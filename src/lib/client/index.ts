@@ -23,8 +23,7 @@ export async function createClient(): Promise<MarketplaceClient> {
       );
     }
     const { SupabaseMarketplaceClient } = await import('./SupabaseClient');
-    // Cast until the real implementation lands in M6 (constructor throws today).
-    instance = new SupabaseMarketplaceClient(url, key) as unknown as MarketplaceClient;
+    instance = new SupabaseMarketplaceClient(url, key);
   }
   return instance!;
 }

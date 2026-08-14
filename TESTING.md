@@ -120,6 +120,19 @@ sizing math).
 
 Setup per README (project, migrations, seed, .env, redirect URL).
 
+> Checkpoint status: this repo's M6 checkpoint was verified against a local
+> Postgres 16 with Supabase shims — all migrations apply in order and a
+> 27-step RLS suite passes (see `supabase/` and the commands below). Run
+> the click-through below the first time a real hosted project is wired up.
+>
+> ```bash
+> # local RLS verification (repeatable):
+> initdb + pg_ctl a scratch cluster, then:
+> psql -f <shim: auth schema/uid(), storage schema, roles, publication>
+> for f in supabase/migrations/*.sql; do psql -f "$f"; done
+> psql -f supabase/seed.sql
+> ```
+
 1. `VITE_MOCK=0 npm run dev` → no Dev switcher; Sign in page offers email
    magic link. Complete sign-in from the email → username claim screen
    (rejects taken/invalid names) → lands signed-in.

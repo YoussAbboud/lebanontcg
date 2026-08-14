@@ -104,6 +104,28 @@ Running log of product/engineering decisions made while building, newest last.
 - **Realtime:** Postgres Changes on `messages` + `listings` filtered per
   conversation/listing id; no presence channels (unread counts derive from
   `read_at`).
+- **Listing visibility widened slightly vs. the brief's letter.** "Publicly
+  readable when active" is the browse rule; at the SQL layer sold/reserved
+  rows stay readable (browse filters them out) because conversations,
+  favorites, and reviews all need to keep rendering their subject after a
+  sale. `removed` rows are hidden from everyone except the seller and
+  existing conversation partners.
+- **Verification without a live project:** this environment has no Supabase
+  credentials, so the M6 checkpoint was run against a local Postgres 16
+  cluster with a small shim for `auth`/`storage`/roles
+  (see TESTING.md → M6): all 7 migrations apply cleanly, and a 27-step RLS
+  test exercises username immutability, foreign-row protection, forged
+  senders, read-receipt column grants, review gating + rating rollup,
+  terminal `sold`, block enforcement, and anon visibility. The
+  `SupabaseMarketplaceClient` compiles against the same domain interface as
+  the mock; first-run verification against a real hosted project follows
+  the TESTING.md M6 script.
+- **Search uses `ilike` terms ANDed across title/set_name** (same semantics
+  as the mock's predicate) rather than Postgres full-text search — simpler,
+  language-agnostic for card names, and fine at marketplace scale. Swap for
+  `tsvector` later if listings grow past ~100k.
+- **Demo seed ships without photos** (Storage can't be seeded from SQL);
+  the app's designed no-photo state covers it.
 
 ## M7 — Hardening
 

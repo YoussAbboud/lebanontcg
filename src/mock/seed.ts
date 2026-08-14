@@ -163,7 +163,7 @@ export function buildSeedConversations(): { conversations: Conversation[]; messa
     },
     {
       id: 'c-2',
-      listingId: 'l-027',
+      listingId: 'l-029',
       buyerId: 'u-maya',
       sellerId: 'u-lina',
       createdAt: mins(60 * 49),

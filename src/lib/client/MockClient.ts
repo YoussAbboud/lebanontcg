@@ -71,6 +71,7 @@ export class MockClient implements MarketplaceClient {
 
   /** Cross-tab sync so two tabs (two mock users) share one world. */
   private channel: BroadcastChannel | null = null;
+  private snapshotApplied = false;
 
   constructor() {
     const seeded = buildSeedConversations();
@@ -87,6 +88,9 @@ export class MockClient implements MarketplaceClient {
     if (typeof BroadcastChannel !== 'undefined') {
       this.channel = new BroadcastChannel('cardpost-mock');
       this.channel.onmessage = (ev) => this.applyRemote(ev.data);
+      // Ask any already-open tab for its state so a reloaded tab rejoins the
+      // same mock world instead of resetting to the seed.
+      this.channel.postMessage({ type: 'hello' } satisfies RemotePatch);
     }
     // Restore per-tab session
     const savedId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(AUTH_KEY) : null;
@@ -102,6 +106,30 @@ export class MockClient implements MarketplaceClient {
 
   private applyRemote(patch: RemotePatch) {
     switch (patch.type) {
+      case 'hello': {
+        // A new tab joined — offer it our current world.
+        this.channel?.postMessage({ type: 'snapshot', state: this.snapshotState() } satisfies RemotePatch);
+        break;
+      }
+      case 'snapshot': {
+        if (this.snapshotApplied) break;
+        this.snapshotApplied = true;
+        const s = patch.state;
+        this.profiles = s.profiles;
+        this.listings = s.listings;
+        this.conversations = s.conversations;
+        this.messages = s.messages;
+        this.reviews = s.reviews;
+        this.reports = s.reports;
+        this.favorites = new Map(s.favorites.map(([k, v]) => [k, new Set(v)]));
+        this.blocks = new Map(s.blocks.map(([k, v]) => [k, new Set(v)]));
+        // Re-resolve the signed-in user against the shared world.
+        const savedId = sessionStorage.getItem(AUTH_KEY);
+        const user = savedId ? (this.profiles.find((p) => p.id === savedId) ?? null) : null;
+        this.setAuth({ user: user ? structuredClone(user) : null, loading: false });
+        this.emitInbox();
+        break;
+      }
       case 'message': {
         if (!this.messages.some((m) => m.id === patch.message.id)) {
           this.messages.push(patch.message);
@@ -152,6 +180,19 @@ export class MockClient implements MarketplaceClient {
         break;
       }
     }
+  }
+
+  private snapshotState(): SnapshotState {
+    return structuredClone({
+      profiles: this.profiles,
+      listings: this.listings,
+      conversations: this.conversations,
+      messages: this.messages,
+      reviews: this.reviews,
+      reports: this.reports,
+      favorites: [...this.favorites.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
+      blocks: [...this.blocks.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
+    });
   }
 
   // ---- emit helpers -------------------------------------------------------
@@ -702,7 +743,20 @@ export class MockClient implements MarketplaceClient {
   }
 }
 
+interface SnapshotState {
+  profiles: Profile[];
+  listings: Listing[];
+  conversations: Conversation[];
+  messages: Message[];
+  reviews: Review[];
+  reports: ReportInput[];
+  favorites: Array<[string, string[]]>;
+  blocks: Array<[string, string[]]>;
+}
+
 type RemotePatch =
+  | { type: 'hello' }
+  | { type: 'snapshot'; state: SnapshotState }
   | { type: 'message'; message: Message }
   | { type: 'read'; conversationId: string; messageIds: string[]; at: string }
   | { type: 'listing'; listing: Listing }

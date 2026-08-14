@@ -1,0 +1,116 @@
+import { useEffect, useRef, useState } from 'react';
+import type { ReportReason, ReportTargetType } from '../lib/types';
+import { REPORT_REASONS, REPORT_REASON_LABELS } from '../lib/types';
+import { useApp } from '../state/AppContext';
+import './reportdialog.css';
+
+interface Props {
+  targetType: ReportTargetType;
+  targetId: string;
+  targetLabel: string;
+  onClose(): void;
+}
+
+export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Props) {
+  const { client, user } = useApp();
+  const [reason, setReason] = useState<ReportReason | null>(null);
+  const [detail, setDetail] = useState('');
+  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    // Focus the dialog on open
+    dialogRef.current?.focus();
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const submit = async () => {
+    if (!reason) return;
+    setState('busy');
+    try {
+      await client.submitReport({ targetType, targetId, reason, detail: detail.trim() });
+      setState('done');
+    } catch {
+      setState('error');
+    }
+  };
+
+  return (
+    <div className="rdlg-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div
+        className="rdlg panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rdlg-title"
+        tabIndex={-1}
+        ref={dialogRef}
+      >
+        {state === 'done' ? (
+          <>
+            <h2 id="rdlg-title" className="display rdlg-title">Report received</h2>
+            <p className="rdlg-sub">
+              Thanks for flagging this — our moderators will take a look. Reports are anonymous to
+              the other party.
+            </p>
+            <div className="rdlg-actions">
+              <button className="btn btn-primary" onClick={onClose}>Done</button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 id="rdlg-title" className="display rdlg-title">Report {targetType}</h2>
+            <p className="rdlg-sub">You&apos;re reporting <strong>{targetLabel}</strong>.</p>
+
+            {!user && <p className="field-error">Sign in to submit a report.</p>}
+
+            <div className="rdlg-reasons" role="radiogroup" aria-label="Reason">
+              {REPORT_REASONS.map((r) => (
+                <button
+                  key={r}
+                  role="radio"
+                  aria-checked={reason === r}
+                  className="chip"
+                  aria-pressed={reason === r}
+                  onClick={() => setReason(r)}
+                >
+                  {REPORT_REASON_LABELS[r]}
+                </button>
+              ))}
+            </div>
+
+            <label className="field">
+              <span className="field-label">Details (optional)</span>
+              <textarea
+                className="textarea"
+                rows={3}
+                maxLength={1000}
+                placeholder="Anything that helps us understand the problem…"
+                value={detail}
+                onChange={(e) => setDetail(e.target.value)}
+              />
+            </label>
+
+            {state === 'error' && (
+              <p className="field-error" role="alert">Couldn&apos;t submit the report — try again.</p>
+            )}
+
+            <div className="rdlg-actions">
+              <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+              <button
+                className="btn btn-danger"
+                disabled={!reason || !user || state === 'busy'}
+                onClick={() => void submit()}
+              >
+                {state === 'busy' ? 'Submitting…' : 'Submit report'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

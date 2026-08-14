@@ -1,0 +1,50 @@
+.browse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+/* Compact take on R1's hero: stretched caps, spectrum emphasis word */
+.browse-hero {
+  text-align: center;
+  padding: var(--sp-8) 0 var(--sp-2);
+}
+.browse-hero-title {
+  font-size: clamp(var(--fs-28), 5vw, var(--fs-52));
+  color: var(--text-1);
+}
+.browse-hero-sub {
+  margin-top: var(--sp-3);
+  color: var(--text-2);
+  font-size: var(--fs-14);
+}
+
+.browse-count {
+  color: var(--text-3);
+  font-size: var(--fs-12);
+}
+
+.browse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sp-4);
+}
+
+.browse-skeleton {
+  border-radius: var(--r-card);
+  aspect-ratio: 5 / 8;
+}
+
+.browse-more {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-4) 0;
+}
+
+@media (max-width: 640px) {
+  .browse-hero { padding-top: var(--sp-4); }
+  .browse-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--sp-3);
+  }
+}

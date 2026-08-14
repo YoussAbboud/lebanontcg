@@ -26,8 +26,9 @@ Running log of product/engineering decisions made while building, newest last.
 - **Mock auth is per-tab (sessionStorage), mock data is cross-tab
   (BroadcastChannel).** Two tabs can be signed in as two different users while
   sharing one in-memory world — exactly what two-party chat testing needs.
-  State resets on full reload of all tabs; that's acceptable for a dev tool
-  and keeps the mock dead simple.
+  A new/reloaded tab asks existing tabs for a state snapshot over the
+  channel, so reloading one tab doesn't fork the world; state only resets
+  when every tab is closed.
 - **Client factory is async (`createClient()`)** so the Supabase SDK is only
   ever loaded (dynamic import) in live mode; mock mode ships zero Supabase
   bytes to the browser.

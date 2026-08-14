@@ -182,6 +182,37 @@ export class MockClient implements MarketplaceClient {
         this.emitInbox();
         break;
       }
+      case 'favorite': {
+        if (!this.favorites.has(patch.userId)) this.favorites.set(patch.userId, new Set());
+        if (patch.on) this.favorites.get(patch.userId)!.add(patch.listingId);
+        else this.favorites.get(patch.userId)!.delete(patch.listingId);
+        break;
+      }
+      case 'block': {
+        if (!this.blocks.has(patch.blockerId)) this.blocks.set(patch.blockerId, new Set());
+        if (patch.on) this.blocks.get(patch.blockerId)!.add(patch.blockedId);
+        else this.blocks.get(patch.blockerId)!.delete(patch.blockedId);
+        break;
+      }
+      case 'review': {
+        if (!this.reviews.some((r) => r.id === patch.review.id)) {
+          this.reviews.push(patch.review);
+        }
+        break;
+      }
+      case 'report': {
+        this.reports.push(patch.report);
+        break;
+      }
+      case 'profile': {
+        const i = this.profiles.findIndex((p) => p.id === patch.profile.id);
+        if (i >= 0) this.profiles[i] = patch.profile;
+        // If it's the signed-in user in this tab, refresh auth state too.
+        if (this.auth.user?.id === patch.profile.id) {
+          this.setAuth({ user: structuredClone(patch.profile), loading: false });
+        }
+        break;
+      }
     }
   }
 
@@ -272,6 +303,7 @@ export class MockClient implements MarketplaceClient {
     const profile = this.profiles.find((p) => p.id === me.id)!;
     profile.username = username;
     this.setAuth({ user: structuredClone(profile), loading: false });
+    this.broadcast({ type: 'profile', profile: structuredClone(profile) });
     return structuredClone(profile);
   }
 
@@ -286,6 +318,7 @@ export class MockClient implements MarketplaceClient {
     if (patch.bio !== undefined) profile.bio = patch.bio;
     if (patch.avatarUrl !== undefined) profile.avatarUrl = patch.avatarUrl;
     this.setAuth({ user: structuredClone(profile), loading: false });
+    this.broadcast({ type: 'profile', profile: structuredClone(profile) });
     return structuredClone(profile);
   }
 
@@ -485,9 +518,11 @@ export class MockClient implements MarketplaceClient {
   }
 
   async setFavorite(listingId: string, favorited: boolean): Promise<void> {
+    const me = this.me();
     const favs = this.myFavorites();
     if (favorited) favs.add(listingId);
     else favs.delete(listingId);
+    this.broadcast({ type: 'favorite', userId: me.id, listingId, on: favorited });
   }
 
   // ---- Chat ---------------------------------------------------------------
@@ -713,6 +748,7 @@ export class MockClient implements MarketplaceClient {
       reviewer: structuredClone(me),
     };
     this.reviews.push(review);
+    this.broadcast({ type: 'review', review: structuredClone(review) });
     return structuredClone(review);
   }
 
@@ -720,6 +756,7 @@ export class MockClient implements MarketplaceClient {
     this.me();
     await sleep(netDelay());
     this.reports.push(structuredClone(input));
+    this.broadcast({ type: 'report', report: structuredClone(input) });
   }
 
   async getBlockedIds(): Promise<Set<string>> {
@@ -732,6 +769,7 @@ export class MockClient implements MarketplaceClient {
     if (!this.blocks.has(me.id)) this.blocks.set(me.id, new Set());
     if (blocked) this.blocks.get(me.id)!.add(userId);
     else this.blocks.get(me.id)!.delete(userId);
+    this.broadcast({ type: 'block', blockerId: me.id, blockedId: userId, on: blocked });
   }
 
   // ---- Storage ------------------------------------------------------------
@@ -773,4 +811,9 @@ type RemotePatch =
   | { type: 'message'; message: Message }
   | { type: 'read'; conversationId: string; messageIds: string[]; at: string }
   | { type: 'listing'; listing: Listing }
-  | { type: 'conversation'; conversation: Conversation };
+  | { type: 'conversation'; conversation: Conversation }
+  | { type: 'favorite'; userId: string; listingId: string; on: boolean }
+  | { type: 'block'; blockerId: string; blockedId: string; on: boolean }
+  | { type: 'review'; review: Review }
+  | { type: 'report'; report: ReportInput }
+  | { type: 'profile'; profile: Profile };

@@ -1,0 +1,27 @@
+.signin {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--sp-12);
+}
+
+.signin-card {
+  width: min(420px, 100%);
+  padding: var(--sp-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.signin-card h1 { font-size: var(--fs-22); }
+.signin-card > p { color: var(--text-2); font-size: var(--fs-13); }
+
+.signin-handle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.signin-at {
+  color: var(--green);
+  font-weight: 800;
+  font-size: var(--fs-18);
+}

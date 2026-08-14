@@ -7,6 +7,8 @@ import { formatPrice, relativeTime, timeOfDay } from '../lib/format';
 import { STATUS_LABELS } from '../lib/status';
 import { useApp } from '../state/AppContext';
 import { Avatar } from '../components/Avatar';
+import { ReviewPrompt } from '../components/ReviewPrompt';
+import { ReportDialog } from '../components/ReportDialog';
 import './chat.css';
 
 let clientIdCounter = 0;
@@ -149,6 +151,9 @@ function Thread({
   const [sendError, setSendError] = useState<string | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
   const [newBelow, setNewBelow] = useState(false);
+  const [reviewState, setReviewState] = useState<'none' | 'pending' | 'done'>('none');
+  const [blockedOther, setBlockedOther] = useState(false);
+  const [reportMessage, setReportMessage] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const atBottomRef = useRef(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -226,6 +231,38 @@ function Thread({
       onAnyChange();
     });
   }, [client, conversationId, meId, onAnyChange, scrollToBottom]);
+
+  // Review prompt: once the listing is sold, check if this user still owes
+  // a review for this conversation. Re-runs when status flips live.
+  const listingStatus = conv?.listing.status;
+  useEffect(() => {
+    if (listingStatus !== 'sold') {
+      setReviewState('none');
+      return;
+    }
+    let cancelled = false;
+    client.getPendingReviews().then((pending) => {
+      if (cancelled) return;
+      setReviewState(pending.some((p) => p.conversationId === conversationId) ? 'pending' : 'done');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [client, conversationId, listingStatus]);
+
+  // Block state for the other party (either direction disables the composer
+  // on our side; their side enforces on send).
+  const otherPartyId = conv?.otherParty.id;
+  useEffect(() => {
+    if (!otherPartyId) return;
+    let cancelled = false;
+    client.getBlockedIds().then((ids) => {
+      if (!cancelled) setBlockedOther(ids.has(otherPartyId));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [client, otherPartyId]);
 
   // Mark read when the tab regains focus while at bottom.
   useEffect(() => {
@@ -323,7 +360,7 @@ function Thread({
 
   const isSeller = conv.sellerId === meId;
   const listing = conv.listing;
-  const composerDisabled = listing.status === 'removed';
+  const composerDisabled = listing.status === 'removed' || blockedOther;
 
   return (
     <section className="chat-thread panel" aria-label={`Conversation with ${conv.otherParty.displayName}`}>
@@ -421,6 +458,16 @@ function Thread({
                 >
                   {cluster.messages.map((m, mi) => (
                     <div key={m.id} className={`chat-bubble ${m.pending ? 'chat-bubble-pending' : ''}`}>
+                      {m.senderId !== meId && (
+                        <button
+                          className="chat-msg-report"
+                          aria-label="Report this message"
+                          title="Report this message"
+                          onClick={() => setReportMessage(m)}
+                        >
+                          ⚑
+                        </button>
+                      )}
                       <p>{m.body}</p>
                       {mi === cluster.messages.length - 1 && (
                         <span className="chat-bubble-meta">
@@ -439,6 +486,19 @@ function Thread({
             )}
           </div>
         ))}
+
+        {reviewState === 'pending' && (
+          <ReviewPrompt
+            conversationId={conversationId}
+            otherParty={conv.otherParty}
+            onDone={() => setReviewState('done')}
+          />
+        )}
+        {reviewState === 'done' && (
+          <p className="chat-reviewed" role="status">
+            <span className="chat-system-pill">You reviewed this trade — thanks!</span>
+          </p>
+        )}
       </div>
 
       {newBelow && (
@@ -451,6 +511,20 @@ function Thread({
         <Link to="/safety" className="chat-safety-link">
           Deal safely: meet in public, verify before paying — read the safe trading tips
         </Link>
+        {blockedOther && (
+          <p className="chat-blocked-note" role="status">
+            You blocked {conv.otherParty.displayName}.{' '}
+            <button
+              className="chat-unblock"
+              onClick={async () => {
+                await client.setBlocked(conv.otherParty.id, false);
+                setBlockedOther(false);
+              }}
+            >
+              Unblock to message
+            </button>
+          </p>
+        )}
         {sendError && (
           <p className="field-error" role="alert">{sendError}</p>
         )}
@@ -459,7 +533,13 @@ function Thread({
             ref={textareaRef}
             className="textarea chat-input"
             rows={1}
-            placeholder={composerDisabled ? 'This listing was removed' : 'Write a message…'}
+            placeholder={
+              blockedOther
+                ? 'You blocked this user'
+                : composerDisabled
+                  ? 'This listing was removed'
+                  : 'Write a message…'
+            }
             value={draft}
             disabled={composerDisabled}
             maxLength={MESSAGE_MAX_LENGTH}
@@ -487,6 +567,15 @@ function Thread({
           </span>
         )}
       </footer>
+
+      {reportMessage && (
+        <ReportDialog
+          targetType="message"
+          targetId={reportMessage.id}
+          targetLabel={`"${reportMessage.body.slice(0, 60)}${reportMessage.body.length > 60 ? '…' : ''}"`}
+          onClose={() => setReportMessage(null)}
+        />
+      )}
     </section>
   );
 }

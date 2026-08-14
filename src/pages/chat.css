@@ -300,9 +300,52 @@
   border-radius: var(--r-card);
   border-bottom-right-radius: var(--r-badge);
 }
+.chat-bubble {
+  position: relative;
+}
 .chat-bubble p {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
+}
+
+/* Flag-a-message affordance — appears on hover/focus */
+.chat-msg-report {
+  position: absolute;
+  top: 2px;
+  right: -26px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--text-3);
+  font-size: var(--fs-11);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--t-fast), color var(--t-fast);
+}
+.chat-bubble:hover .chat-msg-report,
+.chat-msg-report:focus-visible { opacity: 1; }
+.chat-msg-report:hover { color: var(--red); }
+
+.chat-reviewed { text-align: center; }
+.chat-reviewed .chat-system-pill {
+  background: var(--lime-dim);
+  color: var(--lime);
+}
+
+.chat-blocked-note {
+  background: var(--red-dim);
+  color: var(--red);
+  font-size: var(--fs-12);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-badge);
+}
+.chat-unblock {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 700;
 }
 .chat-bubble-pending { opacity: 0.55; }
 

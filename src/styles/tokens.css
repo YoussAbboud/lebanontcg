@@ -26,6 +26,10 @@
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 14px;
 
+  /* Full-screen dialog scrim + the page's dotted-field ink (R2) */
+  --overlay-bg: rgba(10, 10, 12, 0.7);
+  --dot-ink: rgba(255, 255, 255, 0.045);
+
   /* ---- Color: text ------------------------------------------------------ */
   --text-1: #f2f3f5;
   --text-2: #a6a8af;
@@ -36,6 +40,7 @@
   --green: #3edc5c;           /* R1 CTA green — primary actions, active nav */
   --green-hover: #55e871;
   --green-dim: rgba(62, 220, 92, 0.14);
+  --green-border: rgba(62, 220, 92, 0.25);
   --lime: #d8e627;            /* R2 chartreuse — prices, highlights, marks */
   --lime-dim: rgba(216, 230, 39, 0.12);
   --red: #e0483a;             /* R3 slab-label red — danger, destructive */
@@ -50,6 +55,7 @@
   /* ---- Condition scale (NM→DMG, green→red through R2 lime) -------------- */
   --cond-nm: #3edc5c;
   --cond-lp: #a8e03a;
+  --cond-lp-dim: rgba(168, 224, 58, 0.13);
   --cond-mp: #d8e627;
   --cond-hp: #ffb444;
   --cond-dmg: #e0483a;

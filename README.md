@@ -60,6 +60,7 @@ Open http://localhost:5173. You're in mock mode:
 | `npm run build` | typecheck + production build |
 | `npm run preview` | serve the production build |
 | `npm test` | unit tests (Vitest) |
+| `VITE_MOCK=1 VITE_MOCK_STRESS=1000 npm run dev` | mock mode with 1,000 extra synthetic listings (browse perf testing) |
 
 ## Documentation
 

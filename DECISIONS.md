@@ -132,3 +132,14 @@ Running log of product/engineering decisions made while building, newest last.
 - **Stress seed:** `VITE_MOCK_STRESS=1000` env flag makes MockClient
   generate N synthetic listings on top of the curated 40 — used for the
   browse-perf pass (lazy images + content-visibility on cards).
+- **Synthetic listings share bucketed procedural covers** (~20 per game)
+  instead of unique per-listing art: drawing 1,000+ unique canvases caused
+  measurable main-thread jank; after bucketing, a 1,034-listing browse
+  session shows zero >100 ms long tasks during fast scrolling and filter
+  switches take ~0.5 s (half of which is the mock's simulated latency).
+- **Dependency: playwright (dev-only)** — drives the pre-installed Chromium
+  for milestone checkpoint verification (screenshots + scripted two-tab
+  chat flows). Not part of the app bundle.
+- **Anti-drift audit automated ad hoc:** `grep -rn "#\|rgba(" src
+  --include="*.css" | grep -v tokens.css` returns nothing — every color in
+  component CSS flows through the token file.

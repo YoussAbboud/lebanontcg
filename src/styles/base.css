@@ -21,7 +21,7 @@ body {
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   /* R2's dotted-grid field, translated to the dark ground */
-  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-image: radial-gradient(var(--dot-ink) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 

@@ -25,6 +25,7 @@ import { canTransition, statusChangeSystemMessage } from '../status';
 import {
   buildSeedConversations,
   buildSeedListings,
+  buildStressListings,
   seedFavorites,
   seedProfiles,
   seedReviews,
@@ -58,7 +59,10 @@ export class MockClient implements MarketplaceClient {
   readonly isMock = true;
 
   private profiles: Profile[] = structuredClone(seedProfiles);
-  private listings: Listing[] = buildSeedListings();
+  private listings: Listing[] = [
+    ...buildSeedListings(),
+    ...buildStressListings(Number(import.meta.env.VITE_MOCK_STRESS ?? 0) || 0),
+  ];
   private conversations: Conversation[];
   private messages: Message[];
   private favorites = new Map<string, Set<string>>();

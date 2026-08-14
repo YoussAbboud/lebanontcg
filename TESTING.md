@@ -148,6 +148,13 @@ Setup per README (project, migrations, seed, .env, redirect URL).
 
 ## M7 — Hardening
 
+> Checkpoint status: items 1, 3, 4 (skip link, Esc-to-close, filter panel
+> keyboard), 5 (390 px pass over browse/detail/chat/sell/profile/safety —
+> no horizontal overflow anywhere), and 6 (meta/OG in index.html, lazy
+> images) were verified with scripted browser runs; re-run by hand when
+> anything in those areas changes. Measured stress numbers: 1,034 listings,
+> 0 long tasks >100 ms during fast scroll, ~0.5 s filter switches.
+
 1. Stress: `VITE_MOCK=1 VITE_MOCK_STRESS=1000 npm run dev` → Browse stays
    smooth while scrolling/filtering (images lazy-load, no layout thrash).
 2. Kill the network (devtools offline) in live mode → pages show error

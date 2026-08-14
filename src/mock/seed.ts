@@ -206,6 +206,59 @@ export function buildSeedConversations(): { conversations: Conversation[]; messa
   return { conversations, messages };
 }
 
+/**
+ * Synthetic bulk listings for perf testing: VITE_MOCK_STRESS=<n> adds n
+ * generated listings on top of the curated seed (see TESTING.md M7).
+ */
+export function buildStressListings(count: number): Listing[] {
+  const games: Game[] = ['pokemon', 'magic', 'yugioh', 'onepiece', 'lorcana', 'other'];
+  const conds: Condition[] = ['NM', 'LP', 'MP', 'HP', 'DMG'];
+  const finishes: Finish[] = ['normal', 'holo', 'reverse', 'foil'];
+  const sellers = ['u-maya', 'u-karim', 'u-lina'];
+  const nouns = ['Dragon', 'Wizard', 'Leader', 'Trainer', 'Beast', 'Spirit', 'Captain', 'Golem'];
+  const adjs = ['Ancient', 'Shiny', 'Promo', 'Alt Art', 'First Edition', 'Stamped', 'Error', 'Full Art'];
+  return Array.from({ length: count }, (_, i) => {
+    const id = `ls-${String(i + 1).padStart(4, '0')}`;
+    const game = games[i % games.length];
+    const cond = conds[i % conds.length];
+    const finish = finishes[i % finishes.length];
+    const graded = i % 11 === 0;
+    return {
+      id,
+      sellerId: sellers[i % sellers.length],
+      title: `${adjs[i % adjs.length]} ${nouns[(i >> 3) % nouns.length]} #${i + 1}`,
+      game,
+      setName: `Stress Set ${1 + (i % 12)}`,
+      cardNumber: `${(i % 200) + 1}/200`,
+      language: i % 7 === 0 ? 'Japanese' : 'English',
+      condition: cond,
+      finish,
+      gradeCompany: graded ? 'PSA' : null,
+      gradeValue: graded ? `PSA ${(i % 10) + 1}` : null,
+      price: Math.round((5 + (i * 37) % 995) * 100) / 100,
+      currency: 'USD',
+      quantity: 1 + (i % 3),
+      description: 'Synthetic listing generated for the 1,000-listing browse stress test.',
+      status: 'active',
+      reservedForConversationId: null,
+      createdAt: days(1 + (i % 300)),
+      updatedAt: days(i % 300),
+      images: [
+        {
+          id: `${id}-img-0`,
+          listingId: id,
+          // Bucketed seed (not per-listing): synthetic cards share ~20
+          // procedural images per game so the canvas cache absorbs the
+          // cost of drawing 1,000+ covers.
+          storagePath: `mock-card://${game}/bulk-${i % 20}/${finish}/${cond}`,
+          url: '',
+          sortOrder: 0,
+        },
+      ],
+    };
+  });
+}
+
 export const seedFavorites: Array<{ userId: string; listingId: string }> = [
   { userId: 'u-karim', listingId: 'l-004' },
   { userId: 'u-karim', listingId: 'l-029' },

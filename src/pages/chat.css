@@ -296,7 +296,7 @@
 }
 .chat-cluster-own .chat-bubble {
   background: var(--green-dim);
-  border-color: rgba(62, 220, 92, 0.25);
+  border-color: var(--green-border);
   border-radius: var(--r-card);
   border-bottom-right-radius: var(--r-badge);
 }

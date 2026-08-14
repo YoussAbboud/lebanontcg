@@ -34,8 +34,11 @@ import type { Condition, Finish, Game } from '../types';
 
 const AUTH_KEY = 'cardpost.mock.currentUser';
 
-let idCounter = 1000;
-const nextId = (prefix: string) => `${prefix}-${++idCounter}`;
+// IDs must be unique across tabs (each tab runs its own MockClient over a
+// shared BroadcastChannel world), so a per-tab counter would collide.
+let idCounter = 0;
+const tabId = Math.random().toString(36).slice(2, 8);
+const nextId = (prefix: string) => `${prefix}-${tabId}-${++idCounter}`;
 
 /** Small randomized delay so pending/delivered chat states are exercised. */
 const realtimeDelay = () => 250 + Math.random() * 650;
@@ -166,7 +169,7 @@ export class MockClient implements MarketplaceClient {
           this.emitConversation(c.id, {
             type: 'listing_updated',
             conversationId: c.id,
-            listing: patch.listing,
+            listing: this.publicListing(patch.listing),
           });
         }
         this.emitInbox();
@@ -210,8 +213,18 @@ export class MockClient implements MarketplaceClient {
     for (const cb of this.inboxListeners) cb();
   }
 
+  /** Clone a listing with storage paths resolved to displayable URLs —
+      every Listing that leaves the client (returns or events) goes through
+      this so image URLs are always usable. */
+  private publicListing(listing: Listing): Listing {
+    const clone = structuredClone(listing);
+    for (const img of clone.images) img.url = this.resolveImageUrl(img.storagePath);
+    return clone;
+  }
+
   private emitListing(listing: Listing) {
-    for (const cb of this.listingListeners.get(listing.id) ?? []) cb(structuredClone(listing));
+    const resolved = this.publicListing(listing);
+    for (const cb of this.listingListeners.get(listing.id) ?? []) cb(structuredClone(resolved));
   }
 
   private me(): Profile {
@@ -440,7 +453,7 @@ export class MockClient implements MarketplaceClient {
       this.emitConversation(conv.id, {
         type: 'listing_updated',
         conversationId: conv.id,
-        listing: structuredClone(listing),
+        listing: this.publicListing(listing),
       });
       this.broadcast({ type: 'message', message: structuredClone(sys) });
     }

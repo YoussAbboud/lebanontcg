@@ -1,0 +1,246 @@
+/* App shell — R1's framed dark chrome: sticky glass header, uppercase nav
+   with green active state, pill actions. */
+
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--green);
+  color: var(--text-inverse);
+  border-radius: 0 0 var(--r-control) 0;
+  font-weight: 700;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* ---- Header -------------------------------------------------------------- */
+.shell-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--border);
+}
+
+.shell-header-inner {
+  max-width: var(--w-content);
+  margin: 0 auto;
+  height: var(--h-header);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: 0 var(--sp-5);
+}
+
+.shell-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Diamond mark — the card-back emblem, in accent green */
+.shell-logo-mark {
+  width: 14px;
+  height: 14px;
+  background: var(--green);
+  transform: rotate(45deg);
+  border-radius: 3px;
+  box-shadow: var(--shadow-glow-green);
+}
+
+.shell-logo-word {
+  font-size: var(--fs-18);
+  color: var(--text-1);
+}
+
+.shell-logo-accent {
+  color: var(--green);
+}
+
+/* ---- Nav ------------------------------------------------------------------ */
+.shell-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  flex: 1;
+}
+
+.shell-navlink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-12);
+  font-weight: var(--label-weight);
+  letter-spacing: var(--label-spacing);
+  text-transform: uppercase;
+  color: var(--text-2);
+  padding: var(--sp-2) 0;
+  transition: color var(--t-fast);
+}
+.shell-navlink:hover { color: var(--text-1); }
+.shell-navlink.active { color: var(--green); }
+/* R1's little green indicator bar above the active nav item */
+.shell-navlink.active::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * ((var(--h-header) - 100%) / 2));
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--green);
+}
+
+.shell-unread {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--green);
+  color: var(--text-inverse);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shell-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-left: auto;
+}
+
+/* ---- User menu ------------------------------------------------------------ */
+.shell-user { position: relative; }
+
+.shell-user-btn {
+  display: flex;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  padding: 2px;
+  transition: border-color var(--t-fast);
+}
+.shell-user-btn:hover,
+.shell-user-btn[aria-expanded='true'] { border-color: var(--green); }
+
+.shell-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 200px;
+  border-radius: var(--r-card);
+  padding: var(--sp-2);
+  box-shadow: var(--shadow-pop);
+  display: flex;
+  flex-direction: column;
+}
+
+.shell-menu-id {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-2);
+}
+.shell-menu-id strong { font-size: var(--fs-14); }
+.shell-menu-handle { color: var(--text-3); font-size: var(--fs-12); }
+
+.shell-menu-item {
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-badge);
+  font-size: var(--fs-13);
+  color: var(--text-1);
+  transition: background var(--t-fast);
+}
+.shell-menu-item:hover { background: var(--bg-3); }
+.shell-menu-item-danger { color: var(--red); }
+
+/* ---- Mobile nav ----------------------------------------------------------- */
+.shell-burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-badge);
+}
+.shell-burger span {
+  display: block;
+  height: 2px;
+  width: 18px;
+  margin: 0 auto;
+  background: var(--text-1);
+  border-radius: 2px;
+}
+
+.shell-nav-mobile {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .shell-nav { display: none; }
+  .shell-burger { display: flex; }
+  .shell-nav-mobile {
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-2) var(--sp-5) var(--sp-4);
+    gap: var(--sp-1);
+    border-top: 1px solid var(--border);
+  }
+  .shell-nav-mobile .shell-navlink {
+    padding: var(--sp-3) 0;
+  }
+  .shell-nav-mobile .shell-navlink.active::before { display: none; }
+  .shell-header-inner { gap: var(--sp-3); }
+}
+
+/* ---- Main + footer --------------------------------------------------------- */
+.shell-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--w-content);
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-5) var(--sp-16);
+}
+
+.shell-footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.shell-footer-inner {
+  max-width: var(--w-content);
+  margin: 0 auto;
+  padding: var(--sp-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.shell-footer-nav {
+  display: flex;
+  gap: var(--sp-5);
+  font-size: var(--fs-12);
+  color: var(--text-2);
+}
+.shell-footer-nav a:hover { color: var(--green); }

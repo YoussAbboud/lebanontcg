@@ -1,0 +1,133 @@
+/* ==========================================================================
+   CARDPOST DESIGN TOKENS
+   Extracted from design-reference/ (see DESIGN-NOTES.md for the rationale):
+     R1 — "XNFT" dark marketplace hero  → dark surfaces, vivid green accent,
+          pill buttons, glassy overlay chips, large-radius framed panels,
+          spectrum gradient on emphasis text.
+     R2 — "Cards for Marketplaces" grid → chartreuse/lime highlight color,
+          uppercase micro-labels, gradient product cards, dotted-grid field.
+     R3 — Graded slab mockups           → slab-label grade badges (white
+          label, colored bar, heavy grade numeral), condensed uppercase.
+   Every visible style in the app derives from these variables.
+   ========================================================================== */
+
+:root {
+  /* ---- Color: surfaces (R1 near-black stack) --------------------------- */
+  --bg-0: #101113;            /* page ground */
+  --bg-1: #17181c;            /* framed panels / header */
+  --bg-2: #1e2025;            /* cards, elevated surfaces */
+  --bg-3: #26282e;            /* hover / pressed / input fills */
+  --bg-4: #2f3138;            /* highest elevation (menus, tooltips) */
+  --border: #2a2c33;
+  --border-strong: #3a3d45;
+
+  /* Glassy overlay chips (artist chip / price bar in R1) */
+  --glass-bg: rgba(23, 24, 28, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 14px;
+
+  /* ---- Color: text ------------------------------------------------------ */
+  --text-1: #f2f3f5;
+  --text-2: #a6a8af;
+  --text-3: #71747c;
+  --text-inverse: #131313;    /* text on lime/green/white fills (R2 cards) */
+
+  /* ---- Color: accents --------------------------------------------------- */
+  --green: #3edc5c;           /* R1 CTA green — primary actions, active nav */
+  --green-hover: #55e871;
+  --green-dim: rgba(62, 220, 92, 0.14);
+  --lime: #d8e627;            /* R2 chartreuse — prices, highlights, marks */
+  --lime-dim: rgba(216, 230, 39, 0.12);
+  --red: #e0483a;             /* R3 slab-label red — danger, destructive */
+  --red-dim: rgba(224, 72, 58, 0.14);
+  --amber: #ffb444;           /* reserved status, warnings */
+  --amber-dim: rgba(255, 180, 68, 0.14);
+  --blue: #5aa7ff;            /* links inside chat, info */
+
+  /* R1 headline spectrum — used ONLY for graded/holo emphasis + hero text */
+  --spectrum: linear-gradient(92deg, #8a5cff 0%, #e14fff 48%, #ff8a4c 100%);
+
+  /* ---- Condition scale (NM→DMG, green→red through R2 lime) -------------- */
+  --cond-nm: #3edc5c;
+  --cond-lp: #a8e03a;
+  --cond-mp: #d8e627;
+  --cond-hp: #ffb444;
+  --cond-dmg: #e0483a;
+
+  /* ---- Game color coding (procedural card backs + game labels) ---------- */
+  --game-pokemon: #ffcb3d;
+  --game-magic: #e77b3a;
+  --game-yugioh: #a06be0;
+  --game-onepiece: #e0485a;
+  --game-lorcana: #5aa7ff;
+  --game-other: #8a8d96;
+
+  /* ---- Typography ------------------------------------------------------- */
+  /* Archivo Variable (wdth+wght axes) self-hosted via @fontsource.
+     Display = expanded + black, mirroring R1/R2 stretched headline caps. */
+  --font-body: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+
+  --fs-11: 0.6875rem;  /* micro labels, slab cert numbers */
+  --fs-12: 0.75rem;    /* badges, meta */
+  --fs-13: 0.8125rem;  /* secondary UI text */
+  --fs-14: 0.875rem;   /* body */
+  --fs-16: 1rem;       /* emphasized body, inputs */
+  --fs-18: 1.125rem;   /* card titles, section leads */
+  --fs-22: 1.375rem;   /* page titles */
+  --fs-28: 1.75rem;    /* display S */
+  --fs-36: 2.25rem;    /* display M */
+  --fs-52: 3.25rem;    /* display L (hero) */
+
+  /* Display caps: wide + black, tight leading (R1 "UNIQUE COLLECTION") */
+  --display-stretch: 125%;
+  --display-weight: 800;
+  --display-spacing: 0.01em;
+  /* Micro labels: uppercase, loose tracking (R2 "KEYBOARD" / R1 nav) */
+  --label-spacing: 0.09em;
+  --label-weight: 600;
+
+  --lh-tight: 1.08;
+  --lh-snug: 1.3;
+  --lh-body: 1.5;
+
+  /* ---- Spacing rhythm (4px base) ---------------------------------------- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* ---- Radii ------------------------------------------------------------ */
+  --r-pill: 999px;            /* buttons, chips, badges (R1) */
+  --r-panel: 24px;            /* big framed sections (R1 hero frame) */
+  --r-card: 16px;             /* listing cards (R1/R2) */
+  --r-control: 12px;          /* inputs, small cards */
+  --r-badge: 8px;             /* slab labels, tiny tags (R3) */
+
+  /* ---- Shadows (soft, deep — R1) ---------------------------------------- */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow-green: 0 0 24px rgba(62, 220, 92, 0.35);
+
+  /* ---- Motion ------------------------------------------------------------ */
+  --t-fast: 120ms ease;
+  --t-med: 200ms ease;
+
+  /* ---- Layout ------------------------------------------------------------ */
+  --w-content: 1200px;
+  --h-header: 64px;
+}
+
+/* Slab label surfaces (R3) keep light colors even in the dark theme —
+   they imitate a physical grading label. */
+:root {
+  --slab-bg: #f4f2ec;
+  --slab-text: #17181c;
+  --slab-bar: var(--red);
+}

@@ -9,6 +9,8 @@ const msg = (over: Partial<Message>): Message => ({
   senderId: 'u-a',
   kind: 'user',
   body: 'hello',
+  amount: null,
+  offerStatus: null,
   createdAt: '2026-03-04T12:00:00Z',
   readAt: null,
   ...over,
@@ -41,6 +43,17 @@ describe('groupMessages', () => {
     ];
     const sections = groupMessages(messages);
     expect(sections[0].clusters.map((c) => c.messages.length)).toEqual([2, 1]);
+  });
+
+  it('offer messages always stand alone', () => {
+    const t0 = Date.parse('2026-03-04T12:00:00Z');
+    const messages = [
+      msg({ senderId: 'u-a', createdAt: new Date(t0).toISOString() }),
+      msg({ senderId: 'u-a', kind: 'offer', amount: 100, offerStatus: 'proposed', createdAt: new Date(t0 + 1000).toISOString() }),
+      msg({ senderId: 'u-a', createdAt: new Date(t0 + 2000).toISOString() }),
+    ];
+    const clusters = groupMessages(messages)[0].clusters;
+    expect(clusters.map((c) => c.kind)).toEqual(['user', 'offer', 'user']);
   });
 
   it('system messages always stand alone', () => {

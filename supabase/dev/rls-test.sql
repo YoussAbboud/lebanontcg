@@ -147,3 +147,40 @@ select 'T26 anon cannot see removed: ' || (count(*) = 0)::text
   from public.listings where id = '10000000-0000-0000-0000-000000000002';
 select 'T27 anon cannot insert reports: begin';
 reset role;
+
+-- ---- 0008: offers + likes -------------------------------------------------
+set role authenticated;
+-- undo the block from the T22 section so the two can talk again
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+delete from public.blocks where blocker_id = auth.uid();
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+insert into public.messages (conversation_id, sender_id, kind, body, amount, offer_status)
+select c.id, auth.uid(), 'offer', 'cash saturday', 275, 'proposed' from public.conversations c limit 1;
+select 'T28 offer inserted: ' || (count(*) = 1)::text
+  from public.messages where kind = 'offer';
+
+-- sender cannot settle own offer (update policy: sender is excluded)
+update public.messages set offer_status = 'accepted' where kind = 'offer';
+select 'T29 sender cannot settle own offer: '
+  || (count(*) = 1)::text from public.messages where kind = 'offer' and offer_status = 'proposed';
+
+-- recipient accepts -> status flips + system message appears
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+update public.messages set offer_status = 'accepted' where kind = 'offer';
+select 'T30 recipient accepted: ' || (count(*) = 1)::text
+  from public.messages where kind = 'offer' and offer_status = 'accepted';
+select 'T31 acceptance system msg: ' || (count(*) = 1)::text
+  from public.messages where kind = 'system' and body like 'Offer accepted.%';
+
+-- settled offers are immutable
+update public.messages set offer_status = 'declined' where kind = 'offer';
+select 'T32 (expect error above: settled offer immutable)';
+
+-- like counts view is readable and aggregates anonymously
+insert into public.favorites (user_id, listing_id)
+values (auth.uid(), '10000000-0000-0000-0000-000000000001');
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000099';
+select 'T33 like count visible to others: ' || (likes = 1)::text
+  from public.listing_likes where listing_id = '10000000-0000-0000-0000-000000000001';
+select 'T34 raw favorites still hidden: ' || (count(*) = 0)::text from public.favorites;
+reset role;

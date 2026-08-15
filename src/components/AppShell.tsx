@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppContext';
 import { UserSwitcher } from './UserSwitcher';
 import { Avatar } from './Avatar';
-import { FlagLogo } from './FlagLogo';
+import flagGif from '../assets/flag.gif';
 import './appshell.css';
 import '../styles/ui.css';
 
@@ -33,151 +33,173 @@ export function AppShell() {
   const navLinks = (
     <>
       <NavLink to="/" end className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
+        <span className="shell-navtab" aria-hidden="true" />
         Home
       </NavLink>
-      <NavLink to="/sell" className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
-        Sell
+      <NavLink to="/browse" className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
+        <span className="shell-navtab" aria-hidden="true" />
+        Browse
+      </NavLink>
+      <NavLink to="/sellers" className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
+        <span className="shell-navtab" aria-hidden="true" />
+        Sellers
       </NavLink>
       <NavLink to="/chat" className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
-        Chat
+        <span className="shell-navtab" aria-hidden="true" />
+        Messages
         {unreadCount > 0 && (
           <span className="shell-unread" aria-label={`${unreadCount} unread messages`}>
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </NavLink>
-      <NavLink to="/favorites" className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
-        Favorites
-      </NavLink>
     </>
   );
 
   return (
-    <div className="shell">
+    <div className="shell-frame">
       <a href="#main" className="skip-link">
         Skip to content
       </a>
+      <div className="shell-glow" aria-hidden="true" />
+
       <header className="shell-header">
-        <div className="shell-header-inner">
+        <button
+          className="shell-burger"
+          aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={mobileNavOpen}
+          onClick={() => setMobileNavOpen((v) => !v)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <Link to="/" className="shell-logo display" aria-label="LebanonTCG home">
+          <img src={flagGif} alt="" width={38} height={38} className="shell-logo-gif" />
+          LebanonTCG<span className="shell-logo-dot">.</span>
+        </Link>
+
+        <nav className="shell-nav" aria-label="Primary">
+          {navLinks}
+        </nav>
+
+        <div className="shell-actions">
           <button
-            className="shell-burger"
-            aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={mobileNavOpen}
-            onClick={() => setMobileNavOpen((v) => !v)}
+            type="button"
+            aria-label="Search cards"
+            className="btn-icon shell-search"
+            onClick={() => navigate('/browse?focus=1')}
           >
-            <span />
-            <span />
-            <span />
+            ⌕
           </button>
-
-          <Link to="/" className="shell-logo" aria-label="LebanonTCG home">
-            <FlagLogo size={38} />
-            <span className="shell-logo-word display">
-              Lebanon<span className="shell-logo-accent">TCG</span>
-            </span>
-          </Link>
-
-          {/* R4's floating segmented pill nav */}
-          <nav className="shell-nav glass" aria-label="Primary">
-            {navLinks}
-          </nav>
-
-          <div className="shell-actions">
-            {client.isMock && <UserSwitcher />}
-            {user ? (
-              <div className="shell-user" ref={menuRef}>
-                <button
-                  className="shell-user-btn"
-                  aria-haspopup="menu"
-                  aria-expanded={menuOpen}
-                  onClick={() => setMenuOpen((v) => !v)}
-                >
-                  <Avatar profile={user} size={36} />
-                </button>
-                {menuOpen && (
-                  <div className="shell-menu glass" role="menu">
-                    <div className="shell-menu-id">
-                      <strong>{user.displayName}</strong>
-                      {user.username && <span className="shell-menu-handle">@{user.username}</span>}
-                    </div>
-                    {user.username && (
-                      <button
-                        role="menuitem"
-                        className="shell-menu-item"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          navigate(`/u/${user.username}`);
-                        }}
-                      >
-                        My profile
-                      </button>
-                    )}
-                    <button
-                      role="menuitem"
-                      className="shell-menu-item"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        navigate('/my-listings');
-                      }}
-                    >
-                      My listings
-                    </button>
-                    <button
-                      role="menuitem"
-                      className="shell-menu-item"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        navigate('/settings');
-                      }}
-                    >
-                      Settings
-                    </button>
-                    <button
-                      role="menuitem"
-                      className="shell-menu-item shell-menu-item-danger"
-                      onClick={async () => {
-                        setMenuOpen(false);
-                        await client.signOut();
-                        navigate('/');
-                      }}
-                    >
-                      Sign out
-                    </button>
+          {client.isMock && <UserSwitcher />}
+          {user ? (
+            <div className="shell-user" ref={menuRef}>
+              <button
+                className="shell-user-btn"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((v) => !v)}
+              >
+                <Avatar profile={user} size={34} />
+              </button>
+              {menuOpen && (
+                <div className="shell-menu" role="menu">
+                  <div className="shell-menu-id">
+                    <strong>{user.displayName}</strong>
+                    {user.username && <span className="shell-menu-handle">@{user.username}</span>}
                   </div>
-                )}
-              </div>
-            ) : (
-              !client.isMock && (
-                <Link to="/signin" className="btn btn-primary btn-sm">
-                  Sign in
-                </Link>
-              )
-            )}
-          </div>
+                  {user.username && (
+                    <button
+                      role="menuitem"
+                      className="shell-menu-item"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        navigate(`/u/${user.username}`);
+                      }}
+                    >
+                      My profile
+                    </button>
+                  )}
+                  <button
+                    role="menuitem"
+                    className="shell-menu-item"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/my-listings');
+                    }}
+                  >
+                    My listings
+                  </button>
+                  <button
+                    role="menuitem"
+                    className="shell-menu-item"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/favorites');
+                    }}
+                  >
+                    Watchlist
+                  </button>
+                  <button
+                    role="menuitem"
+                    className="shell-menu-item"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate('/settings');
+                    }}
+                  >
+                    Settings
+                  </button>
+                  <button
+                    role="menuitem"
+                    className="shell-menu-item shell-menu-item-danger"
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      await client.signOut();
+                      navigate('/');
+                    }}
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            !client.isMock && (
+              <Link to="/signin" className="btn-outline shell-signin">
+                Sign in
+              </Link>
+            )
+          )}
+          <Link to="/sell" className="btn-acid shell-sell">
+            List a card
+          </Link>
         </div>
-        {mobileNavOpen && (
-          <nav className="shell-nav-mobile glass" aria-label="Primary mobile">
-            {navLinks}
-          </nav>
-        )}
       </header>
+
+      {mobileNavOpen && (
+        <nav className="shell-nav-mobile" aria-label="Primary mobile">
+          {navLinks}
+          <NavLink to="/favorites" className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
+            <span className="shell-navtab" aria-hidden="true" />
+            Watchlist
+          </NavLink>
+        </nav>
+      )}
 
       <main id="main" className="shell-main">
         <Outlet />
       </main>
 
       <footer className="shell-footer">
-        <div className="shell-footer-inner">
-          <span className="shell-footer-brand">
-            <FlagLogo size={22} />
-            <span className="microlabel">LebanonTCG — trade cards, not risks</span>
-          </span>
-          <nav className="shell-footer-nav" aria-label="Footer">
-            <Link to="/safety">Safe trading tips</Link>
-            <Link to="/">Browse</Link>
-            <Link to="/sell">Sell a card</Link>
-          </nav>
-        </div>
+        <div className="mono-label">We connect collectors. You handle the deal.</div>
+        <nav className="shell-footer-nav" aria-label="Footer">
+          <Link to="/safety">Trading safely</Link>
+          <Link to="/favorites">Watchlist</Link>
+          <Link to="/settings">Settings</Link>
+        </nav>
       </footer>
     </div>
   );

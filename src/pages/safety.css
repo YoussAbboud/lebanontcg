@@ -1,21 +1,20 @@
+/* Safe trading tips (Sleeved). */
+
 .safety {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-6);
+  gap: 20px;
   max-width: 720px;
   margin: 0 auto;
+  padding: 40px var(--pad-x) 72px;
 }
 
-.safety-hero {
-  text-align: center;
-  padding-top: var(--sp-6);
-}
-.safety-hero h1 {
-  font-size: clamp(var(--fs-28), 4.5vw, var(--fs-36));
-}
+.safety-hero { text-align: center; padding-top: 12px; }
+.safety-title { font-size: clamp(var(--fs-28), 4.5vw, 44px); }
 .safety-hero p {
-  margin-top: var(--sp-3);
-  color: var(--text-2);
+  margin-top: 14px;
+  color: var(--muted);
   font-size: var(--fs-14);
   max-width: 520px;
   margin-left: auto;
@@ -28,44 +27,37 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  counter-reset: tips;
+  gap: 12px;
 }
 
 .safety-tip {
   display: flex;
-  gap: var(--sp-4);
-  padding: var(--sp-5);
+  gap: 16px;
   align-items: flex-start;
 }
 
 .safety-num {
-  font-size: var(--fs-22);
-  color: var(--text-2);
+  color: var(--acid);
   flex-shrink: 0;
-  min-width: 44px;
+  min-width: 34px;
+  font-size: var(--fs-15);
 }
 
 .safety-tip h2 {
-  font-size: var(--fs-16);
+  font-family: var(--font-display);
   font-weight: 700;
-  margin-bottom: var(--sp-1);
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-15);
+  margin-bottom: 6px;
 }
-.safety-tip p {
-  color: var(--text-2);
-  font-size: var(--fs-13);
-}
+.safety-tip p { color: var(--text-2); font-size: var(--fs-13); }
 
 .safety-footer {
-  padding: var(--sp-5);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-4);
+  gap: 16px;
   flex-wrap: wrap;
 }
-.safety-footer p {
-  color: var(--text-2);
-  font-size: var(--fs-13);
-  max-width: 420px;
-}
+.safety-footer p { color: var(--text-2); font-size: var(--fs-13); max-width: 420px; }

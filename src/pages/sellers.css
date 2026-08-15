@@ -1,0 +1,65 @@
+/* Sellers directory (Sleeved). */
+
+.sellers {
+  position: relative;
+  padding: 32px var(--pad-x) 72px;
+}
+
+.sellers-head { margin: 10px 0 26px; }
+
+.sellers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+}
+
+.sellers-card {
+  text-align: left;
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 18px;
+  transition: transform var(--t-fast), border-color var(--t-fast);
+}
+.sellers-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--acid);
+}
+
+.sellers-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sellers-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-pill);
+  flex: none;
+}
+
+.sellers-names { min-width: 0; }
+.sellers-handle { font-size: var(--fs-15); font-weight: 600; }
+.sellers-region { font-size: var(--fs-12); color: var(--muted); margin-top: 3px; }
+
+.sellers-rank { margin-left: auto; }
+
+.sellers-games {
+  margin-top: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sellers-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.sellers-stat-mid { margin-left: auto; }
+.sellers-stat-right { margin-left: auto; text-align: right; }
+.sellers-stat-v { margin-top: 4px; }

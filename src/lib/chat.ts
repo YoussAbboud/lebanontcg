@@ -8,7 +8,7 @@ import type { Message } from './types';
 export const GROUP_WINDOW_MS = 5 * 60 * 1000;
 
 export interface MessageCluster {
-  kind: 'user' | 'system';
+  kind: Message['kind'];
   senderId: string;
   messages: Message[];
 }

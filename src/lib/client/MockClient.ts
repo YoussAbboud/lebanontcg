@@ -10,9 +10,11 @@ import type {
   ListingWithSeller,
   Message,
   PendingReview,
+  OfferStatus,
   Profile,
   ReportInput,
   Review,
+  SellerStats,
 } from '../types';
 import type {
   AuthState,
@@ -158,7 +160,7 @@ export class MockClient implements MarketplaceClient {
           }
         }
         this.emitConversation(patch.conversationId, {
-          type: 'read',
+          type: 'refresh',
           conversationId: patch.conversationId,
         });
         this.emitInbox();
@@ -184,6 +186,25 @@ export class MockClient implements MarketplaceClient {
           this.conversations.push(patch.conversation);
         }
         this.emitInbox();
+        break;
+      }
+      case 'offer': {
+        const msg = this.messages.find((m) => m.id === patch.messageId);
+        if (msg && msg.kind === 'offer') msg.offerStatus = patch.status;
+        this.emitConversation(patch.conversationId, {
+          type: 'refresh',
+          conversationId: patch.conversationId,
+        });
+        this.emitInbox();
+        break;
+      }
+      case 'typing': {
+        if (patch.userId !== this.auth.user?.id) {
+          this.emitConversation(patch.conversationId, {
+            type: 'typing',
+            conversationId: patch.conversationId,
+          });
+        }
         break;
       }
       case 'favorite': {
@@ -339,6 +360,44 @@ export class MockClient implements MarketplaceClient {
     return p ? this.withRating(p) : null;
   }
 
+  private sellerStatsFor(p: Profile, rank: number): SellerStats {
+    const theirs = this.listings.filter((l) => l.sellerId === p.id);
+    const active = theirs.filter((l) => l.status === 'active');
+    const gameCounts = new Map<string, number>();
+    for (const l of active) gameCounts.set(l.game, (gameCounts.get(l.game) ?? 0) + 1);
+    return {
+      profile: this.withRating(p),
+      rank,
+      activeCount: active.length,
+      soldCount: theirs.filter((l) => l.status === 'sold').length,
+      games: [...gameCounts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([g]) => g) as SellerStats['games'],
+    };
+  }
+
+  /** Rank: review count, then rating, then live inventory. */
+  private rankedSellers(): SellerStats[] {
+    return this.profiles
+      .map((p) => this.sellerStatsFor(p, 0))
+      .sort(
+        (a, b) =>
+          b.profile.ratingCount - a.profile.ratingCount ||
+          (b.profile.ratingAvg ?? 0) - (a.profile.ratingAvg ?? 0) ||
+          b.activeCount - a.activeCount,
+      )
+      .map((s, i) => ({ ...s, rank: i + 1 }));
+  }
+
+  async listSellers(limit: number): Promise<SellerStats[]> {
+    await sleep(netDelay());
+    return this.rankedSellers().slice(0, limit);
+  }
+
+  async getSellerStats(userId: string): Promise<SellerStats | null> {
+    return this.rankedSellers().find((s) => s.profile.id === userId) ?? null;
+  }
+
   /** Recompute rating fields from the reviews table (mirrors the SQL view). */
   private withRating(p: Profile): Profile {
     const received = this.reviews.filter((r) => r.revieweeId === p.id);
@@ -352,6 +411,12 @@ export class MockClient implements MarketplaceClient {
 
   // ---- Listings (read) ----------------------------------------------------
 
+  private likesOf(listingId: string): number {
+    let n = 0;
+    for (const set of this.favorites.values()) if (set.has(listingId)) n++;
+    return n;
+  }
+
   private hydrate(l: Listing): ListingWithSeller {
     const seller = this.withRating(this.profiles.find((p) => p.id === l.sellerId)!);
     const clone = structuredClone(l);
@@ -362,15 +427,27 @@ export class MockClient implements MarketplaceClient {
       sellerActiveListingCount: this.listings.filter(
         (x) => x.sellerId === l.sellerId && x.status === 'active',
       ).length,
+      likes: this.likesOf(l.id),
     };
   }
 
   async searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage> {
     await sleep(netDelay());
-    const matched = sortListings(
-      this.listings.filter((l) => listingMatchesFilter(l, filter)),
-      filter.sort,
-    );
+    let candidates = this.listings.filter((l) => listingMatchesFilter(l, filter));
+    if (filter.sellerHasReviews) {
+      candidates = candidates.filter(
+        (l) => this.withRating(this.profiles.find((p) => p.id === l.sellerId)!).ratingCount > 0,
+      );
+    }
+    const matched =
+      filter.sort === 'most_watched'
+        ? [...candidates].sort(
+            (a, b) =>
+              this.likesOf(b.id) - this.likesOf(a.id) ||
+              b.createdAt.localeCompare(a.createdAt) ||
+              b.id.localeCompare(a.id),
+          )
+        : sortListings(candidates, filter.sort);
     const page = matched.slice(offset, offset + limit);
     return {
       items: page.map((l) => this.hydrate(l)),
@@ -481,6 +558,8 @@ export class MockClient implements MarketplaceClient {
         senderId: '',
         kind: 'system',
         body: statusChangeSystemMessage(status, listing.reservedForConversationId === conv.id),
+        amount: null,
+        offerStatus: null,
         createdAt: new Date().toISOString(),
         readAt: null,
       };
@@ -625,6 +704,8 @@ export class MockClient implements MarketplaceClient {
       senderId: me.id,
       kind: 'user',
       body,
+      amount: null,
+      offerStatus: null,
       createdAt: new Date().toISOString(),
       readAt: null,
       clientId,
@@ -639,6 +720,81 @@ export class MockClient implements MarketplaceClient {
     this.emitInbox();
     this.broadcast({ type: 'message', message: structuredClone(message) });
     return structuredClone(message);
+  }
+
+  async sendOffer(
+    conversationId: string,
+    amount: number,
+    note: string,
+    clientId: string,
+  ): Promise<Message> {
+    const me = this.me();
+    const conv = this.conversations.find((c) => c.id === conversationId);
+    if (!conv || (conv.buyerId !== me.id && conv.sellerId !== me.id)) {
+      throw new Error('Conversation not found');
+    }
+    if (!(amount > 0)) throw new Error('Offer amount must be above zero.');
+    const otherId = conv.buyerId === me.id ? conv.sellerId : conv.buyerId;
+    if (this.isBlockedBetween(me.id, otherId)) throw new Error('You cannot message this user.');
+    await sleep(realtimeDelay());
+    const message: Message = {
+      id: nextId('m'),
+      conversationId,
+      senderId: me.id,
+      kind: 'offer',
+      body: note,
+      amount,
+      offerStatus: 'proposed',
+      createdAt: new Date().toISOString(),
+      readAt: null,
+      clientId,
+    };
+    this.messages.push(message);
+    conv.lastMessageAt = message.createdAt;
+    this.emitConversation(conversationId, {
+      type: 'message',
+      conversationId,
+      message: structuredClone(message),
+    });
+    this.emitInbox();
+    this.broadcast({ type: 'message', message: structuredClone(message) });
+    return structuredClone(message);
+  }
+
+  async respondToOffer(conversationId: string, messageId: string, accept: boolean): Promise<void> {
+    const me = this.me();
+    const msg = this.messages.find((m) => m.id === messageId && m.conversationId === conversationId);
+    if (!msg || msg.kind !== 'offer') throw new Error('Offer not found');
+    if (msg.senderId === me.id) throw new Error('You cannot respond to your own offer.');
+    if (msg.offerStatus !== 'proposed') throw new Error('This offer was already settled.');
+    const status: OfferStatus = accept ? 'accepted' : 'declined';
+    msg.offerStatus = status;
+    this.broadcast({ type: 'offer', conversationId, messageId, status });
+    this.emitConversation(conversationId, { type: 'refresh', conversationId });
+    if (accept) {
+      const sys: Message = {
+        id: nextId('m'),
+        conversationId,
+        senderId: '',
+        kind: 'system',
+        body: 'Offer accepted. Arrange payment and delivery between yourselves — LebanonTCG is not involved in the transaction.',
+        amount: null,
+        offerStatus: null,
+        createdAt: new Date().toISOString(),
+        readAt: null,
+      };
+      this.messages.push(sys);
+      const conv = this.conversations.find((c) => c.id === conversationId);
+      if (conv) conv.lastMessageAt = sys.createdAt;
+      this.emitConversation(conversationId, { type: 'message', conversationId, message: structuredClone(sys) });
+      this.broadcast({ type: 'message', message: structuredClone(sys) });
+    }
+    this.emitInbox();
+  }
+
+  sendTyping(conversationId: string): void {
+    if (!this.auth.user) return;
+    this.broadcast({ type: 'typing', conversationId, userId: this.auth.user.id });
   }
 
   async markConversationRead(conversationId: string): Promise<void> {
@@ -657,7 +813,7 @@ export class MockClient implements MarketplaceClient {
       }
     }
     if (ids.length) {
-      this.emitConversation(conversationId, { type: 'read', conversationId });
+      this.emitConversation(conversationId, { type: 'refresh', conversationId });
       this.emitInbox();
       this.broadcast({ type: 'read', conversationId, messageIds: ids, at });
     }
@@ -816,6 +972,8 @@ type RemotePatch =
   | { type: 'read'; conversationId: string; messageIds: string[]; at: string }
   | { type: 'listing'; listing: Listing }
   | { type: 'conversation'; conversation: Conversation }
+  | { type: 'offer'; conversationId: string; messageId: string; status: OfferStatus }
+  | { type: 'typing'; conversationId: string; userId: string }
   | { type: 'favorite'; userId: string; listingId: string; on: boolean }
   | { type: 'block'; blockerId: string; blockedId: string; on: boolean }
   | { type: 'review'; review: Review }

@@ -42,7 +42,7 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
   return (
     <div className="rdlg-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
-        className="rdlg panel"
+        className="rdlg"
         role="dialog"
         aria-modal="true"
         aria-labelledby="rdlg-title"
@@ -57,7 +57,7 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
               the other party.
             </p>
             <div className="rdlg-actions">
-              <button className="btn btn-primary" onClick={onClose}>Done</button>
+              <button className="btn-acid" onClick={onClose}>Done</button>
             </div>
           </>
         ) : (
@@ -73,7 +73,7 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
                   key={r}
                   role="radio"
                   aria-checked={reason === r}
-                  className="chip"
+                  className="pill"
                   aria-pressed={reason === r}
                   onClick={() => setReason(r)}
                 >
@@ -82,10 +82,10 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
               ))}
             </div>
 
-            <label className="field">
-              <span className="field-label">Details (optional)</span>
+            <label className="rdlg-field">
+              <span className="mono-label rdlg-label">Details (optional)</span>
               <textarea
-                className="textarea"
+                className="input"
                 rows={3}
                 maxLength={1000}
                 placeholder="Anything that helps us understand the problem…"
@@ -99,9 +99,9 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
             )}
 
             <div className="rdlg-actions">
-              <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+              <button className="btn-outline" onClick={onClose}>Cancel</button>
               <button
-                className="btn btn-danger"
+                className="btn-outline btn-danger-outline"
                 disabled={!reason || !user || state === 'busy'}
                 onClick={() => void submit()}
               >

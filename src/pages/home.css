@@ -1,0 +1,206 @@
+/* Home — hero, fan, featured strip, trending (Sleeved). */
+
+.home { position: relative; }
+
+.home-hero {
+  padding: 72px var(--pad-x) 0;
+  text-align: center;
+}
+
+.home-eyebrow { color: var(--muted); }
+
+.home-headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: clamp(40px, 8vw, 88px);
+  line-height: 0.95;
+  margin: 22px 0 0;
+  text-shadow: 0 0 60px var(--acid-glow);
+}
+
+.home-sub {
+  max-width: 470px;
+  margin: 22px auto 0;
+  color: var(--muted);
+  font-size: var(--fs-15);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.home-fan-skeleton {
+  padding: 56px var(--pad-x) 64px;
+}
+.home-fan-skeleton .skeleton {
+  height: clamp(300px, 42vw, 480px);
+  border-radius: var(--r-card);
+}
+
+.home-error { margin: 72px auto; max-width: 480px; }
+
+/* ---- Featured strip ---------------------------------------------------------- */
+.home-featured {
+  position: relative;
+  padding: 8px var(--pad-x) 64px;
+}
+
+.home-featured-arrows {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.home-arrow { background: var(--surface); color: var(--text-1); }
+
+.home-strip {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 4px;
+}
+
+.home-strip-card {
+  flex: none;
+  width: 300px;
+  cursor: pointer;
+  scroll-snap-align: start;
+  border-radius: var(--r-card);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--raised-1), var(--raised-2));
+  box-shadow: var(--shadow-card);
+}
+.home-strip-card.is-acid-strip {
+  border-color: transparent;
+  background: linear-gradient(180deg, var(--acid), var(--acid-press));
+}
+
+.home-strip-face {
+  position: relative;
+  height: 190px;
+  margin: 10px 10px 0;
+  border-radius: var(--r-panel);
+  overflow: hidden;
+}
+.home-strip-face img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.home-strip-glyph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-size: 96px;
+  color: var(--glyph-ink);
+}
+.is-acid-strip .home-strip-glyph { color: var(--glyph-on-acid); }
+
+.home-strip-body { padding: 16px 18px 18px; }
+
+.home-strip-title {
+  font-size: var(--fs-18);
+  margin-top: 8px;
+  color: var(--text-1);
+}
+.is-acid-strip .home-strip-title { color: var(--ink); }
+.is-acid-strip .home-strip-eyebrow { color: var(--ink-soft); }
+.is-acid-strip .mono-value { color: var(--ink); }
+
+.home-strip-asking {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ---- Trending ------------------------------------------------------------------ */
+.home-trending {
+  position: relative;
+  padding: 40px var(--pad-x) 72px;
+  border-top: 1px solid var(--hairline);
+}
+
+.home-trending-note { margin-left: auto; }
+
+.home-trending-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.home-sellers {
+  flex: 1 1 236px;
+  max-width: 320px;
+}
+
+.home-sellers-title { margin-bottom: 14px; }
+
+.home-sellers-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-seller-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 6px;
+  border-radius: var(--r-thumb);
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+.home-seller-row:hover { background: var(--hover-row); }
+
+.home-seller-rank { width: 16px; }
+
+.home-seller-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-pill);
+  flex: none;
+}
+.home-seller-avatar-top {
+  background: var(--brand-grad);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--violet);
+}
+
+.home-seller-names { min-width: 0; }
+.home-seller-handle {
+  font-size: var(--fs-13);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.home-seller-rating { font-size: var(--fs-11); color: var(--muted); }
+
+.home-seller-count { margin-left: auto; color: var(--text-2); font-size: var(--fs-11); }
+
+.home-sellers-empty { color: var(--muted); font-size: var(--fs-13); }
+
+.home-sellers-more { margin-top: 14px; }
+
+.home-trending-grid {
+  flex: 999 1 320px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+  gap: 16px;
+}
+.home-trending-empty { grid-column: 1 / -1; }
+
+.home-games {
+  padding: 0 var(--pad-x) 40px;
+  text-align: center;
+  opacity: 0.5;
+}

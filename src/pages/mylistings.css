@@ -1,27 +1,18 @@
+/* My listings dashboard (Sleeved). */
+
 .mylist {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-5);
+  position: relative;
+  padding: 32px var(--pad-x) 72px;
 }
 
-.mylist-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--sp-4);
-}
-.mylist-head h1 { font-size: var(--fs-28); }
-.mylist-head p {
-  color: var(--text-2);
-  font-size: var(--fs-13);
-  margin-top: var(--sp-1);
-}
+.mylist-new { margin-left: auto; }
 
 .mylist-tabs {
   display: flex;
-  gap: var(--sp-2);
+  gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
+  margin-bottom: 22px;
 }
 .mylist-tabs::-webkit-scrollbar { display: none; }
 
@@ -31,47 +22,52 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: 12px;
 }
 
 .mylist-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  padding: var(--sp-3);
+  gap: 16px;
+  padding: 12px;
 }
 
 .mylist-media {
   width: 64px;
   height: 80px;
-  border-radius: var(--r-control);
+  border-radius: var(--r-thumb);
   overflow: hidden;
-  flex-shrink: 0;
-  background: var(--bg-3);
+  flex: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--glyph-ink-strong);
+  border: none;
+  padding: 0;
 }
-.mylist-media img { width: 100%; height: 100%; object-fit: cover; }
-.mylist-noimg { display: block; width: 100%; height: 100%; }
 
 .mylist-info {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
+  gap: 4px;
 }
 
 .mylist-title {
-  font-weight: 700;
-  font-size: var(--fs-14);
+  font-size: var(--fs-15);
+  color: var(--text-1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.mylist-title:hover { color: var(--text-2); }
+.mylist-title:hover { color: var(--acid); }
 
 .mylist-meta {
-  color: var(--text-3);
-  font-size: var(--fs-12);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -80,23 +76,22 @@
 .mylist-price-line {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: 12px;
 }
+.mylist-status-active { color: var(--acid); }
+.mylist-status-reserved { color: var(--warn); }
+.mylist-status-muted { color: var(--muted); }
 
 .mylist-actions {
   display: flex;
-  gap: var(--sp-2);
+  gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
+.mylist-btn { padding: 9px 14px; min-height: 38px; }
 
 @media (max-width: 640px) {
-  .mylist-row {
-    flex-wrap: wrap;
-  }
-  .mylist-info { flex-basis: calc(100% - 64px - var(--sp-4)); }
-  .mylist-actions {
-    flex-basis: 100%;
-    justify-content: flex-start;
-  }
+  .mylist-row { flex-wrap: wrap; }
+  .mylist-info { flex-basis: calc(100% - 80px); }
+  .mylist-actions { flex-basis: 100%; justify-content: flex-start; }
 }

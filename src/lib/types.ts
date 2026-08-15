@@ -105,6 +105,8 @@ export interface Listing {
 export interface ListingWithSeller extends Listing {
   seller: Profile;
   sellerActiveListingCount: number;
+  /** How many collectors watch (favorite) this listing. */
+  likes: number;
 }
 
 export interface ListingFilter {
@@ -115,8 +117,10 @@ export interface ListingFilter {
   priceMin: number | null;
   priceMax: number | null;
   gradedOnly: boolean;
+  /** Only listings whose seller has at least one review. */
+  sellerHasReviews: boolean;
   language: string | null;
-  sort: 'newest' | 'price_asc' | 'price_desc';
+  sort: 'newest' | 'price_asc' | 'price_desc' | 'most_watched';
 }
 
 export interface ListingPage {
@@ -167,13 +171,19 @@ export interface ConversationSummary extends Conversation {
   unreadCount: number;
 }
 
+export type OfferStatus = 'proposed' | 'accepted' | 'declined';
+
 export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
   /** Empty senderId + kind=system for status-change notices. */
-  kind: 'user' | 'system';
+  kind: 'user' | 'system' | 'offer';
   body: string;
+  /** kind=offer only: proposed amount in the listing's currency. */
+  amount: number | null;
+  /** kind=offer only: negotiation state, mutated by the recipient. */
+  offerStatus: OfferStatus | null;
   createdAt: string;
   readAt: string | null;
   /** Client-side only: set while an optimistic send is in flight. */
@@ -210,3 +220,14 @@ export interface ReportInput {
 
 export const MESSAGE_MAX_LENGTH = 2000;
 export const MAX_LISTING_IMAGES = 8;
+
+/** A seller with marketplace stats, as ranked on the Sellers pages. */
+export interface SellerStats {
+  profile: Profile;
+  /** 1-based rank position ("01" formatting is a UI concern). */
+  rank: number;
+  activeCount: number;
+  soldCount: number;
+  /** Games this seller currently lists, most frequent first. */
+  games: Game[];
+}

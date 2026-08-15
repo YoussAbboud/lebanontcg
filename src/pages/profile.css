@@ -1,150 +1,117 @@
+/* Seller profile (Sleeved). */
+
 .profile {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-6);
+  position: relative;
+  padding: 32px var(--pad-x) 72px;
 }
 
-.profile-head {
+.profile-hero {
   display: flex;
-  gap: var(--sp-5);
-  padding: var(--sp-6);
-  align-items: flex-start;
   flex-wrap: wrap;
+  gap: 22px;
+  align-items: flex-start;
+  margin-top: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 24px;
+}
+
+.profile-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: var(--r-pill);
+  flex: none;
 }
 
 .profile-id {
-  flex: 1;
-  min-width: 240px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-}
-.profile-id h1 { font-size: var(--fs-28); }
-.profile-handle { color: var(--text-2); font-size: var(--fs-13); font-weight: 600; }
-
-.profile-meta {
-  display: flex;
-  gap: var(--sp-4);
-  flex-wrap: wrap;
-  color: var(--text-2);
-  font-size: var(--fs-13);
-  align-items: center;
-}
-
-.profile-bio {
-  color: var(--text-1);
-  font-size: var(--fs-14);
-  max-width: 560px;
-  margin-top: var(--sp-1);
-}
-
-.profile-actions {
-  display: flex;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
-}
-
-.profile-blocked-note {
-  background: var(--red-dim);
-  color: var(--red);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-control);
-  font-size: var(--fs-13);
-}
-
-.profile-section-title {
-  color: var(--text-2);
-  margin-bottom: var(--sp-3);
-}
-
-.profile-listings {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--sp-3);
-}
-
-.profile-listing {
-  display: flex;
-  gap: var(--sp-3);
-  padding: var(--sp-3);
-  transition: border-color var(--t-fast), background var(--t-fast);
-}
-.profile-listing:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-3);
-}
-.profile-listing img {
-  width: 52px;
-  height: 66px;
-  object-fit: cover;
-  border-radius: var(--r-badge);
-  flex-shrink: 0;
-}
-
-.profile-listing-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  flex: 1 1 260px;
   min-width: 0;
 }
-.profile-listing-title {
-  font-weight: 700;
-  font-size: var(--fs-13);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.profile-listing-meta {
-  color: var(--text-3);
-  font-size: var(--fs-11);
+
+.profile-id-top {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.profile-noreviews {
-  color: var(--text-3);
-  font-size: var(--fs-13);
+.profile-handle { font-size: var(--fs-28); }
+
+.profile-meta { margin-top: 10px; }
+
+.profile-bio {
+  color: var(--text-2);
+  font-size: var(--fs-14);
+  line-height: 1.65;
+  margin: 14px 0 0;
+  max-width: 560px;
+  text-wrap: pretty;
 }
+
+.profile-blocked {
+  margin-top: 12px;
+  color: var(--danger);
+}
+
+.profile-side { flex: 1 1 240px; }
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 96px), 1fr));
+  gap: 12px;
+}
+.profile-stat-v { margin-top: 4px; }
+
+.profile-msg {
+  width: 100%;
+  margin-top: 18px;
+  min-height: 48px;
+}
+
+.profile-own-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+.profile-own-actions .btn-outline { flex: 1; }
+
+.profile-trust-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.profile-listings-head { margin: 34px 0 22px; }
+.profile-reviews-head { margin: 40px 0 22px; }
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  gap: 16px;
+}
+
+.profile-noreviews { color: var(--muted); font-size: var(--fs-13); }
 
 .profile-reviews {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: 12px;
   max-width: 640px;
-}
-
-.profile-review {
-  padding: var(--sp-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
 }
 
 .profile-review-head {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  font-size: var(--fs-13);
+  gap: 12px;
   flex-wrap: wrap;
 }
-.profile-review-time {
-  margin-left: auto;
-  color: var(--text-3);
-  font-size: var(--fs-11);
-}
-
+.profile-review-name { font-size: var(--fs-13); font-weight: 600; }
+.profile-review-stars { color: var(--acid); }
+.profile-review-time { margin-left: auto; }
 .profile-review-body {
-  color: var(--text-1);
+  color: var(--text-2);
   font-size: var(--fs-13);
-}
-
-@media (max-width: 640px) {
-  .profile-head { padding: var(--sp-4); }
+  margin-top: 8px;
 }

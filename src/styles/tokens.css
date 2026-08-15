@@ -1,170 +1,109 @@
 /* ==========================================================================
-   LEBANONTCG DESIGN TOKENS
-   Extracted from design-reference/ (see DESIGN-NOTES.md for the rationale):
-     R4 — "NVC" purple marketplace hero → THE governing reference: violet
-          gradient field with light rays, floating white pill nav, huge
-          sentence-case hero with white→translucent gradient text, glassy
-          translucent cards (avatar header, rounded media, price row with
-          coin mark + tiny stat pill), white pill CTAs, auto-scrolling
-          card rail.
-     R5 — Lebanese flag trading card (gold-bordered slab) → brand mark;
-          red/white bands + cedar green appear only in the logo and small
-          national accents, never as UI chrome.
-     R1 — "XNFT" dark marketplace hero → glass overlay chips, framed
-          large-radius panels (kept from the first design round).
-     R3 — Graded slab mockups → slab-label grade badges (kept).
-   Every visible style in the app derives from these variables.
+   LEBANONTCG DESIGN TOKENS — the "Sleeved" system
+   Source of truth: design-reference/ R6 — the owner-authored Claude design
+   component (Sleeved.dc.html). Every value below is lifted from it.
+     · Near-black ground (#08090B) with a framed 1400px shell (#0E1013,
+       r28) and faint violet/acid glows.
+     · One loud accent: acid lime #D6FF3F (hover #9BC400), dark ink text
+       on it. Brand gradient violet→cyan→pink for rank badges; hero
+       gradient violet→cyan→acid for the headline word.
+     · Type: Chakra Petch 700 uppercase (display), Inter (body),
+       JetBrains Mono 500 11px/.12em uppercase (labels, buttons, prices).
+     · Cards: #1F242B→#2A3038 gradient, r20, deep soft shadow; every Nth
+       card flips to the acid gradient with ink text ("acid card").
+     · Card faces: listing photo, or a per-id hue nebula + giant glyph.
    ========================================================================== */
 
 :root {
-  /* ---- Color: the violet field (R4) ------------------------------------- */
-  /* Page ground is a fixed gradient: lilac top-left → violet → near-black
-     lower-right, with soft vertical light rays at the top (base.css). */
-  --field-1: #b6a2f6;
-  --field-2: #8452ee;
-  --field-3: #6d2ee0;
-  --field-4: #2c1a5e;
-  --field-5: #120e20;
-  --bg-0: #170f33;            /* fallback ground / solid fills */
-  --page-gradient: linear-gradient(118deg,
-      var(--field-1) 0%, var(--field-2) 26%, var(--field-3) 48%,
-      var(--field-4) 76%, var(--field-5) 100%);
-  --ray-ink: rgba(255, 255, 255, 0.07);
+  /* ---- Ground + surfaces ------------------------------------------------ */
+  --bg-page: #08090b;
+  --bg-frame: #0e1013;
+  --surface: #16191e;          /* panels, bubbles, inputs-on-frame */
+  --raised-1: #1f242b;         /* card gradient start */
+  --raised-2: #2a3038;         /* card gradient end / strong border */
+  --input-bg: #0e1013;
+  --stripe: #14171b;           /* photo-slot hatch (wizard step 1) */
+  --hairline: #16191e;         /* frame-level separators */
+  --border: #2a3038;           /* control borders */
+  --hover-row: #1f242b;
 
-  /* ---- Color: glass surface stack (R4 cards / R1 chips) ----------------- */
-  --bg-1: rgba(18, 12, 44, 0.52);      /* framed panels (dark glass) */
-  --bg-2: rgba(255, 255, 255, 0.10);   /* cards (light glass) */
-  --bg-3: rgba(255, 255, 255, 0.15);   /* hover / inputs */
-  --bg-4: rgba(255, 255, 255, 0.22);   /* highest elevation */
-  --bg-solid: #221650;                 /* opaque fallback (menus on blur-less UAs) */
-  --border: rgba(255, 255, 255, 0.16);
-  --border-strong: rgba(255, 255, 255, 0.32);
+  /* ---- Ink -------------------------------------------------------------- */
+  --text-1: #f2f5f7;
+  --text-2: #b9c2cc;
+  --muted: #7b8590;
+  --ink: #08090b;              /* text on acid */
+  --ink-soft: rgba(8, 9, 11, 0.62);
+  --ink-rule: rgba(8, 9, 11, 0.16);
+  --glyph-ink: rgba(242, 245, 247, 0.13);
+  --glyph-ink-strong: rgba(242, 245, 247, 0.35);
+  --glyph-on-acid: rgba(8, 9, 11, 0.2);
 
-  --glass-bg: rgba(24, 16, 56, 0.55);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --glass-blur: 16px;
-  --overlay-bg: rgba(10, 6, 24, 0.72);
+  /* ---- Accent ----------------------------------------------------------- */
+  --acid: #d6ff3f;
+  --acid-press: #9bc400;
+  --acid-tint: rgba(214, 255, 63, 0.06);
+  --acid-glow: rgba(214, 255, 63, 0.18);
+  --pink: #ff5c8a;
+  --violet: #7b5cff;
+  --cyan: #35e4ff;
+  --brand-grad: linear-gradient(96deg, #7b5cff, #35e4ff 50%, #ff5c8a);
+  --hero-grad: linear-gradient(96deg, #7b5cff, #35e4ff 46%, #d6ff3f);
+  --frame-glow:
+    radial-gradient(120% 60% at 50% -10%, rgba(123, 92, 255, 0.16), transparent 60%),
+    radial-gradient(80% 40% at 50% 105%, rgba(214, 255, 63, 0.05), transparent 70%);
+  --fan-floor: radial-gradient(58% 62% at 50% 62%, rgba(214, 255, 63, 0.09),
+    rgba(123, 92, 255, 0.05) 55%, transparent 76%);
+  --scrim: linear-gradient(180deg, transparent 38%, rgba(8, 9, 11, 0.86) 100%);
+  --overlay: rgba(8, 9, 11, 0.78);
+  --watch-bg: rgba(8, 9, 11, 0.6);
+  --face-border: rgba(242, 245, 247, 0.22);
+  --info-rule: rgba(242, 245, 247, 0.14);
 
-  /* ---- Color: text ------------------------------------------------------ */
-  --text-1: #ffffff;
-  --text-2: rgba(255, 255, 255, 0.78);
-  --text-3: rgba(255, 255, 255, 0.55);
-  --text-inverse: #221650;    /* text on white pills (R4 nav/CTAs) */
+  /* ---- Status ------------------------------------------------------------ */
+  --ok: #d6ff3f;               /* "Active" reads acid in this system */
+  --warn: #ffc45e;
+  --danger: #ff5c8a;
 
-  /* ---- Color: accents ---------------------------------------------------- */
-  /* R4's action color is white-on-violet. */
-  --accent: #ffffff;
-  --accent-hover: rgba(255, 255, 255, 0.88);
-  --accent-dim: rgba(255, 255, 255, 0.16);
-  --accent-border: rgba(255, 255, 255, 0.38);
-  --outline-on-accent: rgba(0, 0, 0, 0.2);
-  --text-on-lime: #17181c;
-  --stat-pill-bg: rgba(8, 4, 26, 0.45);
-  --header-fade: rgba(16, 8, 40, 0.55);
-  --footer-bg: rgba(10, 6, 26, 0.45);
-  --shine-strong: rgba(255, 255, 255, 0.55);
-  --shine-soft: rgba(255, 255, 255, 0.12);
-  --green: #4ade80;           /* success / "active" status only */
-  --green-dim: rgba(74, 222, 128, 0.18);
-  --lime: #d8e627;            /* condition scale midpoint (kept from R2 round) */
-  --lime-dim: rgba(216, 230, 39, 0.16);
-  --red: #ff6b5e;             /* danger, destructive */
-  --red-dim: rgba(255, 107, 94, 0.18);
-  --amber: #ffc45e;           /* reserved status, warnings */
-  --amber-dim: rgba(255, 196, 94, 0.18);
-  --blue: #8fc2ff;            /* links inside chat, info */
+  /* ---- Type -------------------------------------------------------------- */
+  --font-display: 'Chakra Petch', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Hero text fade — white dissolving to translucent (R4 headline) */
-  --hero-text: linear-gradient(92deg, #ffffff 0%, #ffffff 52%, rgba(255, 255, 255, 0.34) 100%);
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-15: 15px;
+  --fs-18: 18px;
+  --fs-22: 22px;
+  --fs-28: 28px;
 
-  /* ---- Brand (R5 flag card) --------------------------------------------- */
-  --flag-red: #e8443c;
-  --flag-green: #17953f;
-  --flag-gold: #c9a24b;
-  --flag-white: #f7f4ec;
+  --track-label: 0.12em;
+  --track-display: -0.02em;
 
-  /* ---- Condition scale (NM→DMG, green→red) ------------------------------ */
-  --cond-nm: #4ade80;
-  --cond-lp: #a8e03a;
-  --cond-lp-dim: rgba(168, 224, 58, 0.16);
-  --cond-mp: #d8e627;
-  --cond-hp: #ffc45e;
-  --cond-dmg: #ff6b5e;
-
-  /* ---- Game color coding (procedural card backs + game dots) ------------ */
-  --game-pokemon: #ffcb3d;
-  --game-magic: #ff9257;
-  --game-yugioh: #c39bff;
-  --game-onepiece: #ff7a8c;
-  --game-lorcana: #7fc0ff;
-  --game-other: #b9bcd0;
-
-  /* ---- Typography ------------------------------------------------------- */
-  /* Archivo Variable self-hosted. R4's voice is sentence-case, medium
-     weight, tight tracking — no more stretched caps for headings. */
-  --font-body: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
-
-  --fs-11: 0.6875rem;
-  --fs-12: 0.75rem;
-  --fs-13: 0.8125rem;
-  --fs-14: 0.875rem;
-  --fs-16: 1rem;
-  --fs-18: 1.125rem;
-  --fs-22: 1.375rem;
-  --fs-28: 1.75rem;
-  --fs-36: 2.25rem;
-  --fs-56: 3.5rem;            /* display L (hero) */
-
-  /* Display voice: R4 headline — medium weight, tight leading, no caps */
-  --display-weight: 560;
-  --display-spacing: -0.02em;
-  /* Micro labels: small caps captions (kept for metadata labels) */
-  --label-spacing: 0.08em;
-  --label-weight: 600;
-
-  --lh-tight: 1.06;
-  --lh-snug: 1.3;
-  --lh-body: 1.5;
-
-  /* ---- Spacing rhythm (4px base) ----------------------------------------- */
-  --sp-1: 0.25rem;
-  --sp-2: 0.5rem;
-  --sp-3: 0.75rem;
-  --sp-4: 1rem;
-  --sp-5: 1.25rem;
-  --sp-6: 1.5rem;
-  --sp-8: 2rem;
-  --sp-10: 2.5rem;
-  --sp-12: 3rem;
-  --sp-16: 4rem;
-
-  /* ---- Radii (R4: everything softly rounded) ------------------------------ */
+  /* ---- Radii ------------------------------------------------------------- */
+  --r-frame: 28px;
+  --r-card: 20px;
+  --r-panel: 14px;
+  --r-tile: 12px;
+  --r-thumb: 10px;
+  --r-input: 8px;
   --r-pill: 999px;
-  --r-panel: 28px;            /* framed sections */
-  --r-card: 22px;             /* listing cards (R4 card outer) */
-  --r-media: 14px;            /* imagery inside cards (R4 card inner) */
-  --r-control: 14px;          /* inputs, small cards */
-  --r-badge: 9px;             /* slab labels, tiny tags (R3) */
 
-  /* ---- Shadows ------------------------------------------------------------ */
-  --shadow-card: 0 10px 30px rgba(10, 5, 30, 0.25);
-  --shadow-pop: 0 18px 50px rgba(8, 4, 26, 0.55);
+  /* ---- Shadow ------------------------------------------------------------ */
+  --shadow-card: 0 18px 40px -20px rgb(0 0 0 / 0.8);
+  --shadow-fan: 0 30px 70px -28px rgb(0 0 0 / 0.9);
+  --shadow-fan-centre: 0 0 110px -40px rgba(214, 255, 63, 0.55);
+  --shadow-toast: 0 18px 40px -20px rgb(0 0 0 / 0.8);
+  --glow-acid-soft: 0 0 60px -30px var(--acid);
 
-  /* ---- Motion ------------------------------------------------------------- */
-  --t-fast: 120ms ease;
-  --t-med: 200ms ease;
-  --carousel-speed: 42s;      /* full loop of the home card rail */
+  /* ---- Motion ------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 180ms var(--ease-out);
+  --fan-move: 950ms var(--ease-out);
+  --fan-interval: 5000ms;      /* documented; the JS interval matches */
 
-  /* ---- Layout ------------------------------------------------------------- */
-  --w-content: 1200px;
-  --h-header: 76px;
-}
-
-/* Slab label surfaces (R3) keep light colors — they imitate a physical
-   grading label. */
-:root {
-  --slab-bg: #f4f2ec;
-  --slab-text: #17181c;
-  --slab-bar: #d9412e;
+  /* ---- Layout ------------------------------------------------------------ */
+  --w-frame: 1400px;
+  --pad-x: 28px;
 }

@@ -1,0 +1,183 @@
+/* 3D fan carousel (Sleeved hero). All numbers from the design component. */
+
+.fan-section {
+  position: relative;
+  padding: 56px var(--pad-x) 64px;
+}
+
+.fan-floor {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  width: min(1400px, 130%);
+  height: 520px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--fan-floor);
+  pointer-events: none;
+}
+
+.fan-stage {
+  position: relative;
+  height: clamp(300px, 42vw, 480px);
+  perspective: 1600px;
+  perspective-origin: 50% 45%;
+}
+
+.fan-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(150px, 19vw, 260px);
+  aspect-ratio: 5 / 7;
+  cursor: pointer;
+  border-radius: var(--r-card);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform var(--fan-move), filter var(--fan-move), box-shadow var(--fan-move);
+  box-shadow: var(--shadow-fan);
+}
+.fan-card-centre {
+  box-shadow: var(--shadow-fan), var(--shadow-fan-centre);
+}
+
+.fan-face {
+  position: relative;
+  height: 100%;
+  border-radius: var(--r-card);
+  overflow: hidden;
+  border: 1px solid var(--raised-1);
+}
+.fan-card-centre .fan-face { border-color: var(--border); }
+
+.fan-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fan-glyph {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--glyph-ink);
+  font-size: clamp(64px, 9vw, 140px);
+}
+
+.fan-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+}
+
+.fan-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px;
+}
+
+.fan-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  line-height: 1.1;
+  font-size: clamp(13px, 1.35vw, 19px);
+  color: var(--text-1);
+  text-shadow: 0 2px 18px rgb(0 0 0 / 0.6);
+}
+
+.fan-info {
+  overflow: hidden;
+  transition: max-height 400ms var(--ease-out), opacity 300ms ease, margin-top 400ms var(--ease-out),
+    padding-top 400ms var(--ease-out);
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  border-top: 1px solid var(--info-rule);
+  padding-top: 0;
+}
+.fan-info-open {
+  max-height: 170px;
+  opacity: 1;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.fan-seller-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fan-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-pill);
+  flex: none;
+}
+.fan-handle {
+  font-size: var(--fs-12);
+  font-weight: 600;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fan-listed { margin-left: auto; white-space: nowrap; }
+
+.fan-asking-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 10px;
+  min-width: 0;
+}
+.fan-asking {
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fan-more {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--acid);
+  margin-top: 10px;
+  white-space: nowrap;
+}
+
+.fan-dots {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 26px;
+}
+
+.fan-dotbtn {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  background: var(--raised-2);
+  transition: width 300ms ease, background 300ms ease;
+}
+.fan-dotbtn-on {
+  width: 26px;
+  background: var(--acid);
+}

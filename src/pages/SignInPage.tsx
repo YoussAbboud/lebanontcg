@@ -61,8 +61,8 @@ export function SignInPage() {
         <form className="signin-card panel" onSubmit={claim}>
           <h1 className="display">Claim your handle</h1>
           <p>This is your permanent @username — it can&apos;t be changed later.</p>
-          <label className="field">
-            <span className="field-label">Username</span>
+          <label className="signin-field">
+            <span className="mono-label signin-label">Username</span>
             <div className="signin-handle-row">
               <span className="signin-at" aria-hidden="true">@</span>
               <input
@@ -77,7 +77,7 @@ export function SignInPage() {
             </div>
             {claimState === 'error' && <span className="field-error">{claimError}</span>}
           </label>
-          <button className="btn btn-primary btn-lg" disabled={claimState === 'busy'}>
+          <button className="btn-acid signin-btn" disabled={claimState === 'busy'}>
             {claimState === 'busy' ? 'Claiming…' : 'Claim username'}
           </button>
         </form>
@@ -111,7 +111,7 @@ export function SignInPage() {
             We sent a magic link to <strong>{email}</strong>. Open it on this device to finish
             signing in — no password needed.
           </p>
-          <button className="btn btn-ghost btn-sm" onClick={() => setState('idle')}>
+          <button className="btn-outline" onClick={() => setState('idle')}>
             Use a different email
           </button>
         </div>
@@ -119,8 +119,8 @@ export function SignInPage() {
         <form className="signin-card panel" onSubmit={send}>
           <h1 className="display">Sign in</h1>
           <p>Enter your email and we&apos;ll send you a one-tap magic link. New here? The same link creates your account.</p>
-          <label className="field">
-            <span className="field-label">Email</span>
+          <label className="signin-field">
+            <span className="mono-label signin-label">Email</span>
             <input
               className="input"
               type="email"
@@ -132,7 +132,7 @@ export function SignInPage() {
             />
             {state === 'error' && <span className="field-error">{errorMsg}</span>}
           </label>
-          <button className="btn btn-primary btn-lg" disabled={state === 'busy'}>
+          <button className="btn-acid signin-btn" disabled={state === 'busy'}>
             {state === 'busy' ? 'Sending…' : 'Send magic link'}
           </button>
         </form>

@@ -1,94 +1,138 @@
 import { memo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { ListingWithSeller } from '../lib/types';
 import { GAME_LABELS } from '../lib/types';
-import { formatPrice } from '../lib/format';
+import { formatPrice, relativeTime } from '../lib/format';
+import { isAcid, sellerDotBackground } from '../lib/face';
 import { useApp } from '../state/AppContext';
-import { SlabBadge } from './SlabBadge';
-import { Avatar } from './Avatar';
+import { useToast } from '../state/ToastContext';
+import { CardFace } from './CardFace';
 import './listingcard.css';
 
-// Listing card — R4's anatomy: glass panel, seller avatar + handle header,
-// rounded media, price row with coin mark + condition stat pill. Slab
-// badges (R3) overlay graded cards.
+export function listingEyebrow(l: ListingWithSeller): string {
+  const bits = [GAME_LABELS[l.game], l.setName].filter(Boolean);
+  if (l.gradeValue) bits.push(l.gradeValue);
+  return bits.join(' · ');
+}
+
+/** One-liner under the title: description lead or condition/finish line. */
+function oneLinerOf(l: ListingWithSeller): string {
+  const d = l.description.trim();
+  if (d) return d.split('\n')[0];
+  return `${l.condition}${l.language !== 'English' ? ` · ${l.language}` : ''}`;
+}
+
+// Grid listing card — the Sleeved design's article card, wired to real
+// data: seller dot + handle, ♡ like count, watch star (favorite), title,
+// asking/listed columns, Message seller CTA. Every Nth card is acid.
 export const ListingCard = memo(function ListingCard({ listing }: { listing: ListingWithSeller }) {
-  const { favoriteIds, toggleFavorite, user } = useApp();
+  const { favoriteIds, toggleFavorite, user, client } = useApp();
+  const toast = useToast();
   const navigate = useNavigate();
-  const cover = listing.images[0];
-  const favorited = favoriteIds.has(listing.id);
+  const acid = isAcid(listing.id);
+  const watched = favoriteIds.has(listing.id);
+  const isOwner = user?.id === listing.sellerId;
+  const handle = listing.seller.username
+    ? `@${listing.seller.username}`
+    : listing.seller.displayName;
+
+  const open = () => navigate(`/listing/${listing.id}`);
+
+  const watch = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+    await toggleFavorite(listing.id);
+    toast(watched ? 'Removed from watchlist' : 'Added to watchlist');
+  };
+
+  const message = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+    try {
+      const conv = await client.openConversation(listing.id);
+      navigate(`/chat/${conv.id}`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not open the conversation');
+    }
+  };
 
   return (
-    <article className="lcard card-surface">
-      <Link
-        to={`/listing/${listing.id}`}
-        className="lcard-link"
-        aria-label={`${listing.title}, ${formatPrice(listing.price, listing.currency)}`}
-      >
-        <header className="lcard-seller">
-          <Avatar profile={listing.seller} size={28} />
-          <span className="lcard-seller-names">
-            <span className="lcard-seller-name">{listing.seller.displayName}</span>
-            {listing.seller.username && (
-              <span className="lcard-seller-handle">@{listing.seller.username}</span>
-            )}
-          </span>
-        </header>
+    <article
+      role="button"
+      tabIndex={0}
+      aria-label={`${listing.title}, asking ${formatPrice(listing.price, listing.currency)}`}
+      className={`lcard card-raised ${acid ? 'is-acid' : ''}`}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && e.target === e.currentTarget) open();
+      }}
+    >
+      <div className="lcard-top">
+        <div
+          className="lcard-dot"
+          style={{ background: sellerDotBackground(handle) }}
+          aria-hidden="true"
+        />
+        <div className="lcard-handle">{handle}</div>
+        <div className="lcard-likes">♡ {listing.likes}</div>
+      </div>
 
-        <div className="lcard-media">
-          {cover ? (
-            <img src={cover.url} alt="" loading="lazy" decoding="async" />
-          ) : (
-            <div className="lcard-noimage" aria-hidden="true" />
-          )}
-          {listing.gradeValue && (
-            <div className="lcard-slab">
-              <SlabBadge company={listing.gradeCompany} grade={listing.gradeValue} />
-            </div>
-          )}
-          {listing.status !== 'active' && (
-            <span className={`badge badge-${listing.status} lcard-status`}>{listing.status}</span>
-          )}
-        </div>
+      <div className="lcard-facewrap">
+        <CardFace listing={listing} className="lcard-face" onAcid={acid} />
+        {listing.status !== 'active' && (
+          <div className="lcard-status mono-label">{listing.status}</div>
+        )}
+        <button
+          type="button"
+          aria-label={watched ? 'Remove from watchlist' : 'Watch this card'}
+          aria-pressed={watched}
+          className={`lcard-watch ${watched ? 'lcard-watch-on' : ''}`}
+          onClick={(e) => void watch(e)}
+        >
+          {watched ? '★' : '☆'}
+        </button>
+      </div>
 
+      <div className="lcard-body">
+        <div className="lcard-eyebrow mono-label">{listingEyebrow(listing)}</div>
         <h3 className="lcard-title">{listing.title}</h3>
-        <p className="lcard-game">
-          <span className="game-dot" data-game={listing.game} aria-hidden="true" />
-          {GAME_LABELS[listing.game]}
-          {listing.quantity > 1 && <span className="lcard-qty">×{listing.quantity}</span>}
-        </p>
-
-        <div className="lcard-foot">
-          <span className="lcard-price-row">
-            <span className="coin" aria-hidden="true">✦</span>
-            <span className="price lcard-price">{formatPrice(listing.price, listing.currency)}</span>
-          </span>
-          <span className={`stat-pill lcard-cond badge-cond-${listing.condition}`}>
-            {listing.condition}
-          </span>
+        <div className="lcard-oneliner">{oneLinerOf(listing)}</div>
+        <div className="lcard-stats">
+          <div>
+            <div className="mono-label lcard-stat-k">Asking</div>
+            <div className="mono-value lcard-stat-v">
+              {formatPrice(listing.price, listing.currency)}
+              {listing.quantity > 1 ? ` ×${listing.quantity}` : ''}
+            </div>
+          </div>
+          <div className="lcard-stat-right">
+            <div className="mono-label lcard-stat-k">Listed</div>
+            <div className="mono-value lcard-stat-v">{relativeTime(listing.createdAt)}</div>
+          </div>
         </div>
-      </Link>
-
-      <button
-        className="lcard-fav"
-        aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
-        aria-pressed={favorited}
-        onClick={() => {
-          if (!user) {
-            navigate('/signin');
-            return;
-          }
-          void toggleFavorite(listing.id);
-        }}
-      >
-        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
-          <path
-            d="M12 21s-7.5-4.7-10-9.3C.3 8.6 2 4.5 5.8 4.1c2.2-.2 4 .9 5 2.5.2.4.4.4.6 0 1-1.6 2.8-2.7 5-2.5 3.7.4 5.4 4.5 3.7 7.6C19.5 16.3 12 21 12 21z"
-            fill={favorited ? 'var(--flag-red)' : 'none'}
-            stroke={favorited ? 'var(--flag-red)' : 'currentColor'}
-            strokeWidth="2"
-          />
-        </svg>
-      </button>
+        {!isOwner ? (
+          <button type="button" className="lcard-cta" onClick={(e) => void message(e)}>
+            Message seller
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="lcard-cta"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/sell/${listing.id}`);
+            }}
+          >
+            Edit listing
+          </button>
+        )}
+      </div>
     </article>
   );
 });

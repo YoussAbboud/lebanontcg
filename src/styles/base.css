@@ -1,5 +1,4 @@
-/* Global element styles built on tokens.css — the only place element
-   selectors are styled. Everything else is scoped component CSS. */
+/* Global element styles built on tokens.css (the Sleeved system). */
 @import './tokens.css';
 
 *,
@@ -14,35 +13,13 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--bg-0);
-  /* R4's violet field — fixed so scrolling content glides over it */
-  background-image: var(--page-gradient);
-  background-attachment: fixed;
-  background-size: cover;
+  padding: 14px;
+  background: var(--bg-page);
   color: var(--text-1);
   font-family: var(--font-body);
   font-size: var(--fs-14);
-  line-height: var(--lh-body);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-}
-
-/* Soft vertical light rays under the header (R4) */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: 46vh;
-  pointer-events: none;
-  z-index: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent 0 34px,
-    var(--ray-ink) 34px 40px,
-    transparent 40px 96px
-  );
-  filter: blur(7px);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 92%);
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 92%);
 }
 
 h1, h2, h3, h4, p {
@@ -50,9 +27,10 @@ h1, h2, h3, h4, p {
 }
 
 a {
-  color: inherit;
+  color: var(--acid);
   text-decoration: none;
 }
+a:hover { color: var(--acid-press); }
 
 button {
   font-family: inherit;
@@ -66,7 +44,6 @@ button {
 
 input, textarea, select {
   font-family: inherit;
-  font-size: var(--fs-16);
   color: var(--text-1);
 }
 
@@ -76,48 +53,64 @@ img {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--acid);
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--text-inverse);
+  background: var(--acid);
+  color: var(--ink);
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
   }
 }
 
-/* ---- Shared utility classes (token-derived, used across components) ---- */
+/* ---- Voices ---------------------------------------------------------------- */
 
-/* Uppercase micro-label — metadata captions */
-.microlabel {
-  font-size: var(--fs-11);
-  font-weight: var(--label-weight);
-  letter-spacing: var(--label-spacing);
-  text-transform: uppercase;
-  color: var(--text-2);
-}
-
-/* Display voice — R4's sentence-case medium-weight headline */
+/* Chakra display caps */
 .display {
-  font-weight: var(--display-weight);
-  letter-spacing: var(--display-spacing);
-  line-height: var(--lh-tight);
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
 }
 
-/* Hero gradient text — white dissolving to translucent (R4) */
-.hero-text {
-  background: var(--hero-text);
+/* JetBrains mono micro-label */
+.mono-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mono-value {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-13);
+  letter-spacing: 0.04em;
+}
+
+/* Hero gradient word (violet→cyan→acid) */
+.hero-grad-text {
+  background: var(--hero-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
+
+.scrollx { scrollbar-width: none; }
+.scrollx::-webkit-scrollbar { display: none; }
 
 .visually-hidden {
   position: absolute;

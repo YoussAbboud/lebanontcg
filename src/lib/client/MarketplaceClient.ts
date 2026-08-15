@@ -13,6 +13,7 @@ import type {
   Profile,
   ReportInput,
   Review,
+  SellerStats,
 } from '../types';
 
 export type Unsubscribe = () => void;
@@ -25,7 +26,9 @@ export interface AuthState {
 }
 
 export interface ConversationEvent {
-  type: 'message' | 'read' | 'listing_updated';
+  /** 'refresh' = message rows changed in place (read receipts, offer
+      status) — refetch; 'typing' = the other party is composing. */
+  type: 'message' | 'refresh' | 'listing_updated' | 'typing';
   conversationId: string;
   message?: Message;
   listing?: Listing;
@@ -56,6 +59,9 @@ export interface MarketplaceClient {
   // ---- Profiles ----------------------------------------------------------
   getProfileByUsername(username: string): Promise<Profile | null>;
   getProfile(id: string): Promise<Profile | null>;
+  /** Sellers ranked by reviews + activity (Sellers pages). */
+  listSellers(limit: number): Promise<SellerStats[]>;
+  getSellerStats(userId: string): Promise<SellerStats | null>;
 
   // ---- Listings (read) ---------------------------------------------------
   searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage>;
@@ -85,6 +91,12 @@ export interface MarketplaceClient {
   openConversation(listingId: string): Promise<Conversation>;
   getMessages(conversationId: string): Promise<Message[]>;
   sendMessage(conversationId: string, body: string, clientId: string): Promise<Message>;
+  /** Non-binding offer: an 'offer'-kind message with an amount. */
+  sendOffer(conversationId: string, amount: number, note: string, clientId: string): Promise<Message>;
+  /** Recipient accepts/declines a proposed offer. */
+  respondToOffer(conversationId: string, messageId: string, accept: boolean): Promise<void>;
+  /** Fire-and-forget "I'm typing" signal to the other party. */
+  sendTyping(conversationId: string): void;
   markConversationRead(conversationId: string): Promise<void>;
   /** Events for one open thread: new messages, read receipts, listing updates. */
   subscribeToConversation(conversationId: string, cb: (ev: ConversationEvent) => void): Unsubscribe;

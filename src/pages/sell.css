@@ -1,75 +1,151 @@
+/* Sell wizard — 4 steps (Sleeved). */
+
 .sell {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-5);
-  max-width: 760px;
+  position: relative;
+  padding: 40px var(--pad-x) 72px;
+  max-width: 780px;
   margin: 0 auto;
 }
 
-.sell-head h1 { font-size: var(--fs-28); }
-.sell-head p {
-  color: var(--text-2);
-  font-size: var(--fs-13);
-  margin-top: var(--sp-2);
-}
-
-.sell-section {
-  padding: var(--sp-6);
+.sell-head {
   display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
+  align-items: baseline;
+  gap: 14px;
+}
+.sell-title { font-size: var(--fs-28); }
+.sell-steplabel { margin-left: auto; }
+
+.sell-bars {
+  display: flex;
+  gap: 6px;
+  margin-top: 18px;
+}
+.sell-bar {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background var(--t-fast);
+}
+.sell-bar-done { background: var(--acid); }
+
+.sell-steps {
+  margin-top: 12px;
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.sell-steplink {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  color: var(--muted);
+}
+.sell-steplink-on { color: var(--acid); }
+
+.sell-panel {
+  margin-top: 28px;
+  padding: 24px;
 }
 
-.sell-section-title { color: var(--text-2); }
-
-.sell-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-4);
+.sell-panel-title { font-size: var(--fs-18); }
+.sell-panel-sub {
+  color: var(--muted);
+  font-size: var(--fs-13);
+  margin: 8px 0 18px;
 }
-
-.sell-span2 { grid-column: span 2; }
 
 .sell-chiprow {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-2);
+  gap: 8px;
+  margin: 18px 0;
 }
 
-.sell-graded-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-size: var(--fs-14);
-  cursor: pointer;
-}
-.sell-graded-toggle input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent);
-}
-
-.sell-grade-row {
+.sell-fields {
   display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: var(--sp-4);
-  margin-top: var(--sp-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+}
+.sell-fields-deal {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  margin-top: 18px;
 }
 
-.sell-photos-hint { margin-top: calc(-1 * var(--sp-2)); }
+.sell-field { display: block; }
+.sell-field .mono-label { display: block; margin-bottom: 6px; }
+.sell-field .field-error { display: block; margin-top: 6px; }
 
-.sell-count-low { color: var(--amber); }
-
-.sell-actions {
+.sell-graderow {
   display: flex;
-  justify-content: flex-end;
-  gap: var(--sp-3);
-  padding-bottom: var(--sp-8);
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.sell-grade-company { width: 110px; }
+.sell-grade-value { flex: 1; min-width: 160px; }
+
+.sell-condtiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-top: 16px;
 }
 
-@media (max-width: 640px) {
-  .sell-grid { grid-template-columns: 1fr; }
-  .sell-span2 { grid-column: span 1; }
-  .sell-grade-row { grid-template-columns: 1fr; }
-  .sell-section { padding: var(--sp-4); }
+.sell-condtile {
+  text-align: left;
+  cursor: pointer;
+  padding: 13px;
+  border-radius: var(--r-tile);
+  min-height: 44px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text-1);
+  transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
 }
+.sell-condtile-on {
+  border-color: var(--acid);
+  background: var(--acid-tint);
+  color: var(--acid);
+}
+.sell-condtile-code {
+  letter-spacing: var(--track-label);
+  font-size: var(--fs-11);
+}
+.sell-condtile-desc {
+  font-size: var(--fs-12);
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.sell-desc { margin-top: 18px; }
+.sell-desc-count { display: block; margin-top: 6px; }
+
+.sell-preview { max-width: 250px; }
+
+.sell-disclaimer {
+  margin-top: 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 16px;
+  background: var(--input-bg);
+  font-size: var(--fs-13);
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+.sell-publish {
+  margin-top: 18px;
+  min-height: 48px;
+  padding: 15px 26px;
+}
+
+.sell-nav {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.sell-next { margin-left: auto; }

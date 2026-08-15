@@ -1,27 +1,42 @@
+/* Sign in / username claim (Sleeved). */
+
 .signin {
   display: flex;
   justify-content: center;
-  padding-top: var(--sp-12);
+  padding: 72px var(--pad-x);
 }
 
 .signin-card {
   width: min(420px, 100%);
-  padding: var(--sp-8);
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: 16px;
 }
 
-.signin-card h1 { font-size: var(--fs-22); }
-.signin-card > p { color: var(--text-2); font-size: var(--fs-13); }
+.signin-card h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-22);
+}
+.signin-card > p { color: var(--muted); font-size: var(--fs-13); }
+
+.signin-field { display: block; }
+.signin-label { display: block; margin-bottom: 6px; }
+.signin-field .field-error { display: block; margin-top: 6px; }
+
+.signin-btn { min-height: 48px; }
 
 .signin-handle-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 8px;
 }
 .signin-at {
-  color: var(--text-1);
-  font-weight: 800;
+  color: var(--acid);
+  font-family: var(--font-mono);
+  font-weight: 500;
   font-size: var(--fs-18);
 }

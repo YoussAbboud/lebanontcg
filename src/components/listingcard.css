@@ -1,145 +1,154 @@
+/* Grid listing card (Sleeved article card). Acid cards flip ink colors. */
+
 .lcard {
-  position: relative;
-  overflow: hidden;
-  transition: border-color var(--t-med), background var(--t-med), transform var(--t-med);
   content-visibility: auto;
-  contain-intrinsic-size: 250px 400px;
-}
-.lcard:hover {
-  border-color: var(--border-strong);
-  background: var(--bg-3);
-  transform: translateY(-2px);
+  contain-intrinsic-size: 240px 380px;
 }
 
-.lcard-link {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  height: 100%;
-  padding: var(--sp-3);
-}
-
-/* Seller header (R4: avatar + name + @handle) */
-.lcard-seller {
+.lcard-top {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  min-width: 0;
-  padding-right: 36px; /* clear the favorite heart */
+  gap: 8px;
+  padding: 12px 14px 8px;
 }
-.lcard-seller-names {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  min-width: 0;
+
+.lcard-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-pill);
+  flex: none;
 }
-.lcard-seller-name {
+
+.lcard-handle {
   font-size: var(--fs-12);
-  font-weight: 700;
-  white-space: nowrap;
+  font-weight: 600;
+  color: var(--text-1);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.lcard-seller-handle {
+
+.lcard-likes {
+  margin-left: auto;
+  font-family: var(--font-mono);
   font-size: var(--fs-11);
-  color: var(--text-3);
+  letter-spacing: 0.06em;
+  padding: 4px 9px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  color: var(--text-2);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.lcard-media {
+.lcard-facewrap {
   position: relative;
-  aspect-ratio: 5 / 6;
-  overflow: hidden;
-  background: var(--bg-3);
-  border-radius: var(--r-media);
-}
-.lcard-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform var(--t-med);
-}
-.lcard:hover .lcard-media img { transform: scale(1.03); }
-
-.lcard-noimage {
-  position: absolute;
-  inset: 20% 30%;
-  border: 2px dashed var(--border-strong);
-  border-radius: 10px;
+  margin: 0 10px;
 }
 
-.lcard-slab {
-  position: absolute;
-  top: var(--sp-2);
-  left: var(--sp-2);
+.lcard-face {
+  height: 168px;
+  border-radius: var(--r-panel);
 }
 
 .lcard-status {
   position: absolute;
-  top: var(--sp-2);
-  right: var(--sp-2);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  background: var(--glass-bg);
+  top: 10px;
+  left: 10px;
+  background: var(--watch-bg);
+  color: var(--text-1);
+  border: 1px solid var(--face-border);
+  border-radius: var(--r-pill);
+  padding: 4px 10px;
 }
 
+.lcard-watch {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-thumb);
+  cursor: pointer;
+  font-size: 15px;
+  border: 1px solid var(--face-border);
+  background: var(--watch-bg);
+  color: var(--text-1);
+  transition: border-color var(--t-fast), color var(--t-fast);
+}
+.lcard-watch-on {
+  border-color: var(--acid);
+  color: var(--acid);
+}
+
+.lcard-body { padding: 14px; }
+
 .lcard-title {
-  font-size: var(--fs-13);
+  font-family: var(--font-display);
   font-weight: 700;
-  line-height: var(--lh-snug);
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-15);
+  line-height: 1.2;
+  margin: 8px 0 0;
+  color: var(--text-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 36px;
+}
+
+.lcard-oneliner {
+  font-size: var(--fs-12);
+  color: var(--muted);
+  margin-top: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.lcard-game {
+.lcard-stats {
   display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.lcard-stat-right { margin-left: auto; text-align: right; }
+.lcard-stat-v { color: var(--text-1); margin-top: 4px; }
+
+.lcard-cta {
+  width: 100%;
+  margin-top: 14px;
+  min-height: 44px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: 500;
   font-size: var(--fs-11);
-  color: var(--text-3);
-}
-.lcard-qty { font-weight: 700; color: var(--text-2); }
-
-.lcard-foot {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-}
-
-.lcard-price-row {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-width: 0;
-}
-
-.lcard-price { font-size: var(--fs-16); }
-
-/* Condition pill reuses the badge-cond-* text colors on the dark stat pill */
-.lcard-cond { letter-spacing: 0.05em; }
-
-/* Favorite heart — glass chip, top-right of the whole card (R4 corner) */
-.lcard-fav {
-  position: absolute;
-  top: var(--sp-3);
-  right: var(--sp-3);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  background: transparent;
   color: var(--text-1);
-  transition: transform var(--t-fast), color var(--t-fast);
-  z-index: 1;
+  transition: border-color var(--t-fast), color var(--t-fast);
 }
-.lcard-fav:hover { transform: scale(1.1); color: var(--flag-red); }
+.lcard-cta:hover { border-color: var(--acid); color: var(--acid); }
+
+/* ---- Acid card ink flips ----------------------------------------------------- */
+.is-acid .lcard-handle,
+.is-acid .lcard-title { color: var(--ink); }
+.is-acid .lcard-eyebrow,
+.is-acid .lcard-oneliner,
+.is-acid .lcard-stat-k { color: var(--ink-soft); }
+.is-acid .lcard-stat-v { color: var(--ink); }
+.is-acid .lcard-likes {
+  border-color: var(--ink-rule);
+  color: var(--ink);
+}
+.is-acid .lcard-stats { border-top-color: var(--ink-rule); }
+.is-acid .lcard-cta {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--acid);
+}

@@ -1,18 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { ListingStatus, ListingWithSeller } from '../lib/types';
-import {
-  CONDITION_LABELS,
-  FINISH_LABELS,
-  GAME_LABELS,
-} from '../lib/types';
+import { CONDITION_LABELS, FINISH_LABELS, GAME_LABELS } from '../lib/types';
 import { allowedTransitions, STATUS_LABELS } from '../lib/status';
-import { formatPrice, memberSince, relativeTime } from '../lib/format';
+import { avatarBackground, faceBackground, glyphOf } from '../lib/face';
+import { formatPrice, memberSince } from '../lib/format';
 import { useApp } from '../state/AppContext';
+import { useToast } from '../state/ToastContext';
 import { Avatar } from '../components/Avatar';
-import { SlabBadge } from '../components/SlabBadge';
-import { Gallery } from '../components/Gallery';
-import { RatingStars } from '../components/RatingStars';
 import { ReportDialog } from '../components/ReportDialog';
 import './listing.css';
 
@@ -21,12 +16,13 @@ type LoadState = 'loading' | 'ready' | 'error' | 'missing';
 export function ListingPage() {
   const { id } = useParams<{ id: string }>();
   const { client, user, favoriteIds, toggleFavorite } = useApp();
+  const toast = useToast();
   const navigate = useNavigate();
   const [listing, setListing] = useState<ListingWithSeller | null>(null);
   const [state, setState] = useState<LoadState>('loading');
+  const [photo, setPhoto] = useState(0);
   const [busy, setBusy] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -38,6 +34,7 @@ export function ListingPage() {
         return;
       }
       setListing(l);
+      setPhoto(0);
       setState('ready');
     } catch {
       setState('error');
@@ -48,63 +45,63 @@ export function ListingPage() {
     void load();
   }, [load]);
 
-  // Live status/price updates (e.g. seller marks sold from another tab).
   useEffect(() => {
     if (!id) return;
     return client.subscribeToListing(id, (updated) => {
-      setListing((prev) => (prev ? { ...prev, ...updated, seller: prev.seller } : prev));
+      setListing((prev) => (prev ? { ...prev, ...updated, seller: prev.seller, likes: prev.likes } : prev));
     });
   }, [client, id]);
 
   if (state === 'loading') {
     return (
-      <div className="ldetail" aria-busy="true">
-        <div className="skeleton ldetail-skel-media" />
-        <div className="ldetail-skel-side">
-          <div className="skeleton" style={{ height: 32 }} />
-          <div className="skeleton" style={{ height: 96 }} />
-          <div className="skeleton" style={{ height: 200 }} />
-        </div>
-      </div>
+      <main className="ldetail" aria-busy="true">
+        <div className="skeleton" style={{ height: 420 }} />
+      </main>
     );
   }
 
   if (state === 'missing') {
     return (
-      <div className="empty-state">
-        <div className="empty-glyph" aria-hidden="true" />
-        <h3 className="display">Listing not found</h3>
-        <p>It may have been removed by the seller.</p>
-        <Link to="/" className="btn btn-primary">Back to browse</Link>
-      </div>
+      <main className="ldetail">
+        <div className="empty-dashed">
+          <h3>Listing not found</h3>
+          <p>It may have been removed by the seller.</p>
+          <Link to="/browse" className="btn-acid">Back to browse</Link>
+        </div>
+      </main>
     );
   }
 
   if (state === 'error' || !listing) {
     return (
-      <div className="empty-state" role="alert">
-        <div className="empty-glyph" aria-hidden="true" />
-        <h3 className="display">Couldn&apos;t load this listing</h3>
-        <button className="btn btn-primary" onClick={() => void load()}>Retry</button>
-      </div>
+      <main className="ldetail">
+        <div className="empty-dashed" role="alert">
+          <h3>Couldn&apos;t load this listing</h3>
+          <p>Something went wrong on our side.</p>
+          <button className="btn-acid" onClick={() => void load()}>Retry</button>
+        </div>
+      </main>
     );
   }
 
   const isOwner = user?.id === listing.sellerId;
-  const favorited = favoriteIds.has(listing.id);
+  const watched = favoriteIds.has(listing.id);
+  const cover = listing.images[photo] ?? listing.images[0];
+  const sellerHandle = listing.seller.username
+    ? `@${listing.seller.username}`
+    : listing.seller.displayName;
 
-  const changeStatus = async (status: ListingStatus) => {
-    setBusy(true);
-    setActionError(null);
-    try {
-      await client.setListingStatus(listing.id, status);
-      await load();
-    } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Status change failed');
-    } finally {
-      setBusy(false);
-    }
-  };
+  const specs: Array<[string, string]> = [
+    ['Game', GAME_LABELS[listing.game]],
+    ['Set', listing.setName || '—'],
+    ['Card no.', listing.cardNumber || '—'],
+    ['Finish', FINISH_LABELS[listing.finish]],
+    ['Condition', `${listing.condition} — ${CONDITION_LABELS[listing.condition].toLowerCase()}`],
+    ['Grade', listing.gradeValue ? `${listing.gradeValue}${listing.gradeCompany && !listing.gradeValue.toUpperCase().startsWith(listing.gradeCompany.toUpperCase()) ? ` (${listing.gradeCompany})` : ''}` : 'Raw / ungraded'],
+    ['Language', listing.language],
+    ['Quantity', String(listing.quantity)],
+    ['Status', STATUS_LABELS[listing.status]],
+  ];
 
   const messageSeller = async () => {
     if (!user) {
@@ -112,95 +109,104 @@ export function ListingPage() {
       return;
     }
     setBusy(true);
-    setActionError(null);
     try {
       const conv = await client.openConversation(listing.id);
       navigate(`/chat/${conv.id}`);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Could not open the conversation');
+      toast(err instanceof Error ? err.message : 'Could not open the conversation');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const watch = async () => {
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+    await toggleFavorite(listing.id);
+    toast(watched ? 'Removed from watchlist' : 'Added to watchlist');
+  };
+
+  const changeStatus = async (status: ListingStatus) => {
+    setBusy(true);
+    try {
+      await client.setListingStatus(listing.id, status);
+      await load();
+      toast(`Marked ${STATUS_LABELS[status].toLowerCase()}`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Status change failed');
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="ldetail">
-      <Gallery images={listing.images} title={listing.title} />
+    <main className="ldetail">
+      <button type="button" className="btn-ghost-mono is-muted" onClick={() => navigate('/browse')}>
+        ← Back to browse
+      </button>
 
-      <div className="ldetail-side">
-        <div className="ldetail-head">
-          <p className="microlabel ldetail-game">
-            <span className="game-dot" data-game={listing.game} aria-hidden="true" />
-            {GAME_LABELS[listing.game]}
-            <span className={`badge badge-${listing.status}`}>{STATUS_LABELS[listing.status]}</span>
-          </p>
-          <h1 className="ldetail-title display">{listing.title}</h1>
-          <p className="ldetail-setline">
-            {listing.setName}
-            {listing.cardNumber && listing.cardNumber !== '—' ? ` · ${listing.cardNumber}` : ''}
-            {` · ${listing.language}`}
-          </p>
-        </div>
-
-        <div className="ldetail-price-row">
-          <span className="price ldetail-price">{formatPrice(listing.price, listing.currency)}</span>
-          {listing.quantity > 1 && (
-            <span className="ldetail-qty">{listing.quantity} available</span>
+      <div className="ldetail-cols">
+        <div className="ldetail-media">
+          <div
+            className="ldetail-face"
+            style={cover ? undefined : { background: faceBackground(listing.id) }}
+          >
+            {cover ? (
+              <img src={cover.url} alt={`${listing.title} — photo ${photo + 1}`} />
+            ) : (
+              <div className="ldetail-glyph" aria-hidden="true">{glyphOf(listing.title)}</div>
+            )}
+          </div>
+          {listing.images.length > 1 && (
+            <div className="ldetail-thumbs">
+              {listing.images.map((img, i) => (
+                <button
+                  key={img.id}
+                  type="button"
+                  aria-label={`View photo ${i + 1}`}
+                  aria-pressed={i === photo}
+                  className={`ldetail-thumb ${i === photo ? 'ldetail-thumb-on' : ''}`}
+                  onClick={() => setPhoto(i)}
+                >
+                  <img src={img.url} alt="" loading="lazy" />
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
-        <dl className="ldetail-specs card-surface">
-          <div>
-            <dt className="microlabel">Condition</dt>
-            <dd>
-              <span className={`badge badge-cond-${listing.condition}`}>{listing.condition}</span>
-              <span className="ldetail-spec-note">{CONDITION_LABELS[listing.condition]}</span>
-            </dd>
+        <div className="ldetail-info">
+          <div className="mono-label">
+            {GAME_LABELS[listing.game]}
+            {listing.setName ? ` · ${listing.setName}` : ''}
           </div>
-          <div>
-            <dt className="microlabel">Finish</dt>
-            <dd>{FINISH_LABELS[listing.finish]}</dd>
+          <h1 className="display ldetail-title">{listing.title}</h1>
+          <div className="ldetail-price-row">
+            <span className="mono-label">Asking</span>
+            <span className="display ldetail-price">
+              {formatPrice(listing.price, listing.currency)}
+            </span>
+            {listing.status !== 'active' && (
+              <span
+                className={`mono-label ${listing.status === 'sold' ? 'ldetail-tag-muted' : 'ldetail-tag'}`}
+              >
+                {STATUS_LABELS[listing.status]}
+              </span>
+            )}
           </div>
-          <div>
-            <dt className="microlabel">Grade</dt>
-            <dd>
-              {listing.gradeValue ? (
-                <SlabBadge company={listing.gradeCompany} grade={listing.gradeValue} />
-              ) : (
-                <span className="ldetail-spec-muted">Ungraded (raw)</span>
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt className="microlabel">Listed</dt>
-            <dd>{relativeTime(listing.createdAt)}</dd>
-          </div>
-        </dl>
 
-        {listing.description && (
-          <div className="ldetail-desc">
-            <h2 className="microlabel">Seller&apos;s notes</h2>
-            <p>{listing.description}</p>
-          </div>
-        )}
-
-        {actionError && (
-          <p className="field-error" role="alert">{actionError}</p>
-        )}
-
-        {isOwner ? (
-          <div className="ldetail-owner card-surface">
-            <p className="microlabel">Your listing</p>
-            <div className="ldetail-owner-actions">
+          {isOwner ? (
+            <div className="ldetail-actions">
               {(listing.status === 'active' || listing.status === 'reserved') && (
-                <Link to={`/sell/${listing.id}`} className="btn btn-ghost">Edit</Link>
+                <Link to={`/sell/${listing.id}`} className="btn-outline">Edit</Link>
               )}
               {allowedTransitions(listing.status).map((s) => (
                 <button
                   key={s}
-                  className={
-                    s === 'sold' ? 'btn btn-primary' : s === 'removed' ? 'btn btn-danger' : 'btn btn-quiet'
-                  }
+                  type="button"
+                  className={s === 'sold' ? 'btn-acid' : s === 'removed' ? 'btn-outline btn-danger-outline' : 'btn-outline'}
                   disabled={busy}
                   onClick={() => void changeStatus(s)}
                 >
@@ -212,62 +218,102 @@ export function ListingPage() {
                 </button>
               ))}
             </div>
-            {listing.status === 'sold' && (
-              <p className="ldetail-owner-note">Sold listings are final — conversations and reviews stay attached.</p>
-            )}
-          </div>
-        ) : (
-          <div className="ldetail-cta">
-            <button
-              className="btn btn-primary btn-lg ldetail-msg"
-              disabled={busy || listing.status === 'sold' || listing.status === 'removed'}
-              onClick={() => void messageSeller()}
-            >
-              {listing.status === 'sold' ? 'Sold' : listing.status === 'removed' ? 'Unavailable' : 'Message seller'}
-            </button>
-            <button
-              className="btn btn-ghost btn-lg"
-              aria-pressed={favorited}
-              onClick={() => {
-                if (!user) {
-                  navigate('/signin');
-                  return;
-                }
-                void toggleFavorite(listing.id);
-              }}
-            >
-              {favorited ? '♥ Favorited' : '♡ Favorite'}
-            </button>
-          </div>
-        )}
-
-        <section className="ldetail-seller card-surface" aria-label="Seller">
-          <Link
-            to={listing.seller.username ? `/u/${listing.seller.username}` : '#'}
-            className="ldetail-seller-id"
-          >
-            <Avatar profile={listing.seller} size={44} />
-            <span>
-              <strong>{listing.seller.displayName}</strong>
-              <span className="ldetail-seller-handle">
-                {listing.seller.username ? `@${listing.seller.username}` : ''}
-              </span>
-            </span>
-          </Link>
-          <div className="ldetail-seller-meta">
-            <RatingStars avg={listing.seller.ratingAvg} count={listing.seller.ratingCount} />
-            <span>Member since {memberSince(listing.seller.createdAt)}</span>
-            <span>
-              {listing.sellerActiveListingCount} active listing
-              {listing.sellerActiveListingCount === 1 ? '' : 's'}
-            </span>
-          </div>
-          {!isOwner && (
-            <button className="ldetail-report" onClick={() => setReportOpen(true)}>
-              Report this listing
-            </button>
+          ) : (
+            <div className="ldetail-actions">
+              <button
+                type="button"
+                className="btn-acid ldetail-msg"
+                disabled={busy || listing.status === 'sold' || listing.status === 'removed'}
+                onClick={() => void messageSeller()}
+              >
+                {listing.status === 'sold'
+                  ? 'Sold'
+                  : listing.status === 'removed'
+                    ? 'Unavailable'
+                    : 'Message seller'}
+              </button>
+              <button
+                type="button"
+                aria-label={watched ? 'Remove from watchlist' : 'Watch'}
+                aria-pressed={watched}
+                className="btn-icon ldetail-icon"
+                onClick={() => void watch()}
+              >
+                {watched ? '★' : '☆'}
+              </button>
+              <button
+                type="button"
+                aria-label="Report listing"
+                className="btn-icon ldetail-icon ldetail-report"
+                onClick={() => setReportOpen(true)}
+              >
+                ⚑
+              </button>
+            </div>
           )}
-        </section>
+
+          <table className="ldetail-specs">
+            <tbody>
+              {specs.map(([k, v]) => (
+                <tr key={k}>
+                  <td className="mono-label ldetail-spec-k">{k}</td>
+                  <td className="ldetail-spec-v">{v}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {listing.description && <p className="ldetail-desc">{listing.description}</p>}
+
+          <div className="ldetail-seller panel">
+            <div className="ldetail-seller-top">
+              {listing.seller.avatarUrl ? (
+                <Avatar profile={listing.seller} size={44} />
+              ) : (
+                <div
+                  className="ldetail-seller-avatar"
+                  style={{ background: avatarBackground(sellerHandle) }}
+                  aria-hidden="true"
+                />
+              )}
+              <div>
+                <Link
+                  to={listing.seller.username ? `/u/${listing.seller.username}` : '#'}
+                  className="ldetail-seller-name"
+                >
+                  {sellerHandle}
+                </Link>
+                <div className="ldetail-seller-meta">
+                  member since {memberSince(listing.seller.createdAt)}
+                </div>
+              </div>
+            </div>
+            <div className="ldetail-seller-stats">
+              <div>
+                <div className="mono-label">Reviews</div>
+                <div className="mono-value ldetail-seller-stat">
+                  {listing.seller.ratingAvg !== null
+                    ? `${listing.seller.ratingAvg.toFixed(1)} · ${listing.seller.ratingCount}`
+                    : '—'}
+                </div>
+              </div>
+              <div>
+                <div className="mono-label">Watching</div>
+                <div className="mono-value ldetail-seller-stat">{listing.likes}</div>
+              </div>
+              <div>
+                <div className="mono-label">Listings</div>
+                <div className="mono-value ldetail-seller-stat">
+                  {listing.sellerActiveListingCount}
+                </div>
+              </div>
+            </div>
+            <div className="ldetail-safety">
+              LebanonTCG doesn&apos;t handle payment or shipping. You&apos;ll arrange both directly
+              with the seller in chat. <Link to="/safety">How to trade safely</Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       {reportOpen && (
@@ -278,6 +324,6 @@ export function ListingPage() {
           onClose={() => setReportOpen(false)}
         />
       )}
-    </div>
+    </main>
   );
 }

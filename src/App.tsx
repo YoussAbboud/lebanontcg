@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
+import { HomePage } from './pages/HomePage';
 import { BrowsePage } from './pages/BrowsePage';
+import { SellersPage } from './pages/SellersPage';
 import { ListingPage } from './pages/ListingPage';
 import { SellPage } from './pages/SellPage';
 import { MyListingsPage } from './pages/MyListingsPage';
@@ -17,7 +19,9 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<AppShell />}>
-          <Route path="/" element={<BrowsePage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/browse" element={<BrowsePage />} />
+          <Route path="/sellers" element={<SellersPage />} />
           <Route path="/listing/:id" element={<ListingPage />} />
           <Route path="/sell" element={<SellPage />} />
           <Route path="/sell/:id" element={<SellPage />} />

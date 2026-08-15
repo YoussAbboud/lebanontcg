@@ -184,6 +184,8 @@ export function buildSeedConversations(): { conversations: Conversation[]; messa
     senderId,
     kind: 'user',
     body,
+    amount: null,
+    offerStatus: null,
     createdAt: mins(minutesAgo),
     readAt: read ? mins(Math.max(0, minutesAgo - 2)) : null,
   });
@@ -195,7 +197,18 @@ export function buildSeedConversations(): { conversations: Conversation[]; messa
     msg('c-1', 'u-maya', 'I can meet at 300, and I\'ll throw in a couple of the Celebrations promos. Hamra area works for me.', 60 * 23),
     msg('c-1', 'u-karim', 'Deal at 300 with the promos. Saturday afternoon somewhere near AUB?', 40),
     msg('c-1', 'u-maya', 'Saturday works. Caribou on Bliss street, 3pm? I\'ll bring a loupe so you can check it properly.', 25),
-    msg('c-1', 'u-karim', 'Perfect, see you then. I\'ll bring cash exact.', 12, false),
+    msg('c-1', 'u-karim', 'Perfect, see you then. I\'ll bring cash exact.', 14),
+    {
+      id: 'm-offer-1',
+      conversationId: 'c-1',
+      senderId: 'u-karim',
+      kind: 'offer',
+      body: 'Cash on collection Saturday — locking it in.',
+      amount: 300,
+      offerStatus: 'proposed',
+      createdAt: mins(12),
+      readAt: null,
+    },
 
     msg('c-2', 'u-maya', 'Hi Lina — the LOB Blue-Eyes, is that price flexible at all? MP 1st eds have been moving around 500.', 60 * 49),
     msg('c-2', 'u-lina', 'Hey Maya! I\'ve seen those but mine has no creases at all, which is rare for MP. I could do 530.', 60 * 47),

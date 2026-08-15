@@ -5,8 +5,9 @@ and search, and the two parties negotiate and arrange the transaction
 themselves through built-in live chat. **There are no payments in the app**
 — LebanonTCG is the venue, the chat is the transaction layer.
 
-- Frontend: Vite + React + TypeScript, plain CSS on a design-token system
-  (`src/styles/tokens.css`, see `DESIGN-NOTES.md`).
+- Frontend: Vite + React + TypeScript, plain CSS transcribed from the
+  owner's "Sleeved" design component (`design-reference/sleeved/`,
+  tokens in `src/styles/tokens.css`, mapping in `DESIGN-NOTES.md`).
 - Backend: Supabase (Postgres + Auth + Storage + Realtime) — or a fully
   offline mock.
 

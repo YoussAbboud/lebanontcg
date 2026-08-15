@@ -10,8 +10,9 @@ sizing math).
 
 ## M1 — Foundation
 
-1. `npm run dev:mock`, open http://localhost:5173 → app boots on the Home
-   route with the LebanonTCG header (flag logo, pill nav, hero, auto-scrolling carousel), no console errors.
+1. `npm run dev:mock`, open http://localhost:5173 → app boots on the designed Home
+   (framed shell, gif logo, mono nav, fan carousel auto-advancing every
+   5s, featured strip, trending sellers & cards), no console errors.
 2. Header shows the dashed **Dev** switcher (mock only). Pick “Maya Haddad”
    → avatar appears; menu shows profile/listings/settings/sign-out.
 3. Switch to “Karim Nassar” → identity changes instantly, survives reload
@@ -26,10 +27,11 @@ sizing math).
 
 ## M2 — Listings read path
 
-1. Home shows the hero + auto-scrolling featured rail (pauses on hover);
-   below it the seeded grid (~35 active listings) with seller header, cover
-   image, game label + dot, title, condition pill, slab badge on graded
-   cards, white price with coin mark.
+1. /browse shows the sidebar (game + condition pills, price min/max,
+   finish/language, graded-only, seller-has-reviews) and the card grid:
+   seller dot + @handle, like count, watch star, mono eyebrow (game · set
+   · grade), Chakra title, one-liner, Asking/Listed, Message seller CTA;
+   every ~4th card is the acid variant.
 2. Type “charizard” in search → grid narrows after a beat (debounce);
    clearing restores. The `q=` appears in the URL.
 3. Filter by game=Pokémon + condition=NM → results intersect; “Filters (2)”
@@ -168,3 +170,25 @@ Setup per README (project, migrations, seed, .env, redirect URL).
 5. Phone-width (390 px) pass over every screen; chat especially: composer
    stays above the keyboard, pinned header stays visible.
 6. Lighthouse quick pass: images lazy, meta/OG tags present.
+
+
+## R2 — Offers, likes, sellers (design-component features)
+
+1. Two tabs (Maya = seller, Karim = buyer) on the Charizard thread: Maya
+   sees Accept/Decline on Karim's seeded $300 offer; Karim doesn't.
+2. Karim types → Maya sees "@karim_tcg is typing…" within ~2s; it clears
+   a few seconds after he stops.
+3. Maya accepts → both tabs flip the offer to "Offer accepted" and the
+   system message ("…LebanonTCG is not involved…") appears live.
+4. $ toggle → amount + note → Send offer → appears in both tabs; Decline
+   propagates the same way; settled offers show no buttons.
+5. "We completed this deal" (seller) → listing sold, "Deal confirmed"
+   chip, review prompts in both tabs.
+6. Watch star on any card → toast, like count reflects it after reload
+   (aggregate is anonymous); "Most watched" sort puts liked cards first.
+7. /sellers ranks the three seeded users (Maya #1 by reviews); each card
+   opens the profile with rank chip, stats, games derived from live
+   listings, and Message seller opening a conversation on their newest
+   active listing.
+8. Sell wizard: step gating (no photos → error on Continue), condition
+   tiles, live preview card on Review, publish → detail + toast.

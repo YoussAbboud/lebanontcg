@@ -170,3 +170,45 @@ Running log of product/engineering decisions made while building, newest last.
   rounded inner media, coin mark + white price + dark condition pill),
   which also surfaces the seller identity that used to require opening
   the detail page.
+
+## R2 — "Sleeved" design component port (owner template)
+
+- **The owner supplied their own Claude design component** (checked into
+  `design-reference/sleeved/`) and asked for the site to match it exactly
+  with the mocked features wired for real. The entire UI was rebuilt on
+  its system (see DESIGN-NOTES.md): framed shell, Chakra/Inter/JetBrains
+  Mono (all @fontsource, self-hosted), acid-lime accent, hash-picked acid
+  cards, per-id hue "nebula" faces for photo-less listings, and the 3D
+  fan hero with the component's exact transform math. The animated flag
+  gif ships from the component's own assets as the header logo.
+- **Route split:** the landing page is now the designed Home (hero, fan,
+  featured strip, trending); the filterable grid moved to /browse
+  (sidebar layout). URL-encoded filter state unchanged, plus rated=1
+  (seller has reviews) and sort=most_watched.
+- **Mocked features wired for real:**
+  - *Offers* — kind='offer' messages with amount + proposed/accepted/
+    declined state. Recipient-only accept/decline (RLS: column grant on
+    offer_status, state machine + acceptance system-message via trigger;
+    migration 0008, RLS tests T28-T32).
+  - *Likes / watch counts* — favorites aggregated per listing. RLS hides
+    who favorites what, so counts come from an owner-rights listing_likes
+    view (T33-T34). Watch star = the favorite toggle; "Most watched"
+    sort orders by the counts.
+  - *Sellers pages* — real ranking (review count, rating, live
+    inventory) with per-seller stats and games derived from their active
+    listings; the design's unmodeled region/reply-rate fields became
+    real Deals (sold count) and member-since.
+  - *Typing indicator* — BroadcastChannel in mock, Supabase realtime
+    broadcast on the conversation channel in live mode, throttled to one
+    ping per 2s, auto-clearing after 3s.
+  - *"We completed this deal"* — the thread-header confirm is the
+    existing mark-sold transition; review prompts follow as before.
+  - *Toasts* — the component's acid toast pill, driven by real actions
+    (watch, offers, publish, deal confirmed, errors).
+- **SEALED condition tile from the template was dropped** (not in the
+  condition model); the five real grades keep the tile treatment with
+  plain-language descriptions.
+- **Glyph faces are the fallback, photos are the truth.** The template
+  renders letter-glyph nebulas; real listings render their cover photo in
+  the same frame, and photo-less listings get the nebula so the grid
+  still reads exactly like the reference.

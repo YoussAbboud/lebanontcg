@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import type { ListingWithSeller } from '../lib/types';
 import { useApp } from '../state/AppContext';
 import { ListingCard } from '../components/ListingCard';
-import './browse.css';
+import './favorites.css';
 
 export function FavoritesPage() {
   const { client, user, favoriteIds } = useApp();
@@ -24,61 +24,60 @@ export function FavoritesPage() {
     if (user) void load();
   }, [load, user]);
 
-  // Drop cards un-favorited elsewhere without a refetch.
   const visible = items.filter((l) => favoriteIds.has(l.id));
 
   if (!user) {
     return (
-      <div className="empty-state">
-        <div className="empty-glyph" aria-hidden="true" />
-        <h3 className="display">Favorites</h3>
-        <p>Sign in to keep a shortlist of cards you&apos;re watching.</p>
-        <Link to="/signin" className="btn btn-primary">Sign in</Link>
-      </div>
+      <main className="watchlist">
+        <div className="empty-dashed">
+          <h3>Watchlist</h3>
+          <p>Sign in to keep an eye on cards you want.</p>
+          <Link to="/signin" className="btn-acid">Sign in</Link>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="browse">
-      <header>
-        <h1 className="display" style={{ fontSize: 'var(--fs-28)' }}>Favorites</h1>
-        <p style={{ color: 'var(--text-2)', marginTop: 'var(--sp-2)', fontSize: 'var(--fs-13)' }}>
-          Cards you&apos;re watching. Sold and reserved cards stay here so you don&apos;t lose track.
-        </p>
-      </header>
+    <main className="watchlist">
+      <div className="section-head">
+        <h1>Watchlist</h1>
+        <div className="mono-label">
+          {String(visible.length).padStart(2, '0')} watched · sold and reserved cards stay here
+        </div>
+      </div>
 
       {state === 'loading' && (
-        <div className="browse-grid" aria-hidden="true">
+        <div className="watchlist-grid" aria-hidden="true">
           {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="browse-skeleton skeleton" />
+            <div key={i} className="skeleton" style={{ height: 380, borderRadius: 'var(--r-card)' }} />
           ))}
         </div>
       )}
 
       {state === 'error' && (
-        <div className="empty-state" role="alert">
-          <div className="empty-glyph" aria-hidden="true" />
-          <h3 className="display">Couldn&apos;t load favorites</h3>
-          <button className="btn btn-primary" onClick={() => void load()}>Retry</button>
+        <div className="empty-dashed" role="alert">
+          <h3>Couldn&apos;t load your watchlist</h3>
+          <p>Something went wrong on our side.</p>
+          <button className="btn-acid" onClick={() => void load()}>Retry</button>
         </div>
       )}
 
       {state === 'ready' && visible.length === 0 && (
-        <div className="empty-state">
-          <div className="empty-glyph" aria-hidden="true" />
-          <h3 className="display">Nothing saved yet</h3>
-          <p>Tap the heart on any listing to watch it here.</p>
-          <Link to="/" className="btn btn-primary">Browse cards</Link>
+        <div className="empty-dashed">
+          <h3>Nothing watched yet</h3>
+          <p>Tap the ☆ on any listing to track it here.</p>
+          <Link to="/browse" className="btn-acid">Browse cards</Link>
         </div>
       )}
 
       {state === 'ready' && visible.length > 0 && (
-        <div className="browse-grid">
+        <div className="watchlist-grid">
           {visible.map((l) => (
             <ListingCard key={l.id} listing={l} />
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }

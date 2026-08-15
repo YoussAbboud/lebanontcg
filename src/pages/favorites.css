@@ -1,0 +1,10 @@
+.watchlist {
+  position: relative;
+  padding: 32px var(--pad-x) 72px;
+}
+
+.watchlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+  gap: 16px;
+}

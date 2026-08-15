@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { Profile } from '../lib/types';
+import { avatarBackground } from '../lib/face';
 import { useApp } from '../state/AppContext';
 
 export function Avatar({ profile, size = 32 }: { profile: Profile; size?: number }) {
@@ -11,26 +12,20 @@ export function Avatar({ profile, size = 32 }: { profile: Profile; size?: number
   if (!src) {
     return (
       <span
-        className="avatar"
+        className="avatar-img"
         style={{
           width: size,
           height: size,
           display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 800,
-          fontSize: size * 0.42,
-          color: 'var(--text-2)',
+          background: avatarBackground(profile.username ?? profile.id),
         }}
         aria-hidden="true"
-      >
-        {profile.displayName.charAt(0).toUpperCase()}
-      </span>
+      />
     );
   }
   return (
     <img
-      className="avatar"
+      className="avatar-img"
       src={src}
       width={size}
       height={size}

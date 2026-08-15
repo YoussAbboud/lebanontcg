@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #08090B; color: #F2F5F7; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #D6FF3F; text-decoration: none; }
+  a:hover { color: #9BC400; }
+  ::selection { background: #D6FF3F; color: #08090B; }
+  button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid #D6FF3F; outline-offset: 2px; }
+  @keyframes fanIn { from { opacity: 0; transform: translateY(40px) scale(.94); } to { opacity: 1; transform: none; } }
+  @keyframes breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  .scrollx { scrollbar-width: none; }
+  .scrollx::-webkit-scrollbar { display: none; }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #08090B; padding: 14px; font-family: Inter, system-ui, sans-serif;">
+<div style="max-width: 1400px; margin: 0 auto; background: #0E1013; border-radius: 28px; border: 1px solid #16191E; overflow: hidden; position: relative;">
+
+  <div style="position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 60% at 50% -10%, rgba(123,92,255,.16), transparent 60%), radial-gradient(80% 40% at 50% 105%, rgba(214,255,63,.05), transparent 70%);"></div>
+
+  <header style="position: relative; display: flex; align-items: center; gap: 24px; padding: 18px 28px; border-bottom: 1px solid #16191E;">
+    <div style="display: flex; align-items: center; gap: 10px; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: .06em; text-transform: uppercase;"><img src="uploads/3dgifmaker02418.gif" alt="" width="38" height="38" style="width: 38px; height: 38px; object-fit: contain; flex: none;" />LEbanonTCG<span style="color: rgb(214, 255, 63);">.</span></div>
+    <nav style="display: flex; gap: 4px; position: absolute; left: 50%; transform: translateX(-50%);">
+      <sc-for list="{{ navItems }}" as="nav" hint-placeholder-count="5">
+        <button type="button" onClick="{{ nav.go }}" style="{{ nav.style }}">
+          <span style="{{ nav.tabStyle }}"></span>
+          {{ nav.label }}
+        </button>
+      </sc-for>
+    </nav>
+    <div style="display: flex; align-items: center; gap: 12px; margin-left: auto;">
+      <button type="button" aria-label="Search" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #2A3038; background: transparent; color: #B9C2CC; cursor: pointer; font-size: 15px;" style-hover="border-color:#D6FF3F;color:#D6FF3F">⌕</button>
+      <button type="button" onClick="{{ goSell }}" style="border: none; background: #D6FF3F; color: #08090B; border-radius: 999px; padding: 12px 22px; font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 44px;" style-hover="background:#9BC400">List a card</button>
+    </div>
+  </header>
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+  <main style="position: relative;">
+    <section style="padding: 72px 28px 0; text-align: center;">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">PEER-TO-PEER · 41,208 CARDS LISTED</div>
+      <h1 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: clamp(40px, 8vw, 88px); line-height: .95; margin: 22px 0 0; text-shadow: 0 0 60px rgba(214,255,63,.18);">
+        We connect<br>
+        <span style="background: linear-gradient(96deg, rgb(123, 92, 255), rgb(53, 228, 255) 46%, rgb(214, 255, 63)) text; color: transparent">Collectors</span>
+      </h1>
+      <p style="max-width: 470px; margin: 22px auto 0; color: #7B8590; font-size: 15px; line-height: 1.6; text-wrap: pretty;">List what you own, message the person who has what you want. No checkout, no fees, you agree the terms yourselves.</p>
+    </section>
+
+    <section aria-label="Recently listed" style="position: relative; padding: 56px 28px 64px;">
+      <div style="position: absolute; left: 50%; bottom: 20px; width: min(1400px, 130%); height: 520px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(58% 62% at 50% 62%, rgba(214,255,63,.09), rgba(123,92,255,.05) 55%, transparent 76%); pointer-events: none;"></div>
+      <div onMouseEnter="{{ pauseCarousel }}" onMouseLeave="{{ resumeCarousel }}" style="position: relative; height: clamp(300px, 42vw, 480px); perspective: 1600px; perspective-origin: 50% 45%;">
+        <sc-for list="{{ fan }}" as="card" hint-placeholder-count="5">
+          <div role="button" tabindex="0" aria-label="{{ card.aria }}" onClick="{{ card.click }}" onMouseEnter="{{ card.enter }}" onMouseLeave="{{ card.leave }}" onFocus="{{ card.enter }}" onBlur="{{ card.leave }}" style="{{ card.wrapStyle }}">
+            <div style="{{ card.faceStyle }}">
+              <div style="{{ card.glyphStyle }}">{{ card.glyph }}</div>
+              <div style="{{ card.scrimStyle }}"></div>
+              <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 18px;">
+                <div style="{{ card.titleStyle }}">{{ card.title }}</div>
+                <div style="{{ card.infoStyle }}">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="{{ card.dotStyle }}"></div>
+                    <div style="font-size: 12px; font-weight: 600; color: #F2F5F7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ card.seller }}</div>
+                    <div style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">{{ card.listed }}</div>
+                  </div>
+                  <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 10px; min-width: 0;">
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Asking</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .04em; color: #F2F5F7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ card.asking }}</span>
+                  </div>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #D6FF3F; margin-top: 10px; white-space: nowrap;">More →</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="position: relative; display: flex; justify-content: center; gap: 8px; margin-top: 26px;">
+        <sc-for list="{{ fanDots }}" as="d" hint-placeholder-count="5">
+          <button type="button" aria-label="{{ d.aria }}" onClick="{{ d.pick }}" style="{{ d.style }}"></button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section aria-label="Featured this week" style="position: relative; padding: 8px 28px 64px;">
+      <div style="display: flex; align-items: flex-end; gap: 20px; border-bottom: 1px solid #2A3038; padding-bottom: 14px; margin-bottom: 22px;">
+        <h2 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 22px; margin: 0;">Featured this week</h2>
+        <div style="margin-left: auto; display: flex; gap: 8px;">
+          <button type="button" aria-label="Scroll left" onClick="{{ scrollFeaturedLeft }}" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #2A3038; background: #16191E; color: #F2F5F7; cursor: pointer; font-size: 15px;" style-hover="border-color:#D6FF3F;color:#D6FF3F">←</button>
+          <button type="button" aria-label="Scroll right" onClick="{{ scrollFeaturedRight }}" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #2A3038; background: #16191E; color: #F2F5F7; cursor: pointer; font-size: 15px;" style-hover="border-color:#D6FF3F;color:#D6FF3F">→</button>
+        </div>
+      </div>
+      <div class="scrollx" id="sleeved-featured" style="display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px;">
+        <sc-for list="{{ featured }}" as="f" hint-placeholder-count="4">
+          <div role="button" tabindex="0" onClick="{{ f.open }}" style="{{ f.stripStyle }}">
+            <div style="{{ f.faceStyle }}">
+              <div style="{{ f.glyphStyle }}">{{ f.glyph }}</div>
+            </div>
+            <div style="padding: 16px 18px 18px;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ f.muted }};">{{ f.eyebrow }}</div>
+              <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 18px; margin-top: 8px; color: {{ f.fg }};">{{ f.title }}</div>
+              <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 10px;">
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ f.muted }};">Asking</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .06em; color: {{ f.fg }};">{{ f.asking }}</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section aria-label="Trending sellers and listings" style="position: relative; padding: 40px 28px 72px; background-image: radial-gradient(#2A3038 1px, transparent 1px); background-size: 24px 24px; border-top: 1px solid #16191E;">
+      <div style="display: flex; align-items: flex-end; gap: 20px; border-bottom: 1px solid #2A3038; padding-bottom: 14px; margin-bottom: 26px;">
+        <h2 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 22px; margin: 0;">Trending sellers &amp; cards</h2>
+        <div style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Last 30 days</div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start;">
+        <div style="flex: 1 1 236px; max-width: 320px; background: #16191E; border: 1px solid #2A3038; border-radius: 14px; padding: 18px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590; margin-bottom: 14px;">Top sellers</div>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <sc-for list="{{ sellers }}" as="s" hint-placeholder-count="6">
+              <div role="button" tabindex="0" onClick="{{ s.open }}" style="display: flex; align-items: center; gap: 12px; padding: 9px 6px; border-radius: 10px; cursor: pointer;" style-hover="background:#1F242B">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; color: #7B8590; width: 16px;">{{ s.rank }}</div>
+                <div style="{{ s.avatarStyle }}"></div>
+                <div style="min-width: 0;">
+                  <div style="font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ s.handle }}</div>
+                  <div style="font-size: 11px; color: #7B8590;">{{ s.rating }}</div>
+                </div>
+                <div style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .06em; color: #B9C2CC;">{{ s.listings }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ goSellers }}" style="margin-top: 14px; background: transparent; border: none; color: #D6FF3F; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; padding: 8px 2px;">See more →</button>
+        </div>
+
+        <div style="flex: 999 1 320px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px;">
+          <sc-for list="{{ listings }}" as="l" hint-placeholder-count="8">
+            <article role="button" tabindex="0" onClick="{{ l.open }}" style="{{ l.cardStyle }}" style-hover="transform:translateY(-4px)">
+              <div style="display: flex; align-items: center; gap: 8px; padding: 12px 14px 8px;">
+                <div style="{{ l.dotStyle }}"></div>
+                <div style="font-size: 12px; font-weight: 600; color: {{ l.fg }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ l.seller }}</div>
+                <div style="{{ l.likeStyle }}">♡ {{ l.likes }}</div>
+              </div>
+              <div style="{{ l.faceStyle }}">
+                <div style="{{ l.glyphStyle }}">{{ l.glyph }}</div>
+                <button type="button" aria-label="Watch this card" onClick="{{ l.watch }}" style="{{ l.watchStyle }}">{{ l.watchIcon }}</button>
+              </div>
+              <div style="padding: 14px;">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">{{ l.eyebrow }}</div>
+                <h3 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 15px; line-height: 1.2; margin: 8px 0 0; color: {{ l.fg }}; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">{{ l.title }}</h3>
+                <div style="font-size: 12px; color: {{ l.muted }}; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ l.oneLiner }}</div>
+                <div style="display: flex; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid {{ l.rule }};">
+                  <div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">Asking</div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .04em; color: {{ l.fg }}; margin-top: 4px;">{{ l.asking }}</div>
+                  </div>
+                  <div style="margin-left: auto; text-align: right;">
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">Listed</div>
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .04em; color: {{ l.fg }}; margin-top: 4px;">{{ l.listed }}</div>
+                  </div>
+                </div>
+                <button type="button" onClick="{{ l.message }}" style="{{ l.ctaStyle }}">Message seller</button>
+              </div>
+            </article>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isBrowse }}" hint-placeholder-val="{{ false }}">
+  <main style="position: relative; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 28px; padding: 32px 28px 72px;">
+    <aside aria-label="Filters" style="flex: 1 1 224px; max-width: 300px; background: #16191E; border: 1px solid #2A3038; border-radius: 14px; padding: 18px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Filters</div>
+        <button type="button" onClick="{{ clearFilters }}" style="margin-left: auto; background: transparent; border: none; color: #D6FF3F; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer;">Clear</button>
+      </div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #B9C2CC; margin-bottom: 10px;">Game</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px;">
+        <sc-for list="{{ games }}" as="g" hint-placeholder-count="7">
+          <button type="button" onClick="{{ g.toggle }}" style="{{ g.style }}">{{ g.label }}</button>
+        </sc-for>
+      </div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #B9C2CC; margin-bottom: 10px;">Condition</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px;">
+        <sc-for list="{{ conditions }}" as="c" hint-placeholder-count="6">
+          <button type="button" onClick="{{ c.toggle }}" style="{{ c.style }}">{{ c.label }}</button>
+        </sc-for>
+      </div>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #B9C2CC; margin-bottom: 10px;">Asking price</div>
+      <div style="display: flex; gap: 8px; margin-bottom: 22px;">
+        <input type="text" aria-label="Minimum price" placeholder="Min" style="width: 100%; min-height: 44px; background: #0E1013; border: 1px solid #2A3038; border-radius: 8px; color: #F2F5F7; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+        <input type="text" aria-label="Maximum price" placeholder="Max" style="width: 100%; min-height: 44px; background: #0E1013; border: 1px solid #2A3038; border-radius: 8px; color: #F2F5F7; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+      </div>
+      <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #B9C2CC; min-height: 44px; cursor: pointer;">
+        <input type="checkbox" style="width: 16px; height: 16px; accent-color: #D6FF3F;"> Trade only
+      </label>
+      <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #B9C2CC; min-height: 44px; cursor: pointer;">
+        <input type="checkbox" style="width: 16px; height: 16px; accent-color: #D6FF3F;"> Ships to my region
+      </label>
+      <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #B9C2CC; min-height: 44px; cursor: pointer;">
+        <input type="checkbox" style="width: 16px; height: 16px; accent-color: #D6FF3F;"> Seller has reviews
+      </label>
+    </aside>
+
+    <section style="flex: 999 1 320px; min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 22px;">
+        <h1 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 22px; margin: 0;">Browse cards</h1>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">{{ resultCount }} results</div>
+        <div style="width: 100%; order: 1; position: relative;">
+          <span aria-hidden="true" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #7B8590; font-size: 16px;">⌕</span>
+          <input type="search" aria-label="Search cards" value="{{ query }}" onChange="{{ setQuery }}" placeholder="Search card name, set or title" style="width: 100%; min-height: 48px; background: #16191E; border: 1px solid #2A3038; border-radius: 999px; color: #F2F5F7; padding: 13px 20px 13px 44px; font-size: 14px;">
+        </div>
+        <div style="margin-left: auto; display: flex; gap: 8px;">
+          <sc-for list="{{ sorts }}" as="s" hint-placeholder-count="3">
+            <button type="button" onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 16px;">
+        <sc-for list="{{ browseListings }}" as="l" hint-placeholder-count="9">
+          <article role="button" tabindex="0" onClick="{{ l.open }}" style="{{ l.cardStyle }}" style-hover="transform:translateY(-4px)">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 12px 14px 8px;">
+              <div style="{{ l.dotStyle }}"></div>
+              <div style="font-size: 12px; font-weight: 600; color: {{ l.fg }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ l.seller }}</div>
+              <div style="{{ l.likeStyle }}">♡ {{ l.likes }}</div>
+            </div>
+            <div style="{{ l.faceStyle }}">
+              <div style="{{ l.glyphStyle }}">{{ l.glyph }}</div>
+              <button type="button" aria-label="Watch this card" onClick="{{ l.watch }}" style="{{ l.watchStyle }}">{{ l.watchIcon }}</button>
+            </div>
+            <div style="padding: 14px;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">{{ l.eyebrow }}</div>
+              <h3 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 15px; line-height: 1.2; margin: 8px 0 0; color: {{ l.fg }}; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">{{ l.title }}</h3>
+              <div style="font-size: 12px; color: {{ l.muted }}; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ l.oneLiner }}</div>
+              <div style="display: flex; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid {{ l.rule }};">
+                <div>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">Asking</div>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .04em; color: {{ l.fg }}; margin-top: 4px;">{{ l.asking }}</div>
+                </div>
+                <div style="margin-left: auto; text-align: right;">
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">Listed</div>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .04em; color: {{ l.fg }}; margin-top: 4px;">{{ l.listed }}</div>
+                </div>
+              </div>
+              <button type="button" onClick="{{ l.message }}" style="{{ l.ctaStyle }}">Message seller</button>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+      <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+        <div style="border: 1px dashed #2A3038; border-radius: 14px; padding: 48px 24px; text-align: center;">
+          <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 18px;">No cards match these filters</div>
+          <p style="color: #7B8590; font-size: 14px; margin: 10px 0 20px;">Try widening the price range or clearing the set.</p>
+          <button type="button" onClick="{{ clearFilters }}" style="background: #D6FF3F; color: #08090B; border: none; border-radius: 999px; padding: 12px 22px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 44px;">Clear filters</button>
+        </div>
+      </sc-if>
+      <div style="display: flex; justify-content: center; margin-top: 28px;">
+        <button type="button" style="background: transparent; border: 1px solid #2A3038; color: #B9C2CC; border-radius: 999px; padding: 12px 26px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 44px;" style-hover="border-color:#D6FF3F;color:#D6FF3F">Load more</button>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isSellers }}" hint-placeholder-val="{{ false }}">
+  <main style="position: relative; padding: 32px 28px 72px;">
+    <button type="button" onClick="{{ goHome }}" style="background: transparent; border: none; color: #7B8590; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; padding: 10px 2px;">← Back to home</button>
+    <div style="display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid #2A3038; padding-bottom: 14px; margin: 10px 0 26px;">
+      <h1 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 22px; margin: 0;">Browse sellers</h1>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Ranked by completed deals, reviews and reply rate · last 30 days</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 16px;">
+      <sc-for list="{{ sellerCards }}" as="p" hint-placeholder-count="8">
+        <article role="button" tabindex="0" onClick="{{ p.open }}" style="{{ p.cardStyle }}" style-hover="transform:translateY(-4px);border-color:#D6FF3F">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="{{ p.avatarStyle }}"></div>
+            <div style="min-width: 0;">
+              <div style="font-size: 15px; font-weight: 600;">{{ p.handle }}</div>
+              <div style="font-size: 12px; color: #7B8590; margin-top: 3px;">{{ p.region }}</div>
+            </div>
+            <div style="margin-left: auto;"><span style="{{ p.rankStyle }}">{{ p.rank }}</span></div>
+          </div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590; margin-top: 16px;">{{ p.games }}</div>
+          <div style="display: flex; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid #2A3038;">
+            <div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Rating</div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">{{ p.rating }} · {{ p.reviews }}</div>
+            </div>
+            <div style="margin-left: auto; text-align: right;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Listings</div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">{{ p.listings }}</div>
+            </div>
+          </div>
+        </article>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isSeller }}" hint-placeholder-val="{{ false }}">
+  <main style="position: relative; padding: 32px 28px 72px;">
+    <button type="button" onClick="{{ goSellers }}" style="background: transparent; border: none; color: #7B8590; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; padding: 10px 2px;">← All sellers</button>
+    <div style="display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; margin-top: 10px; background: #16191E; border: 1px solid #2A3038; border-radius: 20px; padding: 24px;">
+      <div style="{{ seller.avatarStyle }}"></div>
+      <div style="flex: 1 1 260px; min-width: 0;">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <h1 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 28px; margin: 0;">{{ seller.handle }}</h1>
+          <span style="{{ seller.rankStyle }}">Rank {{ seller.rank }}</span>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590; margin-top: 10px;">{{ seller.region }} · member since {{ seller.since }} · {{ seller.games }}</div>
+        <p style="color: #B9C2CC; font-size: 14px; line-height: 1.65; margin: 14px 0 0; max-width: 560px; text-wrap: pretty;">{{ seller.bio }}</p>
+      </div>
+      <div style="flex: 1 1 240px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 96px), 1fr)); gap: 12px;">
+          <div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Reviews</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">{{ seller.rating }} · {{ seller.reviews }}</div>
+          </div>
+          <div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Replies</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">{{ seller.reply }}</div>
+          </div>
+          <div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Ships to</div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">{{ seller.ships }}</div>
+          </div>
+        </div>
+        <button type="button" onClick="{{ goThread }}" style="width: 100%; margin-top: 18px; background: #D6FF3F; color: #08090B; border: none; border-radius: 999px; padding: 15px 22px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 48px;" style-hover="background:#9BC400">Message seller</button>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid #2A3038; padding-bottom: 14px; margin: 34px 0 22px;">
+      <h2 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 22px; margin: 0;">Listings</h2>
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">{{ seller.count }} active</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 16px">
+      <sc-for list="{{ seller.listings }}" as="l" hint-placeholder-count="4">
+        <article role="button" tabindex="0" onClick="{{ l.open }}" style="{{ l.cardStyle }}" style-hover="transform:translateY(-4px)">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 12px 14px 8px;">
+            <div style="{{ l.dotStyle }}"></div>
+            <div style="font-size: 12px; font-weight: 600; color: {{ l.fg }}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ l.seller }}</div>
+            <div style="{{ l.likeStyle }}">♡ {{ l.likes }}</div>
+          </div>
+          <div style="{{ l.faceStyle }}">
+            <div style="{{ l.glyphStyle }}">{{ l.glyph }}</div>
+            <button type="button" aria-label="Watch this card" onClick="{{ l.watch }}" style="{{ l.watchStyle }}">{{ l.watchIcon }}</button>
+          </div>
+          <div style="padding: 14px;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">{{ l.eyebrow }}</div>
+            <h3 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 15px; line-height: 1.2; margin: 8px 0 0; color: {{ l.fg }}; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;">{{ l.title }}</h3>
+            <div style="font-size: 12px; color: {{ l.muted }}; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ l.oneLiner }}</div>
+            <div style="display: flex; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid {{ l.rule }};">
+              <div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">Asking</div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .04em; color: {{ l.fg }}; margin-top: 4px;">{{ l.asking }}</div>
+              </div>
+              <div style="margin-left: auto; text-align: right;">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ l.muted }};">Listed</div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .04em; color: {{ l.fg }}; margin-top: 4px;">{{ l.listed }}</div>
+              </div>
+            </div>
+            <button type="button" onClick="{{ l.message }}" style="{{ l.ctaStyle }}">Message seller</button>
+          </div>
+        </article>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isListing }}" hint-placeholder-val="{{ false }}">
+  <main style="position: relative; padding: 28px 28px 72px;">
+    <button type="button" onClick="{{ goBrowse }}" style="background: transparent; border: none; color: #7B8590; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; padding: 10px 2px; margin-bottom: 14px;">← Back to browse</button>
+    <div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start;">
+      <div style="flex: 1 1 340px; min-width: 0;">
+        <div style="{{ detail.faceStyle }}">
+          <div style="{{ detail.glyphStyle }}">{{ detail.glyph }}</div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <sc-for list="{{ detail.thumbs }}" as="t" hint-placeholder-count="4">
+            <button type="button" aria-label="View photo" style="{{ t.style }}">{{ t.glyph }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="flex: 1 1 340px; min-width: 0;">
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">{{ detail.eyebrow }}</div>
+        <h1 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 28px; line-height: 1.1; margin: 12px 0 0;">{{ detail.title }}</h1>
+        <div style="display: flex; align-items: baseline; gap: 10px; margin-top: 16px;">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Asking</span>
+          <span style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -0.02em;">{{ detail.asking }}</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #D6FF3F;">Open to offers</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 22px;">
+          <button type="button" onClick="{{ goThread }}" style="flex: 1; color: #08090B; border: none; border-radius: 999px; padding: 15px 22px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 48px; background-color: #D6FF3F" style-hover="background:#9BC400">Message seller</button>
+          <button type="button" onClick="{{ toggleWatchDetail }}" aria-label="Watch" style="{{ detail.watchStyle }}">{{ detail.watchIcon }}</button>
+          <button type="button" style="width: 48px; height: 48px; border-radius: 999px; border: 1px solid #2A3038; background: transparent; color: #FF5C8A; cursor: pointer;" style-hover="border-color:#FF5C8A" aria-label="Report listing">⚑</button>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 28px;">
+          <tbody>
+            <sc-for list="{{ detail.specs }}" as="row" hint-placeholder-count="7">
+              <tr style="border-bottom: 1px solid #16191E;">
+                <td style="padding: 11px 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590; width: 40%;">{{ row.k }}</td>
+                <td style="padding: 11px 0; font-size: 14px; color: #F2F5F7;">{{ row.v }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+
+        <p style="color: #B9C2CC; font-size: 14px; line-height: 1.65; margin: 22px 0 0; text-wrap: pretty;">{{ detail.description }}</p>
+
+        <div style="margin-top: 26px; border: 1px solid #2A3038; border-radius: 14px; padding: 18px; background-color: #16191E">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(140deg, #7B5CFF, #35E4FF);"></div>
+            <div>
+              <div style="font-size: 15px; font-weight: 600;">{{ detail.seller }}</div>
+              <div style="font-size: 12px; color: #7B8590;">Beirut, LB · member since 2023</div>
+            </div>
+            <div style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; padding: 7px 12px; border-radius: 999px; background: linear-gradient(96deg, #7B5CFF, #35E4FF 50%, #FF5C8A); color: #16191E; font-weight: 800">Rank 01</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; margin-top: 18px;">
+            <div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Reviews</div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">4.9 · 61</div>
+            </div>
+            <div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Replies</div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">98% / 24h</div>
+            </div>
+            <div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Ships to</div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; margin-top: 4px;">LB AE FR</div>
+            </div>
+          </div>
+          <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #2A3038; font-size: 12px; color: #7B8590; line-height: 1.6;">Sleeved doesn't handle payment or shipping. You'll arrange both directly with the seller in chat. <a href="#safety">How to trade safely</a></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isMessages }}" hint-placeholder-val="{{ false }}">
+  <main style="position: relative; display: flex; flex-wrap: wrap; align-items: stretch; min-height: 720px;">
+    <aside aria-label="Inbox" style="flex: 1 1 280px; max-width: 380px; border-right: 1px solid #16191E; padding: 20px 16px;">
+      <h1 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 22px; margin: 0 0 16px;">Messages</h1>
+      <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+        <sc-for list="{{ inboxFilters }}" as="f" hint-placeholder-count="4">
+          <button type="button" onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <sc-for list="{{ conversations }}" as="c" hint-placeholder-count="5">
+          <button type="button" onClick="{{ c.open }}" style="{{ c.style }}">
+            <div style="{{ c.thumbStyle }}">{{ c.glyph }}</div>
+            <div style="min-width: 0; flex: 1; text-align: left;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 13px; font-weight: 600; color: #F2F5F7;">{{ c.handle }}</span>
+                <span style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #7B8590;">{{ c.time }}</span>
+                <span style="{{ c.unreadStyle }}"></span>
+              </div>
+              <div style="font-size: 12px; color: #7B8590; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.snippet }}</div>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+    </aside>
+
+    <section aria-label="Conversation" style="flex: 999 1 360px; min-width: 0; display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: center; gap: 14px; padding: 16px 22px; border-bottom: 1px solid #16191E; background: #0E1013;">
+        <div style="{{ thread.thumbStyle }}">{{ thread.glyph }}</div>
+        <div style="min-width: 0;">
+          <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 15px;">{{ thread.title }}</div>
+          <div style="display: flex; gap: 10px; margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">
+            <span>Asking {{ thread.asking }}</span>
+            <span style="color: #D6FF3F;">Active</span>
+          </div>
+        </div>
+        <div style="margin-left: auto; display: flex; gap: 8px;">
+          <button type="button" onClick="{{ confirmDeal }}" style="{{ thread.confirmStyle }}">{{ thread.confirmLabel }}</button>
+          <button type="button" onClick="{{ goListing }}" style="border: 1px solid #2A3038; background: transparent; color: #B9C2CC; border-radius: 999px; padding: 11px 16px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 44px;" style-hover="border-color:#D6FF3F;color:#D6FF3F">View listing</button>
+        </div>
+      </div>
+
+      <div role="log" aria-live="polite" id="sleeved-log" style="flex: 1; overflow-y: auto; padding: 24px 22px; display: flex; flex-direction: column; gap: 12px; max-height: 460px;">
+        <sc-for list="{{ messages }}" as="m" hint-placeholder-count="6">
+          <div style="{{ m.rowStyle }}">
+            <div style="{{ m.bubbleStyle }}">
+              <sc-if value="{{ m.isOffer }}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #D6FF3F;">Offer · non-binding</div>
+                  <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.02em; margin-top: 6px;">{{ m.offerAmount }}</div>
+                  <div style="font-size: 13px; color: #B9C2CC; margin-top: 6px;">{{ m.body }}</div>
+                  <sc-if value="{{ m.pending }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; gap: 8px; margin-top: 12px;">
+                      <button type="button" onClick="{{ m.accept }}" style="background: #D6FF3F; color: #08090B; border: none; border-radius: 999px; padding: 11px 18px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 44px;">Accept</button>
+                      <button type="button" onClick="{{ m.decline }}" style="background: transparent; color: #FF5C8A; border: 1px solid #2A3038; border-radius: 999px; padding: 11px 18px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 44px;">Decline</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ m.settled }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590; margin-top: 12px;">{{ m.state }}</div>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.isText }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size: 14px; line-height: 1.55; white-space: pre-wrap;">{{ m.body }}</div>
+              </sc-if>
+              <div style="{{ m.metaStyle }}">{{ m.time }}</div>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ typing }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">{{ thread.handle }} is typing…</div>
+        </sc-if>
+      </div>
+
+      <div style="border-top: 1px solid #16191E; padding: 16px 22px;">
+        <sc-if value="{{ offerOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px; background: #16191E; border: 1px solid #D6FF3F; border-radius: 14px; padding: 12px;">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #D6FF3F;">Offer</span>
+            <input type="text" aria-label="Offer amount" value="{{ offerAmount }}" onChange="{{ setOfferAmount }}" placeholder="240.00" style="width: 120px; min-height: 44px; background: #0E1013; border: 1px solid #2A3038; border-radius: 8px; color: #F2F5F7; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px;">
+            <input type="text" aria-label="Offer note" value="{{ offerNote }}" onChange="{{ setOfferNote }}" placeholder="Optional note" style="flex: 1; min-height: 44px; background: #0E1013; border: 1px solid #2A3038; border-radius: 8px; color: #F2F5F7; padding: 10px 12px; font-size: 14px;">
+            <button type="button" onClick="{{ sendOffer }}" style="background: #D6FF3F; color: #08090B; border: none; border-radius: 999px; padding: 12px 20px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 44px;">Send offer</button>
+          </div>
+        </sc-if>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" onClick="{{ toggleOffer }}" aria-label="Make an offer" style="{{ offerBtnStyle }}">$</button>
+          <button type="button" aria-label="Attach image" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #2A3038; background: transparent; color: #B9C2CC; cursor: pointer;" style-hover="border-color:#D6FF3F;color:#D6FF3F">⊕</button>
+          <input type="text" aria-label="Message" value="{{ draft }}" onChange="{{ setDraft }}" onKeyDown="{{ onComposerKey }}" placeholder="Write a message" style="flex: 1; min-height: 48px; background: #16191E; border: 1px solid #2A3038; border-radius: 999px; color: #F2F5F7; padding: 13px 20px; font-size: 14px;">
+          <button type="button" onClick="{{ sendMessage }}" style="background: #D6FF3F; color: #08090B; border: none; border-radius: 999px; padding: 14px 24px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 48px;" style-hover="background:#9BC400">Send</button>
+        </div>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #16191E; font-size: 12px; color: #7B8590;">Never send payment before you've agreed terms. <a href="#safety">How to trade safely</a></div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isSell }}" hint-placeholder-val="{{ false }}">
+  <main style="position: relative; padding: 40px 28px 72px; max-width: 780px; margin: 0 auto;">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <h1 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 28px; margin: 0;">List a card</h1>
+      <div style="margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; color: #7B8590;">{{ stepLabel }}</div>
+    </div>
+    <div style="display: flex; gap: 6px; margin-top: 18px;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+        <div style="{{ s.barStyle }}"></div>
+      </sc-for>
+    </div>
+    <div style="margin-top: 12px; display: flex; gap: 18px; flex-wrap: wrap;">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+        <button type="button" onClick="{{ s.pick }}" style="{{ s.labelStyle }}">{{ s.label }}</button>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: 28px; background: #16191E; border: 1px solid #2A3038; border-radius: 14px; padding: 24px;">
+      <sc-if value="{{ step1 }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 18px;">Photos</div>
+          <p style="color: #7B8590; font-size: 13px; margin: 8px 0 18px;">1–8 photos. The first is the cover. Drag to reorder.</p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px;">
+            <sc-for list="{{ photoSlots }}" as="p" hint-placeholder-count="4">
+              <div style="{{ p.style }}">{{ p.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ step2 }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 18px;">The card</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0;">
+            <sc-for list="{{ games }}" as="g" hint-placeholder-count="7">
+              <button type="button" onClick="{{ g.toggle }}" style="{{ g.style }}">{{ g.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px;">
+            <sc-for list="{{ cardFields }}" as="f" hint-placeholder-count="6">
+              <label style="display: block;">
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">{{ f.label }}</span>
+                <input type="text" placeholder="{{ f.placeholder }}" style="width: 100%; min-height: 44px; margin-top: 6px; background: #0E1013; border: 1px solid #2A3038; border-radius: 8px; color: #F2F5F7; padding: 11px 12px; font-size: 14px;">
+              </label>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 20px;">
+            <sc-for list="{{ gradedToggle }}" as="g" hint-placeholder-count="2">
+              <button type="button" onClick="{{ g.pick }}" style="{{ g.style }}">{{ g.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 16px;">
+            <sc-for list="{{ conditionTiles }}" as="c" hint-placeholder-count="6">
+              <button type="button" onClick="{{ c.pick }}" style="{{ c.style }}">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em;">{{ c.code }}</div>
+                <div style="font-size: 12px; color: #7B8590; margin-top: 6px; line-height: 1.4;">{{ c.desc }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ step3 }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 18px;">The deal</div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; margin-top: 18px;">
+            <label style="display: block;">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Quantity</span>
+              <input type="text" value="1" style="width: 100%; min-height: 44px; margin-top: 6px; background: #0E1013; border: 1px solid #2A3038; border-radius: 8px; color: #F2F5F7; padding: 11px 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px;">
+            </label>
+            <label style="display: block;">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Asking</span>
+              <input type="text" placeholder="240.00" style="width: 100%; min-height: 44px; margin-top: 6px; background: #0E1013; border: 1px solid #2A3038; border-radius: 8px; color: #F2F5F7; padding: 11px 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px;">
+            </label>
+            <label style="display: block;">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">Currency</span>
+              <input type="text" value="USD" style="width: 100%; min-height: 44px; margin-top: 6px; background: #0E1013; border: 1px solid #2A3038; border-radius: 8px; color: #F2F5F7; padding: 11px 12px; font-family: 'JetBrains Mono', monospace; font-size: 14px;">
+            </label>
+          </div>
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #B9C2CC; min-height: 44px; margin-top: 12px; cursor: pointer;">
+            <input type="checkbox" style="width: 16px; height: 16px; accent-color: #D6FF3F;"> Open to offers
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #B9C2CC; min-height: 44px; cursor: pointer;">
+            <input type="checkbox" style="width: 16px; height: 16px; accent-color: #D6FF3F;"> Trade only
+          </label>
+        </div>
+      </sc-if>
+      <sc-if value="{{ step4 }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 18px;">Review</div>
+          <p style="color: #7B8590; font-size: 13px; margin: 8px 0 18px;">This is how your card appears in the grid.</p>
+          <div style="max-width: 250px;">
+            <article style="{{ preview.cardStyle }}">
+              <div style="display: flex; align-items: center; gap: 8px; padding: 12px 14px 8px;">
+                <div style="{{ preview.dotStyle }}"></div>
+                <div style="font-size: 12px; font-weight: 600; color: {{ preview.fg }};">{{ preview.seller }}</div>
+                <div style="{{ preview.likeStyle }}">♡ 0</div>
+              </div>
+              <div style="{{ preview.faceStyle }}">
+                <div style="{{ preview.glyphStyle }}">{{ preview.glyph }}</div>
+              </div>
+              <div style="padding: 14px;">
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: {{ preview.muted }};">{{ preview.eyebrow }}</div>
+                <h3 style="font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; font-size: 15px; line-height: 1.2; margin: 8px 0 0; color: {{ preview.fg }};">{{ preview.title }}</h3>
+                <div style="font-size: 12px; color: {{ preview.muted }}; margin-top: 6px;">{{ preview.oneLiner }}</div>
+              </div>
+            </article>
+          </div>
+          <div style="margin-top: 22px; border: 1px solid #2A3038; border-radius: 14px; padding: 16px; background: #0E1013; font-size: 13px; color: #B9C2CC; line-height: 1.6;">Sleeved doesn't handle payment or shipping. You'll arrange both directly with the buyer in chat.</div>
+          <button type="button" onClick="{{ publish }}" style="margin-top: 18px; background: #D6FF3F; color: #08090B; border: none; border-radius: 999px; padding: 15px 26px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; min-height: 48px;" style-hover="background:#9BC400">Publish listing</button>
+        </div>
+      </sc-if>
+    </div>
+  </main>
+  </sc-if>
+
+  <footer style="position: relative; border-top: 1px solid #16191E; padding: 26px 28px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap;">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590;">We connect collectors. You handle the deal.</div>
+    <div style="margin-left: auto; display: flex; gap: 18px; font-size: 13px;">
+      <a href="#safety">Trading safely</a>
+      <a href="#watchlist">Watchlist</a>
+      <a href="#settings">Settings</a>
+    </div>
+  </footer>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); background: #D6FF3F; color: #08090B; border-radius: 999px; padding: 13px 24px; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; box-shadow: 0 18px 40px -20px rgb(0 0 0 / .8); z-index: 20;">{{ toast }}</div>
+  </sc-if>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#D6FF3F&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#D6FF3F&quot;,&quot;#35E4FF&quot;,&quot;#FF5C8A&quot;,&quot;#7B5CFF&quot;],&quot;section&quot;:&quot;Theme&quot;},&quot;acidEvery&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:4,&quot;min&quot;:2,&quot;max&quot;:8,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Card grid&quot;}}">
+const MONO = "'JetBrains Mono', monospace";
+
+const RAW = [
+  { id: "l01", game: "Pokémon", set: "Base Set 1999", title: "Charizard holo #4", one: "Sharp corners, light surface swirl", seller: "@holo.beirut", asking: "$1,240", listed: "2h", likes: 128, glyph: "C" },
+  { id: "l02", game: "Magic", set: "Alpha", title: "Birds of paradise", one: "Graded, sleeved since 2011", seller: "@mox.trader", asking: "$980", listed: "5h", likes: 92, glyph: "B" },
+  { id: "l03", game: "One Piece", set: "OP-05 Awakening", title: "Shanks leader parallel", one: "Pack fresh, never played", seller: "@grandline", asking: "Open to offers", listed: "6h", likes: 54, glyph: "S" },
+  { id: "l04", game: "Yu-Gi-Oh!", set: "LOB", title: "Blue-eyes white dragon", one: "1st edition, PSA 8", seller: "@kaiba.corp", asking: "$3,100", listed: "9h", likes: 210, glyph: "D" },
+  { id: "l05", game: "Lorcana", set: "Rise of the Floodborn", title: "Enchanted Elsa", one: "Two available, both NM", seller: "@inkwell", asking: "$460", listed: "11h", likes: 71, glyph: "E" },
+  { id: "l06", game: "Pokémon", set: "Evolving Skies", title: "Umbreon VMAX alt art", one: "CGC 9.5, fresh from grading", seller: "@moonstone", asking: "$1,850", listed: "14h", likes: 305, glyph: "U" },
+  { id: "l07", game: "Sports", set: "Prizm 2018", title: "Rookie silver refractor", one: "Trade only, want vintage Pokémon", seller: "@courtside", asking: "Trade only", listed: "1d", likes: 39, glyph: "R" },
+  { id: "l08", game: "Digimon", set: "BT-11", title: "Omnimon ace parallel", one: "Japanese print, mint", seller: "@digi.lb", asking: "$210", listed: "1d", likes: 26, glyph: "O" },
+  { id: "l09", game: "Magic", set: "Modern Horizons 3", title: "Foil ragavan playset", one: "Four copies, sold as a set", seller: "@mox.trader", asking: "$720", listed: "2d", likes: 61, glyph: "M" },
+  { id: "l10", game: "Pokémon", set: "151 sealed", title: "Ultra premium collection", one: "Sealed, case fresh", seller: "@holo.beirut", asking: "$340", listed: "2d", likes: 88, glyph: "1" },
+  { id: "l11", game: "One Piece", set: "OP-01 Romance Dawn", title: "Luffy manga rare", one: "Slight edge wear, priced for it", seller: "@grandline", asking: "$1,090", listed: "3d", likes: 143, glyph: "L" },
+  { id: "l12", game: "Lorcana", set: "Ursula's Return", title: "Ursula enchanted", one: "Open to trades for MTG duals", seller: "@inkwell", asking: "$395", listed: "3d", likes: 47, glyph: "V" },
+];
+
+function hash(id) { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0; return h; }
+function hue(id) { return (hash(id) * 137) % 360; }
+const FAN_N = 7;
+
+class Component extends DCLogic {
+  state = {
+    screen: "home",
+    watched: {},
+    watchedDetail: false,
+    activeGames: [],
+    activeConds: [],
+    query: "",
+    sort: "Newest",
+    inboxFilter: "All",
+    convo: 0,
+    step: 1,
+    graded: "Ungraded",
+    condition: "NM",
+    carousel: 2,
+    hovered: null,
+    paused: false,
+    draft: "",
+    offerOpen: false,
+    offerAmount: "",
+    offerNote: "",
+    typing: false,
+    toast: "",
+    dealConfirmed: false,
+    messages: [
+      { id: 1, mine: false, kind: "text", body: "Hey — is the Charizard still available? Interested if the swirl is only on the back.", time: "14:02" },
+      { id: 2, mine: true, kind: "text", body: "Still here. Swirl is back only, front is clean. Happy to send more photos in daylight.", time: "14:06" },
+      { id: 3, mine: false, kind: "image", body: "[photo] back-left corner close-up", time: "14:09" },
+      { id: 4, mine: false, kind: "offer", body: "Can do cash on collection in Beirut this weekend.", amount: "$1,150", state: "proposed", time: "14:11" },
+    ],
+  };
+
+  accent() { return this.props.accent || "#D6FF3F"; }
+  acidEvery() { return this.props.acidEvery || 4; }
+
+  face(item, h) {
+    const u = hue(item.id);
+    return "position: relative; height: " + h + "px; margin: 0 10px; border-radius: 14px; overflow: hidden; background:" +
+      " radial-gradient(90% 70% at 30% 15%, hsl(" + u + " 70% 44% / .9), transparent 65%), linear-gradient(155deg, hsl(" + ((u + 40) % 360) + " 55% 22%), #0B0D10 70%);";
+  }
+
+  startCarousel() {
+    if (this._carousel) return;
+    const reduced = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+    if (window.__sleevedCarousel) clearInterval(window.__sleevedCarousel);
+    this._carousel = window.__sleevedCarousel = setInterval(() => {
+      if (this.state.screen !== "home" || this.state.hovered !== null || this.state.paused) return;
+      this.setState(s => ({ carousel: (s.carousel + 1) % FAN_N }));
+    }, 5000);
+  }
+
+  scrollLog() {
+    [0, 60, 200, 400].forEach(ms => setTimeout(() => {
+      const l = document.getElementById("sleeved-log");
+      if (l) l.scrollTop = l.scrollHeight;
+    }, ms));
+  }
+  glyphStyle(size, color) {
+    return "position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: " + size + "px; letter-spacing: -0.04em; color: " + (color || "rgba(242,245,247,.13)") + ";";
+  }
+
+  decorate(item, i) {
+    const acid = hash(item.id) % this.acidEvery() === 0;
+    const fg = acid ? "#08090B" : "#F2F5F7";
+    const muted = acid ? "rgba(8,9,11,.62)" : "#7B8590";
+    const rule = acid ? "rgba(8,9,11,.16)" : "#2A3038";
+    const on = !!this.state.watched[item.id];
+    return {
+      ...item,
+      eyebrow: item.game + " · " + item.set,
+      oneLiner: item.one,
+      acid, fg, muted, rule,
+      cardStyle: "position: relative; border-radius: 20px; overflow: hidden; border: 1px solid " + (acid ? "transparent" : "#2A3038") +
+        "; background: " + (acid ? "linear-gradient(180deg, " + this.accent() + ", #9BC400)" : "linear-gradient(180deg, #1F242B, #2A3038)") +
+        "; box-shadow: 0 18px 40px -20px rgb(0 0 0 / .8)" + (acid ? ", 0 0 60px -30px " + this.accent() : "") +
+        "; cursor: pointer; transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms cubic-bezier(.2,.8,.2,1);",
+      dotStyle: "width: 22px; height: 22px; border-radius: 999px; flex: none; background: linear-gradient(140deg, hsl(" + (hash(item.seller) % 360) + " 70% 55%), #35E4FF);",
+      likeStyle: "margin-left: auto; font-family: " + MONO + "; font-size: 11px; letter-spacing: .06em; padding: 4px 9px; border-radius: 999px; border: 1px solid " + rule + "; color: " + (acid ? "#08090B" : "#B9C2CC") + ";",
+      faceStyle: this.face(item, 168),
+      glyphStyle: this.glyphStyle(84, acid ? "rgba(8,9,11,.2)" : "rgba(242,245,247,.13)"),
+      watchIcon: on ? "★" : "☆",
+      watchStyle: "position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; font-size: 15px; border: 1px solid " +
+        (on ? this.accent() : "rgba(242,245,247,.22)") + "; background: rgba(8,9,11,.6); color: " + (on ? this.accent() : "#F2F5F7") + ";",
+      ctaStyle: "width: 100%; margin-top: 14px; min-height: 44px; border-radius: 999px; cursor: pointer; font-family: " + MONO +
+        "; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; border: 1px solid " + (acid ? "#08090B" : "#2A3038") +
+        "; background: " + (acid ? "#08090B" : "transparent") + "; color: " + (acid ? this.accent() : "#F2F5F7") + ";",
+      watch: e => { if (e && e.stopPropagation) e.stopPropagation(); this.setState(s => ({ watched: { ...s.watched, [item.id]: !s.watched[item.id] } })); },
+      open: () => this.go("listing"),
+      message: e => { if (e && e.stopPropagation) e.stopPropagation(); this.go("messages"); },
+    };
+  }
+
+  pill(active, label) {
+    return "border-radius: 999px; padding: 9px 14px; min-height: 40px; cursor: pointer; font-family: " + MONO +
+      "; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; border: 1px solid " + (active ? this.accent() : "#2A3038") +
+      "; background: " + (active ? this.accent() : "transparent") + "; color: " + (active ? "#08090B" : "#B9C2CC") + ";";
+  }
+
+  toast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._t);
+    this._t = setTimeout(() => this.setState({ toast: "" }), 2200);
+  }
+
+  go(screen) { this.setState({ screen }); if (typeof window !== "undefined") window.scrollTo(0, 0); }
+
+  send(text, kind, amount) {
+    if (!text && !amount) return;
+    const now = new Date();
+    const time = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    this.setState(s => ({
+      messages: [...s.messages, { id: Date.now(), mine: true, kind: kind || "text", body: text, amount, state: kind === "offer" ? "proposed" : undefined, time }],
+      draft: "", offerOpen: false, offerAmount: "", offerNote: "", typing: true,
+    }), () => this.scrollLog());
+    this.scrollLog();
+    clearTimeout(this._reply);
+    this._reply = setTimeout(() => this.setState(s => ({
+      typing: false,
+      messages: [...s.messages, { id: Date.now() + 1, mine: false, kind: "text", body: "Sounds good — I'll bring it sleeved and top-loaded. Saturday afternoon works.", time }],
+    }), () => this.scrollLog()), 1500);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const listings = RAW.map((l, i) => this.decorate(l, i));
+    const detailItem = RAW[0];
+    const acidAccent = this.accent();
+
+    const navItems = ["Home", "Browse", "Sell", "Messages"].map(label => {
+      const key = label.toLowerCase();
+      const active = s.screen === key;
+      return {
+        label,
+        go: () => this.go(key),
+        style: "position: relative; background: transparent; border: none; cursor: pointer; padding: 12px 16px; min-height: 44px; font-family: " + MONO +
+          "; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: " + (active ? acidAccent : "#7B8590") + ";",
+        tabStyle: "position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 22px; height: 2px; border-radius: 2px; background: " + (active ? acidAccent : "transparent") + ";",
+      };
+    });
+
+    const N = FAN_N;
+    this.startCarousel();
+    const active = s.carousel % N;
+    const hovered = s.hovered;
+    const fan = RAW.slice(0, N).map((item, i) => {
+      let off = ((i - active) % N + N) % N;
+      if (off > (N - 1) / 2) off -= N;
+      const abs = Math.abs(off);
+      const isCentre = off === 0;
+      const isHot = hovered === i || (hovered === null && isCentre);
+      const scale = (isCentre ? 1 : 1 - abs * 0.1) * (hovered === i ? 1.09 : 1);
+      const sign = off < 0 ? -1 : 1;
+      const x = sign * [0, 60, 106, 142][abs];
+      const rot = sign * [0, 18, 27, 33][abs];
+      const z = -[0, 60, 110, 160][abs] + (hovered === i ? 90 : 0);
+      return {
+        ...item,
+        aria: item.title + " — " + item.asking,
+        click: () => this.go("listing"),
+        enter: () => this.setState({ hovered: i }),
+        leave: () => this.setState({ hovered: null }),
+        wrapStyle: "position: absolute; top: 50%; left: 50%; width: clamp(150px, 19vw, 260px); aspect-ratio: 5 / 7; cursor: pointer; border-radius: 20px; overflow: hidden;" +
+          " transform: translate(-50%, -50%) translateX(" + x + "%) translateZ(" + z + "px) rotateY(" + rot + "deg) scale(" + scale.toFixed(3) + ");" +
+          " transform-style: preserve-3d; transition: transform 950ms cubic-bezier(.2,.8,.2,1), filter 950ms cubic-bezier(.2,.8,.2,1), box-shadow 950ms cubic-bezier(.2,.8,.2,1);" +
+          " filter: brightness(" + (isHot ? 1 : 1 - abs * 0.22).toFixed(2) + ");" +
+          " z-index: " + (10 - abs + (hovered === i ? 5 : 0)) + "; box-shadow: 0 30px 70px -28px rgb(0 0 0 / .9)" + (isCentre ? ", 0 0 110px -40px rgba(214,255,63,.55)" : "") + ";",
+        faceStyle: "position: relative; height: 100%; border-radius: 20px; overflow: hidden; border: 1px solid " + (isCentre ? "#2A3038" : "#1F242B") + "; background:" +
+          " radial-gradient(90% 70% at 30% 15%, hsl(" + hue(item.id) + " 70% 44% / .9), transparent 65%), linear-gradient(155deg, hsl(" + ((hue(item.id) + 40) % 360) + " 55% 22%), #0B0D10 70%);",
+        glyphStyle: "position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Chakra Petch', sans-serif; font-weight: 700; letter-spacing: -0.04em; color: rgba(242,245,247,.13); font-size: clamp(64px, 9vw, 140px);",
+        scrimStyle: "position: absolute; inset: 0; background: linear-gradient(180deg, transparent 38%, rgba(8,9,11,.86) 100%);",
+        titleStyle: "font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.1; font-size: clamp(13px, 1.35vw, 19px); color: #F2F5F7; text-shadow: 0 2px 18px rgba(0,0,0,.6);",
+        dotStyle: "width: 22px; height: 22px; border-radius: 999px; flex: none; background: linear-gradient(140deg, hsl(" + (hue(item.seller) % 360) + " 70% 55%), #35E4FF);",
+        infoStyle: "overflow: hidden; transition: max-height 400ms cubic-bezier(.2,.8,.2,1), opacity 300ms ease; max-height: " + (isHot ? "170px" : "0px") +
+          "; opacity: " + (isHot ? 1 : 0) + "; margin-top: " + (isHot ? "14px" : "0px") + "; border-top: 1px solid rgba(242,245,247,.14); padding-top: " + (isHot ? "12px" : "0px") + ";",
+      };
+    });
+
+    const fanDots = RAW.slice(0, N).map((item, i) => ({
+      aria: "Show " + item.title,
+      pick: () => this.setState({ carousel: i }),
+      style: "width: " + (i === active ? "26px" : "8px") + "; height: 8px; border-radius: 999px; border: none; cursor: pointer; padding: 0; transition: width 300ms ease, background 300ms ease; background: " + (i === active ? acidAccent : "#2A3038") + ";",
+    }));
+
+    const featured = RAW.slice(5, 11).map((item, i) => {
+      const acid = i === 1;
+      return {
+        ...item,
+        eyebrow: item.game + " · " + item.set,
+        fg: acid ? "#08090B" : "#F2F5F7",
+        muted: acid ? "rgba(8,9,11,.6)" : "#7B8590",
+        open: () => this.go("listing"),
+        stripStyle: "flex: none; width: 300px; cursor: pointer; scroll-snap-align: start; border-radius: 20px; overflow: hidden; border: 1px solid " + (acid ? "transparent" : "#2A3038") +
+          "; background: " + (acid ? "linear-gradient(180deg, " + acidAccent + ", #9BC400)" : "linear-gradient(180deg, #1F242B, #2A3038)") +
+          "; box-shadow: 0 18px 40px -20px rgb(0 0 0 / .8);",
+        faceStyle: this.face(item, 190).replace("margin: 0 10px", "margin: 10px 10px 0"),
+        glyphStyle: this.glyphStyle(96, acid ? "rgba(8,9,11,.2)" : "rgba(242,245,247,.13)"),
+      };
+    });
+
+    const sellers = [
+      { handle: "@holo.beirut", rating: "4.9 · 61 reviews", listings: "48" },
+      { handle: "@mox.trader", rating: "4.9 · 54 reviews", listings: "37" },
+      { handle: "@moonstone", rating: "5.0 · 40 reviews", listings: "31" },
+      { handle: "@grandline", rating: "4.8 · 33 reviews", listings: "24" },
+      { handle: "@inkwell", rating: "4.8 · 28 reviews", listings: "19" },
+      { handle: "@kaiba.corp", rating: "4.7 · 22 reviews", listings: "14" },
+    ].map((x, i) => ({
+      ...x,
+      rank: String(i + 1).padStart(2, "0"),
+      open: () => this.setState({ activeSeller: x.handle, screen: "seller" }, () => window.scrollTo(0, 0)),
+      avatarStyle: "width: 30px; height: 30px; border-radius: 999px; flex: none; background: " +
+        (i === 0 ? "linear-gradient(96deg, #7B5CFF, #35E4FF 50%, #FF5C8A)" : "linear-gradient(140deg, hsl(" + (hash(x.handle) % 360) + " 60% 50%), #16191E)") +
+        (i === 0 ? "; box-shadow: 0 0 0 2px #16191E, 0 0 0 3px #7B5CFF" : "") + ";",
+    }));
+
+    const games = ["Pokémon", "Magic", "Yu-Gi-Oh!", "One Piece", "Lorcana", "Digimon", "Sports"].map(label => ({
+      label,
+      style: this.pill(s.activeGames.includes(label)),
+      toggle: () => this.setState(st => ({ activeGames: st.activeGames.includes(label) ? st.activeGames.filter(g => g !== label) : [...st.activeGames, label] })),
+    }));
+
+    const conditions = ["NM", "LP", "MP", "HP", "DMG", "Sealed"].map(label => ({
+      label,
+      style: this.pill(s.activeConds.includes(label)),
+      toggle: () => this.setState(st => ({ activeConds: st.activeConds.includes(label) ? st.activeConds.filter(c => c !== label) : [...st.activeConds, label] })),
+    }));
+
+    const q = (s.query || "").trim().toLowerCase();
+    const filtered = listings
+      .filter(l => (s.activeGames.length ? s.activeGames.includes(l.game) : true))
+      .filter(l => (q ? (l.title + " " + l.set + " " + l.game + " " + l.one).toLowerCase().includes(q) : true));
+
+    const conversations = [
+      { handle: "@holo.beirut", snippet: "Can do cash on collection in Beirut…", time: "14:11", unread: true, glyph: "C" },
+      { handle: "@mox.trader", snippet: "Sending the daylight photos tonight", time: "11:40", unread: false, glyph: "B" },
+      { handle: "@moonstone", snippet: "Offer accepted — see you Saturday", time: "Tue", unread: false, glyph: "U" },
+      { handle: "@grandline", snippet: "Would you split the playset?", time: "Mon", unread: false, glyph: "L" },
+      { handle: "@inkwell", snippet: "Trade for duals still open?", time: "Sun", unread: false, glyph: "E" },
+    ].map((c, i) => ({
+      ...c,
+      open: () => this.setState({ convo: i }),
+      style: "display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; cursor: pointer; padding: 11px; border-radius: 12px; border: 1px solid " +
+        (s.convo === i ? "#2A3038" : "transparent") + "; background: " + (s.convo === i ? "#16191E" : "transparent") + ";",
+      thumbStyle: "width: 42px; height: 54px; border-radius: 8px; flex: none; display: flex; align-items: center; justify-content: center; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 18px; color: rgba(242,245,247,.35); background: linear-gradient(155deg, hsl(" + (hash(c.handle) % 360) + " 55% 30%), #0B0D10);",
+      unreadStyle: c.unread ? "width: 8px; height: 8px; border-radius: 999px; background: " + acidAccent + ";" : "display: none;",
+    }));
+
+    const messages = s.messages.map(m => ({
+      ...m,
+      isOffer: m.kind === "offer",
+      isText: m.kind !== "offer",
+      offerAmount: m.amount,
+      pending: m.kind === "offer" && m.state === "proposed" && !m.mine,
+      settled: m.kind === "offer" && m.state !== "proposed",
+      state: m.state === "accepted" ? "Offer accepted" : m.state === "declined" ? "Offer declined" : "",
+      rowStyle: "display: flex; animation: msgIn 120ms ease-out both; justify-content: " + (m.mine ? "flex-end" : "flex-start") + ";",
+      bubbleStyle: "max-width: 66%; border-radius: 14px; padding: 13px 16px; border: 1px solid " +
+        (m.kind === "offer" ? acidAccent : m.mine ? "transparent" : "#2A3038") +
+        "; background: " + (m.mine && m.kind !== "offer" ? acidAccent : "#16191E") +
+        "; color: " + (m.mine && m.kind !== "offer" ? "#08090B" : "#F2F5F7") + ";",
+      metaStyle: "font-family: " + MONO + "; font-size: 11px; letter-spacing: .12em; margin-top: 8px; color: " + (m.mine && m.kind !== "offer" ? "rgba(8,9,11,.55)" : "#7B8590") + ";",
+      accept: () => this.setState(st => ({
+        messages: st.messages.map(x => x.id === m.id ? { ...x, state: "accepted" } : x)
+          .concat([{ id: Date.now(), mine: false, kind: "text", body: "Offer accepted. Arrange payment and delivery between yourselves — Sleeved isn't involved in the transaction.", time: m.time }]),
+      }), () => this.scrollLog()),
+      decline: () => this.setState(st => ({ messages: st.messages.map(x => x.id === m.id ? { ...x, state: "declined" } : x) })),
+    }));
+
+    const activeConvo = conversations[s.convo] || conversations[0];
+
+    return {
+      isHome: s.screen === "home",
+      isBrowse: s.screen === "browse",
+      isSellers: s.screen === "sellers",
+      isSeller: s.screen === "seller",
+      isListing: s.screen === "listing",
+      isMessages: s.screen === "messages",
+      isSell: s.screen === "sell",
+      navItems, fan, fanDots, featured, sellers, listings,
+      pauseCarousel: () => this.setState({ paused: true }),
+      resumeCarousel: () => this.setState({ paused: false, hovered: null }),
+      browseListings: filtered,
+      noResults: filtered.length === 0,
+      resultCount: String(filtered.length).padStart(2, "0"),
+      games, conditions,
+      sorts: ["Newest", "Price ↑", "Most watched"].map(label => ({
+        label, style: this.pill(s.sort === label), pick: () => this.setState({ sort: label }),
+      })),
+      query: s.query || "",
+      setQuery: e => this.setState({ query: e.target.value }),
+      clearFilters: () => this.setState({ activeGames: [], activeConds: [], query: "" }),
+      goBrowse: () => this.go("browse"),
+      goSellers: () => this.go("sellers"),
+      goHome: () => this.go("home"),
+      seller: (() => {
+        const meta = {
+          "@holo.beirut": { rating: "4.9", reviews: "61", region: "Beirut, LB", games: "Pokémon · One Piece", since: "2023", reply: "98% / 24h", ships: "LB AE FR", rank: "01" },
+          "@mox.trader": { rating: "4.9", reviews: "54", region: "Lyon, FR", games: "Magic", since: "2022", reply: "95% / 24h", ships: "FR EU", rank: "02" },
+          "@moonstone": { rating: "5.0", reviews: "40", region: "Manchester, UK", games: "Pokémon", since: "2024", reply: "99% / 24h", ships: "UK EU US", rank: "03" },
+          "@grandline": { rating: "4.8", reviews: "33", region: "Dubai, AE", games: "One Piece · Digimon", since: "2023", reply: "92% / 24h", ships: "AE LB", rank: "04" },
+          "@inkwell": { rating: "4.8", reviews: "28", region: "Toronto, CA", games: "Lorcana", since: "2024", reply: "90% / 24h", ships: "CA US", rank: "05" },
+          "@kaiba.corp": { rating: "4.7", reviews: "22", region: "Osaka, JP", games: "Yu-Gi-Oh!", since: "2021", reply: "88% / 24h", ships: "JP worldwide", rank: "06" },
+          "@courtside": { rating: "4.7", reviews: "18", region: "Chicago, US", games: "Sports", since: "2023", reply: "86% / 24h", ships: "US", rank: "07" },
+          "@digi.lb": { rating: "4.6", reviews: "15", region: "Beirut, LB", games: "Digimon", since: "2024", reply: "84% / 24h", ships: "LB", rank: "08" },
+        };
+        const handle = s.activeSeller || "@holo.beirut";
+        const m = meta[handle] || meta["@holo.beirut"];
+        const own = listings.filter(l => l.seller === handle);
+        return {
+          ...m, handle,
+          listings: own.length ? own : listings.slice(0, 3),
+          count: String((own.length ? own : listings.slice(0, 3)).length).padStart(2, "0"),
+          bio: "Long-time collector trading singles and sealed. Everything is photographed under daylight, sleeved and top-loaded before it leaves. Local meets welcome, otherwise tracked post at cost.",
+          avatarStyle: "width: 84px; height: 84px; border-radius: 999px; flex: none; background: linear-gradient(140deg, hsl(" + (hue(handle) % 360) + " 65% 52%), #16191E);",
+          rankStyle: "font-family: " + MONO + "; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; padding: 7px 12px; border-radius: 999px; color: " +
+            (m.rank === "01" ? "#08090B" : "#B9C2CC") + "; background: " + (m.rank === "01" ? "linear-gradient(96deg, #7B5CFF, #35E4FF 50%, #FF5C8A)" : "transparent") +
+            "; border: 1px solid " + (m.rank === "01" ? "transparent" : "#2A3038") + ";",
+        };
+      })(),
+      sellerCards: [
+        { handle: "@holo.beirut", rating: "4.9", reviews: "61", listings: "48", region: "Beirut, LB", games: "Pokémon · One Piece" },
+        { handle: "@mox.trader", rating: "4.9", reviews: "54", listings: "37", region: "Lyon, FR", games: "Magic" },
+        { handle: "@moonstone", rating: "5.0", reviews: "40", listings: "31", region: "Manchester, UK", games: "Pokémon" },
+        { handle: "@grandline", rating: "4.8", reviews: "33", listings: "24", region: "Dubai, AE", games: "One Piece · Digimon" },
+        { handle: "@inkwell", rating: "4.8", reviews: "28", listings: "19", region: "Toronto, CA", games: "Lorcana" },
+        { handle: "@kaiba.corp", rating: "4.7", reviews: "22", listings: "14", region: "Osaka, JP", games: "Yu-Gi-Oh!" },
+        { handle: "@courtside", rating: "4.7", reviews: "18", listings: "12", region: "Chicago, US", games: "Sports" },
+        { handle: "@digi.lb", rating: "4.6", reviews: "15", listings: "9", region: "Beirut, LB", games: "Digimon" },
+      ].map((x, i) => ({
+        ...x,
+        rank: String(i + 1).padStart(2, "0"),
+        open: () => this.setState({ activeSeller: x.handle, screen: "seller" }, () => window.scrollTo(0, 0)),
+        rankStyle: "font-family: " + MONO + "; font-size: 11px; letter-spacing: .12em; padding: 6px 11px; border-radius: 999px; color: " +
+          (i === 0 ? "#08090B" : "#B9C2CC") + "; background: " + (i === 0 ? "linear-gradient(96deg, #7B5CFF, #35E4FF 50%, #FF5C8A)" : "transparent") +
+          "; border: 1px solid " + (i === 0 ? "transparent" : "#2A3038") + ";",
+        avatarStyle: "width: 48px; height: 48px; border-radius: 999px; flex: none; background: linear-gradient(140deg, hsl(" + (hue(x.handle) % 360) + " 65% 52%), #16191E);",
+        cardStyle: "text-align: left; cursor: pointer; background: #16191E; border: 1px solid #2A3038; border-radius: 20px; padding: 18px; transition: transform 180ms cubic-bezier(.2,.8,.2,1), border-color 180ms;",
+      })),
+      goSell: () => this.go("sell"),
+      goListing: () => this.go("listing"),
+      goThread: () => this.go("messages"),
+
+      detail: {
+        ...this.decorate(detailItem, 0),
+        faceStyle: "position: relative; height: clamp(300px, 34vw, 460px); border-radius: 20px; overflow: hidden; border: 1px solid #2A3038; background: radial-gradient(90% 70% at 30% 15%, hsl(" + hue(detailItem.id) + " 70% 44% / .9), transparent 65%), linear-gradient(155deg, hsl(" + ((hue(detailItem.id) + 40) % 360) + " 55% 22%), #0B0D10 70%);",
+        glyphStyle: this.glyphStyle(200),
+        description: "Pulled from a 1999 UK base set booster box I opened on stream, sleeved the same night and kept in a binder since. Front is clean under a light — the only flaw is a faint back swirl visible at an angle, shown in photo four. Collection in Beirut, or I'll ship double-sleeved and top-loaded at cost.",
+        thumbs: ["C", "2", "3", "4"].map((g, i) => ({
+          glyph: g,
+          style: "width: 76px; height: 96px; border-radius: 10px; cursor: pointer; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 20px; color: rgba(242,245,247,.35); border: 1px solid " + (i === 0 ? acidAccent : "#2A3038") + "; background: linear-gradient(155deg, hsl(" + ((hash(detailItem.id) + i * 30) % 360) + " 55% 28%), #0B0D10);",
+        })),
+        specs: [
+          { k: "Game", v: "Pokémon" }, { k: "Set", v: "Base Set (1999)" }, { k: "Card no.", v: "4/102" },
+          { k: "Rarity", v: "Holo rare" }, { k: "Finish", v: "Holofoil" }, { k: "Condition", v: "LP — light play" },
+          { k: "Language", v: "EN" }, { k: "Quantity", v: "1" },
+        ],
+        watchIcon: s.watchedDetail ? "★" : "☆",
+        watchStyle: "width: 48px; height: 48px; border-radius: 999px; cursor: pointer; font-size: 16px; border: 1px solid " + (s.watchedDetail ? acidAccent : "#2A3038") + "; background: transparent; color: " + (s.watchedDetail ? acidAccent : "#B9C2CC") + ";",
+      },
+      toggleWatchDetail: () => this.setState(st => ({ watchedDetail: !st.watchedDetail })),
+
+      inboxFilters: ["All", "Buying", "Selling", "Archived"].map(label => ({
+        label, style: this.pill(s.inboxFilter === label), pick: () => this.setState({ inboxFilter: label }),
+      })),
+      conversations, messages,
+      typing: s.typing,
+      thread: {
+        handle: activeConvo.handle,
+        title: "Charizard holo #4",
+        asking: "$1,240",
+        glyph: activeConvo.glyph,
+        thumbStyle: "width: 44px; height: 56px; border-radius: 8px; flex: none; display: flex; align-items: center; justify-content: center; font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 18px; color: rgba(242,245,247,.35); background: linear-gradient(155deg, hsl(" + (hash("l01") % 360) + " 55% 30%), #0B0D10);",
+        confirmLabel: s.dealConfirmed ? "Deal confirmed" : "We completed this deal",
+        confirmStyle: this.pill(s.dealConfirmed) + " padding: 11px 16px; min-height: 44px;",
+      },
+      confirmDeal: () => { this.setState({ dealConfirmed: true }); this.toast("Deal confirmed"); },
+      draft: s.draft,
+      setDraft: e => this.setState({ draft: e.target.value }),
+      onComposerKey: e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); this.send(this.state.draft); } },
+      sendMessage: () => this.send(this.state.draft),
+      offerOpen: s.offerOpen,
+      offerAmount: s.offerAmount,
+      offerNote: s.offerNote,
+      setOfferAmount: e => this.setState({ offerAmount: e.target.value }),
+      setOfferNote: e => this.setState({ offerNote: e.target.value }),
+      toggleOffer: () => this.setState(st => ({ offerOpen: !st.offerOpen })),
+      offerBtnStyle: "width: 44px; height: 44px; border-radius: 999px; cursor: pointer; font-family: " + MONO + "; font-size: 13px; border: 1px solid " + (s.offerOpen ? acidAccent : "#2A3038") + "; background: transparent; color: " + (s.offerOpen ? acidAccent : "#B9C2CC") + ";",
+      sendOffer: () => this.send(this.state.offerNote || "Offer sent.", "offer", "$" + (this.state.offerAmount || "0.00")),
+
+      stepLabel: "0" + s.step + " / 04",
+      step1: s.step === 1, step2: s.step === 2, step3: s.step === 3, step4: s.step === 4,
+      steps: ["Photos", "The card", "The deal", "Review"].map((label, i) => ({
+        label,
+        pick: () => this.setState({ step: i + 1 }),
+        barStyle: "flex: 1; height: 3px; border-radius: 3px; background: " + (s.step > i ? acidAccent : "#2A3038") + ";",
+        labelStyle: "background: transparent; border: none; cursor: pointer; padding: 6px 0; font-family: " + MONO +
+          "; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: " + (s.step === i + 1 ? acidAccent : "#7B8590") + ";",
+      })),
+      photoSlots: [0, 1, 2, 3].map(i => ({
+        label: i === 0 ? "Cover" : "Drop photo",
+        style: "aspect-ratio: 3 / 4; border-radius: 12px; display: flex; align-items: flex-end; padding: 12px; font-family: " + MONO +
+          "; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7B8590; border: 1px dashed " + (i === 0 ? acidAccent : "#2A3038") +
+          "; background: repeating-linear-gradient(135deg, #14171B, #14171B 6px, #0E1013 6px, #0E1013 12px);",
+      })),
+      cardFields: [
+        { label: "Card name", placeholder: "Charizard" }, { label: "Set", placeholder: "Base Set 1999" },
+        { label: "Card number", placeholder: "4/102" }, { label: "Rarity", placeholder: "Holo rare" },
+        { label: "Language", placeholder: "EN" }, { label: "Finish", placeholder: "Holofoil" },
+      ],
+      gradedToggle: ["Ungraded", "Graded"].map(label => ({
+        label, style: this.pill(s.graded === label), pick: () => this.setState({ graded: label }),
+      })),
+      conditionTiles: [
+        { code: "NM", desc: "Looks pack fresh at arm's length." },
+        { code: "LP", desc: "Light wear on the edges or back." },
+        { code: "MP", desc: "Visible whitening or a soft corner." },
+        { code: "HP", desc: "Heavy wear, still playable sleeved." },
+        { code: "DMG", desc: "Creased, bent or water marked." },
+        { code: "SEALED", desc: "Unopened product, never touched." },
+      ].map(c => ({
+        ...c,
+        pick: () => this.setState({ condition: c.code }),
+        style: "text-align: left; cursor: pointer; padding: 13px; border-radius: 12px; min-height: 44px; border: 1px solid " +
+          (s.condition === c.code ? acidAccent : "#2A3038") + "; background: " + (s.condition === c.code ? "rgba(214,255,63,.06)" : "#0E1013") +
+          "; color: " + (s.condition === c.code ? acidAccent : "#F2F5F7") + ";",
+      })),
+      preview: this.decorate({ id: "new1", game: "Pokémon", set: "Base Set 1999", title: "Charizard holo #4", one: "Sharp corners, light surface swirl", seller: "@you", glyph: "C" }, 0),
+      publish: () => this.toast("Published"),
+      toast: s.toast,
+      scrollFeaturedLeft: () => { const el = document.getElementById("sleeved-featured"); if (el) el.scrollBy({ left: -320, behavior: "smooth" }); },
+      scrollFeaturedRight: () => { const el = document.getElementById("sleeved-featured"); if (el) el.scrollBy({ left: 320, behavior: "smooth" }); },
+    };
+  }
+}
+
+</script>
+</body>
+</html>

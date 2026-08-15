@@ -1,313 +1,306 @@
-/* Shared component classes — every recurring pattern from the references.
-   Values come only from tokens.css. */
+/* Shared component classes — every recurring pattern from the Sleeved
+   design component. Values come only from tokens.css. */
 
-/* ---- Buttons: pill shapes from R1 -------------------------------------- */
-.btn {
+/* ---- Buttons ---------------------------------------------------------------- */
+/* Acid pill: the primary action everywhere (mono uppercase, ink text) */
+.btn-acid {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-2);
-  padding: 0 var(--sp-5);
-  height: 40px;
+  gap: 8px;
+  background: var(--acid);
+  color: var(--ink);
+  border: none;
   border-radius: var(--r-pill);
-  font-size: var(--fs-13);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast),
-    transform var(--t-fast), opacity var(--t-fast);
+  padding: 12px 22px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--t-fast);
   white-space: nowrap;
-  user-select: none;
 }
-.btn:active { transform: translateY(1px); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.btn-acid:hover:not(:disabled) { background: var(--acid-press); }
+.btn-acid:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.btn-primary {
-  background: var(--accent);
-  color: var(--text-inverse);
-}
-.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
-
-.btn-lime {
-  background: var(--lime);
-  color: var(--text-on-lime);
-}
-.btn-lime:hover:not(:disabled) { filter: brightness(1.08); }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-1);
-  border: 1px solid var(--border-strong);
-}
-.btn-ghost:hover:not(:disabled) { background: var(--bg-3); border-color: var(--text-3); }
-
-.btn-quiet {
-  background: var(--bg-3);
-  color: var(--text-1);
-}
-.btn-quiet:hover:not(:disabled) { background: var(--bg-4); }
-
-.btn-danger {
-  background: var(--red-dim);
-  color: var(--red);
-  border: 1px solid transparent;
-}
-.btn-danger:hover:not(:disabled) { border-color: var(--red); }
-
-.btn-sm { height: 32px; padding: 0 var(--sp-4); font-size: var(--fs-12); }
-.btn-lg { height: 48px; padding: 0 var(--sp-8); font-size: var(--fs-14); }
-
-/* ---- Chips: filter pills / glass chips --------------------------------- */
-.chip {
+/* Outline pill */
+.btn-outline {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  height: 32px;
-  padding: 0 var(--sp-4);
-  border-radius: var(--r-pill);
-  border: 1px solid var(--border-strong);
+  justify-content: center;
+  gap: 8px;
   background: transparent;
   color: var(--text-2);
-  font-size: var(--fs-12);
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  transition: all var(--t-fast);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 12px 22px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color var(--t-fast), color var(--t-fast);
   white-space: nowrap;
 }
-.chip:hover { border-color: var(--text-3); color: var(--text-1); }
-.chip[aria-pressed='true'],
-.chip.chip-on {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--text-inverse);
-}
-.chip[aria-pressed='true'] .game-dot,
-.chip.chip-on .game-dot { outline: 1px solid var(--outline-on-accent); }
+.btn-outline:hover:not(:disabled) { border-color: var(--acid); color: var(--acid); }
+.btn-outline:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.glass {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-}
+.btn-danger-outline { color: var(--danger); }
+.btn-danger-outline:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
 
-/* ---- Inputs ------------------------------------------------------------- */
-.input,
-.textarea,
-.select {
-  width: 100%;
-  background: var(--bg-3);
+/* Circle icon button */
+.btn-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
-  padding: 10px var(--sp-4);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  transition: border-color var(--t-fast), color var(--t-fast);
+}
+.btn-icon:hover { border-color: var(--acid); color: var(--acid); }
+.btn-icon[aria-pressed='true'],
+.btn-icon.icon-on { border-color: var(--acid); color: var(--acid); }
+
+/* Ghost mono text button ("See more →", "← Back") */
+.btn-ghost-mono {
+  background: transparent;
+  border: none;
+  color: var(--acid);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 8px 2px;
+}
+.btn-ghost-mono.is-muted { color: var(--muted); }
+.btn-ghost-mono.is-muted:hover { color: var(--text-1); }
+
+/* ---- Filter / toggle pill ---------------------------------------------------- */
+.pill {
+  border-radius: var(--r-pill);
+  padding: 9px 14px;
+  min-height: 40px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+}
+.pill:hover { border-color: var(--acid); color: var(--acid); }
+.pill[aria-pressed='true'],
+.pill.pill-on {
+  border-color: var(--acid);
+  background: var(--acid);
+  color: var(--ink);
+}
+
+/* ---- Panels + cards ---------------------------------------------------------- */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 18px;
+}
+
+/* Raised listing card shell (grid cards / preview) */
+.card-raised {
+  position: relative;
+  border-radius: var(--r-card);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--raised-1), var(--raised-2));
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+.card-raised:hover { transform: translateY(-4px); }
+
+/* Acid variant — every Nth card (hash-picked) */
+.card-raised.is-acid {
+  border-color: transparent;
+  background: linear-gradient(180deg, var(--acid), var(--acid-press));
+  box-shadow: var(--shadow-card), var(--glow-acid-soft);
+}
+
+/* ---- Inputs ------------------------------------------------------------------- */
+.input {
+  width: 100%;
+  min-height: 44px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
   color: var(--text-1);
-  transition: border-color var(--t-fast), background var(--t-fast);
+  padding: 11px 12px;
+  font-size: var(--fs-14);
+  transition: border-color var(--t-fast);
 }
-.input::placeholder,
-.textarea::placeholder { color: var(--text-3); }
-.input:focus,
-.textarea:focus,
-.select:focus {
-  outline: none;
-  border-color: var(--accent-border);
-  background: var(--bg-2);
+.input::placeholder { color: var(--muted); }
+.input:focus { outline: none; border-color: var(--acid); }
+.input[aria-invalid='true'] { border-color: var(--danger); }
+.input.input-mono { font-family: var(--font-mono); font-size: var(--fs-13); }
+
+.input-round {
+  width: 100%;
+  min-height: 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  color: var(--text-1);
+  padding: 13px 20px;
+  font-size: var(--fs-14);
+  transition: border-color var(--t-fast);
 }
-.input[aria-invalid='true'],
-.textarea[aria-invalid='true'],
-.select[aria-invalid='true'] { border-color: var(--red); }
-.textarea { resize: vertical; min-height: 96px; line-height: var(--lh-body); }
-.select {
+.input-round::placeholder { color: var(--muted); }
+.input-round:focus { outline: none; border-color: var(--acid); }
+
+textarea.input { resize: vertical; min-height: 96px; line-height: 1.55; }
+
+select.input {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, var(--text-3) 50%),
-    linear-gradient(135deg, var(--text-3) 50%, transparent 50%);
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
   background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
   background-size: 5px 5px;
   background-repeat: no-repeat;
-  padding-right: var(--sp-8);
+  padding-right: 34px;
 }
 
-.field { display: flex; flex-direction: column; gap: var(--sp-2); }
-.field-label {
-  font-size: var(--fs-11);
-  font-weight: var(--label-weight);
-  letter-spacing: var(--label-spacing);
-  text-transform: uppercase;
-  color: var(--text-2);
-}
-.field-error { color: var(--red); font-size: var(--fs-12); }
-.field-hint { color: var(--text-3); font-size: var(--fs-12); }
-
-/* ---- Panels ------------------------------------------------------------- */
-.panel {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--r-panel);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-}
-.card-surface {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-card);
-  box-shadow: var(--shadow-card);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-}
-
-/* ---- Status + condition badges ------------------------------------------ */
-.badge {
-  display: inline-flex;
+.checkline {
+  display: flex;
   align-items: center;
-  gap: var(--sp-1);
-  padding: 3px 10px;
-  border-radius: var(--r-pill);
-  font-size: var(--fs-11);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  gap: 10px;
+  font-size: var(--fs-13);
+  color: var(--text-2);
+  min-height: 44px;
+  cursor: pointer;
 }
-.badge-active { background: var(--green-dim); color: var(--green); }
-.badge-reserved { background: var(--amber-dim); color: var(--amber); }
-.badge-sold { background: var(--bg-4); color: var(--text-2); }
-.badge-removed { background: var(--bg-3); color: var(--text-3); }
-
-.badge-cond-NM { background: var(--green-dim); color: var(--cond-nm); }
-.badge-cond-LP { background: var(--cond-lp-dim); color: var(--cond-lp); }
-.badge-cond-MP { background: var(--lime-dim); color: var(--cond-mp); }
-.badge-cond-HP { background: var(--amber-dim); color: var(--cond-hp); }
-.badge-cond-DMG { background: var(--red-dim); color: var(--cond-dmg); }
-
-/* ---- Slab label (R3) — grade badge -------------------------------------- */
-.slab {
-  display: inline-flex;
-  align-items: stretch;
-  background: var(--slab-bg);
-  color: var(--slab-text);
-  border-radius: var(--r-badge);
-  overflow: hidden;
-  font-weight: 700;
-  line-height: 1;
-  box-shadow: var(--shadow-card);
-}
-.slab-bar { width: 5px; background: var(--slab-bar); }
-.slab-company {
-  padding: 5px 8px;
-  font-size: var(--fs-11);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  align-self: center;
-}
-.slab-grade {
-  padding: 5px 9px 5px 0;
-  font-size: var(--fs-14);
-  font-weight: 800;
-  align-self: center;
-  white-space: nowrap;
-}
-
-/* ---- Game dot ----------------------------------------------------------- */
-.game-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.game-dot[data-game='pokemon'] { background: var(--game-pokemon); }
-.game-dot[data-game='magic'] { background: var(--game-magic); }
-.game-dot[data-game='yugioh'] { background: var(--game-yugioh); }
-.game-dot[data-game='onepiece'] { background: var(--game-onepiece); }
-.game-dot[data-game='lorcana'] { background: var(--game-lorcana); }
-.game-dot[data-game='other'] { background: var(--game-other); }
-
-/* ---- Price -------------------------------------------------------------- */
-.price {
-  color: var(--text-1);
-  font-weight: 800;
-  letter-spacing: 0.01em;
-}
-
-/* Coin mark preceding prices (R4's "◦ 0.328 NVC" row) */
-.coin {
+.checkline input[type='checkbox'] {
   width: 16px;
   height: 16px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--text-inverse);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  font-weight: 900;
-  flex-shrink: 0;
+  accent-color: var(--acid);
 }
 
-/* Tiny dark stat pill next to prices (R4's percentage chip) */
-.stat-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 9px;
-  border-radius: var(--r-pill);
-  background: var(--stat-pill-bg);
-  border: 1px solid var(--border);
-  font-size: var(--fs-11);
+.field-error { color: var(--danger); font-size: var(--fs-12); }
+
+/* ---- Section headers ----------------------------------------------------------- */
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 14px;
+  margin-bottom: 22px;
+}
+.section-head h1,
+.section-head h2 {
+  font-family: var(--font-display);
   font-weight: 700;
-}
-.price-currency {
-  color: var(--text-2);
-  font-weight: 600;
-  font-size: 0.78em;
-  margin-left: 2px;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-22);
 }
 
-/* ---- Skeletons ----------------------------------------------------------- */
+/* Dotted-grid section texture (Trending) */
+.dotgrid {
+  background-image: radial-gradient(var(--raised-2) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ---- Avatars -------------------------------------------------------------------- */
+.avatar-img {
+  border-radius: var(--r-pill);
+  object-fit: cover;
+  flex: none;
+}
+
+/* Rank chip (gradient for #1, outline otherwise) */
+.rank-chip {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  padding: 6px 11px;
+  border-radius: var(--r-pill);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  background: transparent;
+  white-space: nowrap;
+}
+.rank-chip.rank-top {
+  color: var(--ink);
+  font-weight: 800;
+  border-color: transparent;
+  background: var(--brand-grad);
+}
+
+/* ---- Empty / dashed state -------------------------------------------------------- */
+.empty-dashed {
+  border: 1px dashed var(--border);
+  border-radius: var(--r-panel);
+  padding: 48px 24px;
+  text-align: center;
+}
+.empty-dashed h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-18);
+}
+.empty-dashed p {
+  color: var(--muted);
+  font-size: var(--fs-14);
+  margin: 10px 0 20px;
+}
+
+/* ---- Skeleton --------------------------------------------------------------------- */
 .skeleton {
-  background: linear-gradient(100deg, var(--bg-2) 40%, var(--bg-3) 50%, var(--bg-2) 60%);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: linear-gradient(100deg, var(--surface) 40%, var(--raised-1) 50%, var(--surface) 60%);
   background-size: 200% 100%;
   animation: skeleton-sweep 1.4s infinite linear;
-  border-radius: var(--r-control);
+  border-radius: var(--r-panel);
 }
 @keyframes skeleton-sweep {
   from { background-position: 130% 0; }
   to { background-position: -70% 0; }
 }
 
-/* ---- Empty / error states ------------------------------------------------ */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-3);
-  text-align: center;
-  padding: var(--sp-16) var(--sp-6);
-  color: var(--text-2);
-}
-.empty-state .empty-glyph {
-  width: 56px;
-  height: 78px;
-  border: 2px dashed var(--border-strong);
-  border-radius: 8px;
-  position: relative;
-}
-.empty-state .empty-glyph::after {
-  content: '';
-  position: absolute;
-  inset: 30%;
-  border: 2px dashed var(--border-strong);
-  transform: rotate(45deg);
-}
-.empty-state h3 {
-  color: var(--text-1);
-  font-size: var(--fs-18);
-  font-weight: 700;
-}
-.empty-state p { max-width: 380px; font-size: var(--fs-13); }
-
-/* ---- Avatar -------------------------------------------------------------- */
-.avatar {
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--bg-3);
-  flex-shrink: 0;
+/* ---- Toast ------------------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  background: var(--acid);
+  color: var(--ink);
+  border-radius: var(--r-pill);
+  padding: 13px 24px;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  box-shadow: var(--shadow-toast);
+  z-index: 60;
 }

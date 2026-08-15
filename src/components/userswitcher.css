@@ -1,28 +1,29 @@
-/* Dev user switcher — lime-flagged so it can't be mistaken for product UI. */
+/* Dev user switcher — dashed acid so it can't be mistaken for product UI. */
 
 .uswitch { position: relative; }
 
 .uswitch-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  height: 32px;
-  padding: 0 var(--sp-3);
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
   border-radius: var(--r-pill);
-  border: 1px dashed var(--lime);
-  color: var(--lime);
-  font-size: var(--fs-12);
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  border: 1px dashed var(--acid);
+  color: var(--acid);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
   transition: background var(--t-fast);
 }
-.uswitch-btn:hover { background: var(--lime-dim); }
+.uswitch-btn:hover { background: var(--acid-tint); }
 
 .uswitch-dot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
-  background: var(--lime);
+  border-radius: var(--r-pill);
+  background: var(--acid);
   animation: uswitch-pulse 2s infinite;
 }
 @keyframes uswitch-pulse {
@@ -35,9 +36,11 @@
   right: 0;
   top: calc(100% + 10px);
   min-width: 230px;
-  border-radius: var(--r-card);
-  padding: var(--sp-2);
-  box-shadow: var(--shadow-pop);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 8px;
+  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -45,21 +48,25 @@
 }
 
 .uswitch-title {
-  padding: var(--sp-2) var(--sp-3);
-  color: var(--lime);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  padding: 8px 12px;
+  color: var(--acid);
 }
 
 .uswitch-item {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-badge);
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--r-thumb);
   text-align: left;
   transition: background var(--t-fast);
 }
-.uswitch-item:hover { background: var(--bg-3); }
-.uswitch-item[aria-current='true'] { background: var(--bg-3); }
+.uswitch-item:hover { background: var(--hover-row); }
+.uswitch-item[aria-current='true'] { background: var(--hover-row); }
 
 .uswitch-item-name {
   display: flex;
@@ -67,19 +74,19 @@
   line-height: 1.25;
 }
 .uswitch-item-name strong { font-size: var(--fs-13); }
-.uswitch-item-name span { font-size: var(--fs-11); color: var(--text-3); }
+.uswitch-item-name span { font-size: var(--fs-11); color: var(--muted); }
 
-.uswitch-check { margin-left: auto; color: var(--lime); font-weight: 800; }
+.uswitch-check { margin-left: auto; color: var(--acid); font-weight: 800; }
 
 .uswitch-signout {
   justify-content: center;
   color: var(--text-2);
   border-top: 1px solid var(--border);
   border-radius: 0;
-  margin-top: var(--sp-1);
-  padding-top: var(--sp-3);
+  margin-top: 4px;
+  padding-top: 12px;
 }
 
-@media (max-width: 480px) {
-  .uswitch-btn { padding: 0 var(--sp-2); }
+@media (max-width: 640px) {
+  .uswitch-btn { padding: 0 8px; }
 }

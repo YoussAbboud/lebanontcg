@@ -1,33 +1,26 @@
 .rvw {
-  margin: var(--sp-2) auto;
-  padding: var(--sp-4);
+  margin: 8px auto;
   max-width: 420px;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  border-color: var(--lime);
+  gap: 12px;
+  border-color: var(--acid);
 }
 
-.rvw-title { color: var(--lime); }
+.rvw-title { color: var(--acid); }
 
-.rvw-sub {
-  font-size: var(--fs-13);
-  color: var(--text-2);
-}
+.rvw-sub { font-size: var(--fs-13); color: var(--text-2); }
 
-.rvw-stars {
-  display: flex;
-  gap: var(--sp-1);
-}
+.rvw-stars { display: flex; gap: 4px; }
 
 .rvw-star {
   font-size: 26px;
   line-height: 1;
-  color: var(--bg-4);
+  color: var(--raised-2);
   transition: color var(--t-fast), transform var(--t-fast);
 }
 .rvw-star:hover { transform: scale(1.15); }
-.rvw-star-on { color: var(--lime); }
+.rvw-star-on { color: var(--acid); }
 
 .rvw-submit { align-self: flex-end; }

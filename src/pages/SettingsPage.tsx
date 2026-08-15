@@ -32,12 +32,11 @@ export function SettingsPage() {
 
   if (!user) {
     return (
-      <div className="empty-state">
-        <div className="empty-glyph" aria-hidden="true" />
-        <h3 className="display">Settings</h3>
+      <main className="settings"><div className="empty-dashed">
+        <h3>Settings</h3>
         <p>Sign in to manage your profile.</p>
-        <Link to="/signin" className="btn btn-primary">Sign in</Link>
-      </div>
+        <Link to="/signin" className="btn-acid">Sign in</Link>
+      </div></main>
     );
   }
 
@@ -63,7 +62,7 @@ export function SettingsPage() {
       <h1 className="display settings-title">Settings</h1>
 
       <form className="settings-section panel" onSubmit={save}>
-        <h2 className="microlabel settings-section-title">Profile</h2>
+        <h2 className="mono-label settings-section-title">Profile</h2>
         <div className="settings-identity">
           <Avatar profile={user} size={64} />
           <div>
@@ -73,8 +72,8 @@ export function SettingsPage() {
             </p>
           </div>
         </div>
-        <label className="field">
-          <span className="field-label">Display name</span>
+        <label className="settings-field">
+          <span className="mono-label settings-label">Display name</span>
           <input
             className="input"
             value={displayName}
@@ -82,10 +81,10 @@ export function SettingsPage() {
             onChange={(e) => setDisplayName(e.target.value)}
           />
         </label>
-        <label className="field">
-          <span className="field-label">Bio</span>
+        <label className="settings-field">
+          <span className="mono-label settings-label">Bio</span>
           <textarea
-            className="textarea"
+            className="input"
             rows={3}
             maxLength={400}
             placeholder="What you collect, where you trade, how you ship…"
@@ -98,14 +97,14 @@ export function SettingsPage() {
         )}
         <div className="settings-save-row">
           {saveState === 'saved' && <span className="settings-saved" role="status">Saved ✓</span>}
-          <button className="btn btn-primary" disabled={saveState === 'busy' || !displayName.trim()}>
+          <button className="btn-acid" disabled={saveState === 'busy' || !displayName.trim()}>
             {saveState === 'busy' ? 'Saving…' : 'Save profile'}
           </button>
         </div>
       </form>
 
       <section className="settings-section panel" aria-label="Blocked users">
-        <h2 className="microlabel settings-section-title">Blocked users</h2>
+        <h2 className="mono-label settings-section-title">Blocked users</h2>
         {blockedProfiles.length === 0 ? (
           <p className="settings-muted">
             Nobody blocked. Block someone from their profile or a chat thread and they&apos;ll
@@ -120,7 +119,7 @@ export function SettingsPage() {
                   <strong>{p.displayName}</strong>
                   <span>@{p.username}</span>
                 </span>
-                <button className="btn btn-quiet btn-sm" onClick={() => void unblock(p.id)}>
+                <button className="btn-outline settings-sm" onClick={() => void unblock(p.id)}>
                   Unblock
                 </button>
               </li>
@@ -130,13 +129,13 @@ export function SettingsPage() {
       </section>
 
       <section className="settings-section panel" aria-label="Account">
-        <h2 className="microlabel settings-section-title">Account</h2>
+        <h2 className="mono-label settings-section-title">Account</h2>
         <p className="settings-muted">
           Signed in as <strong>{user.displayName}</strong>
           {client.isMock && ' (mock mode — use the Dev switcher to change users)'}.
         </p>
         <button
-          className="btn btn-danger btn-sm settings-signout"
+          className="btn-outline btn-danger-outline settings-signout"
           onClick={() => void client.signOut()}
         >
           Sign out

@@ -40,8 +40,8 @@ export function SafeTradingPage() {
   return (
     <article className="safety">
       <header className="safety-hero">
-        <h1 className="display">
-          Trade cards, <span className="hero-text">not risks</span>
+        <h1 className="display safety-title">
+          Trade cards, <span className="hero-grad-text">not risks</span>
         </h1>
         <p>
           LebanonTCG is the venue, not the middleman — every deal is arranged directly between
@@ -51,8 +51,8 @@ export function SafeTradingPage() {
 
       <ol className="safety-list">
         {TIPS.map((tip, i) => (
-          <li key={tip.title} className="safety-tip card-surface">
-            <span className="safety-num display" aria-hidden="true">
+          <li key={tip.title} className="safety-tip panel">
+            <span className="safety-num mono-value" aria-hidden="true">
               {String(i + 1).padStart(2, '0')}
             </span>
             <div>
@@ -68,7 +68,7 @@ export function SafeTradingPage() {
           Something felt off? Use the <strong>Report</strong> link on any listing, profile, or
           message — every report goes to moderators.
         </p>
-        <Link to="/" className="btn btn-primary">Back to browsing</Link>
+        <Link to="/" className="btn-acid">Back to browsing</Link>
       </footer>
     </article>
   );

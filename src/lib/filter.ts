@@ -9,6 +9,7 @@ export const DEFAULT_FILTER: ListingFilter = {
   priceMin: null,
   priceMax: null,
   gradedOnly: false,
+  sellerHasReviews: false,
   language: null,
   sort: 'newest',
 };
@@ -22,6 +23,7 @@ export function isDefaultFilter(f: ListingFilter): boolean {
     f.priceMin === null &&
     f.priceMax === null &&
     !f.gradedOnly &&
+    !f.sellerHasReviews &&
     !f.language &&
     f.sort === 'newest'
   );
@@ -35,6 +37,7 @@ export function activeFacetCount(f: ListingFilter): number {
   if (f.finishes.length) n++;
   if (f.priceMin !== null || f.priceMax !== null) n++;
   if (f.gradedOnly) n++;
+  if (f.sellerHasReviews) n++;
   if (f.language) n++;
   return n;
 }
@@ -57,6 +60,8 @@ export function listingMatchesFilter(l: Listing, f: ListingFilter): boolean {
   return true;
 }
 
+/** Sorts everything except most_watched (which needs like counts — the
+    clients handle it where the counts live). */
 export function sortListings<T extends Listing>(items: T[], sort: ListingFilter['sort']): T[] {
   const out = [...items];
   switch (sort) {
@@ -66,7 +71,7 @@ export function sortListings<T extends Listing>(items: T[], sort: ListingFilter[
     case 'price_desc':
       out.sort((a, b) => b.price - a.price || cmpNewest(a, b));
       break;
-    case 'newest':
+    default:
       out.sort(cmpNewest);
       break;
   }
@@ -88,6 +93,7 @@ export function filterToSearchParams(f: ListingFilter): URLSearchParams {
   if (f.priceMin !== null) p.set('min', String(f.priceMin));
   if (f.priceMax !== null) p.set('max', String(f.priceMax));
   if (f.gradedOnly) p.set('graded', '1');
+  if (f.sellerHasReviews) p.set('rated', '1');
   if (f.language) p.set('lang', f.language);
   if (f.sort !== 'newest') p.set('sort', f.sort);
   return p;
@@ -113,7 +119,11 @@ export function filterFromSearchParams(p: URLSearchParams): ListingFilter {
     priceMin: num('min'),
     priceMax: num('max'),
     gradedOnly: p.get('graded') === '1',
+    sellerHasReviews: p.get('rated') === '1',
     language: p.get('lang') || null,
-    sort: sortRaw === 'price_asc' || sortRaw === 'price_desc' ? sortRaw : 'newest',
+    sort:
+      sortRaw === 'price_asc' || sortRaw === 'price_desc' || sortRaw === 'most_watched'
+        ? sortRaw
+        : 'newest',
   };
 }

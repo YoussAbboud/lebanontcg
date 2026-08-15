@@ -17,6 +17,7 @@ import type {
   Profile,
   ReportInput,
   Review,
+  SellerStats,
 } from '../types';
 import type {
   AuthState,
@@ -83,8 +84,10 @@ interface MessageRow {
   id: string;
   conversation_id: string;
   sender_id: string | null;
-  kind: 'user' | 'system';
+  kind: 'user' | 'system' | 'offer';
   body: string;
+  amount: number | string | null;
+  offer_status: 'proposed' | 'accepted' | 'declined' | null;
   created_at: string;
   read_at: string | null;
 }
@@ -108,6 +111,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   private sb: SupabaseClient;
   private auth: AuthState = { user: null, loading: true };
   private authListeners = new Set<(s: AuthState) => void>();
+  /** Open realtime channels per conversation (used for typing broadcast). */
+  private convChannels = new Map<string, ReturnType<SupabaseClient['channel']>>();
 
   constructor(url: string, anonKey: string) {
     this.sb = createSupabase(url, anonKey);
@@ -177,6 +182,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       senderId: row.sender_id ?? '',
       kind: row.kind,
       body: row.body,
+      amount: row.amount === null ? null : Number(row.amount),
+      offerStatus: row.offer_status,
       createdAt: row.created_at,
       readAt: row.read_at,
     };
@@ -317,15 +324,88 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     return data ? this.mapProfile(data as ProfileRow) : null;
   }
 
+  private async buildSellerStats(profiles: Profile[]): Promise<SellerStats[]> {
+    if (profiles.length === 0) return [];
+    const ids = profiles.map((p) => p.id);
+    const { data } = await this.sb
+      .from('listings')
+      .select('seller_id, game, status')
+      .in('seller_id', ids)
+      .in('status', ['active', 'sold']);
+    const rows = (data ?? []) as { seller_id: string; game: string; status: string }[];
+    const stats = profiles.map((p) => {
+      const mine = rows.filter((r) => r.seller_id === p.id);
+      const active = mine.filter((r) => r.status === 'active');
+      const gameCounts = new Map<string, number>();
+      for (const r of active) gameCounts.set(r.game, (gameCounts.get(r.game) ?? 0) + 1);
+      return {
+        profile: p,
+        rank: 0,
+        activeCount: active.length,
+        soldCount: mine.filter((r) => r.status === 'sold').length,
+        games: [...gameCounts.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .map(([g]) => g) as SellerStats['games'],
+      };
+    });
+    return stats
+      .sort(
+        (a, b) =>
+          b.profile.ratingCount - a.profile.ratingCount ||
+          (b.profile.ratingAvg ?? 0) - (a.profile.ratingAvg ?? 0) ||
+          b.activeCount - a.activeCount,
+      )
+      .map((s, i) => ({ ...s, rank: i + 1 }));
+  }
+
+  async listSellers(limit: number): Promise<SellerStats[]> {
+    const { data } = await this.sb
+      .from('profiles')
+      .select('*')
+      .not('username', 'is', null)
+      .order('rating_count', { ascending: false })
+      .limit(Math.max(limit * 3, 30));
+    const profiles = ((data ?? []) as ProfileRow[]).map((p) => this.mapProfile(p));
+    return (await this.buildSellerStats(profiles)).slice(0, limit);
+  }
+
+  async getSellerStats(userId: string): Promise<SellerStats | null> {
+    // Rank within the same pool listSellers uses.
+    const pool = await this.listSellers(100);
+    const found = pool.find((s) => s.profile.id === userId);
+    if (found) return found;
+    const profile = await this.getProfile(userId);
+    if (!profile) return null;
+    const [stats] = await this.buildSellerStats([profile]);
+    return { ...stats, rank: pool.length + 1 };
+  }
+
   // ---- Listings (read) ----------------------------------------------------
 
+  /** Bulk like counts from the listing_likes view (0008). */
+  private async likesFor(ids: string[]): Promise<Map<string, number>> {
+    if (ids.length === 0) return new Map();
+    const { data } = await this.sb.from('listing_likes').select('*').in('listing_id', ids);
+    return new Map(
+      ((data ?? []) as { listing_id: string; likes: number }[]).map((r) => [
+        r.listing_id,
+        Number(r.likes),
+      ]),
+    );
+  }
+
   async searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage> {
+    if (filter.sort === 'most_watched') {
+      return this.searchMostWatched(filter, offset, limit);
+    }
     let q = this.sb
       .from('listings')
-      .select(`${LISTING_SELECT}, seller:profiles!listings_seller_id_fkey(*)`, {
-        count: 'exact',
-      })
+      .select(
+        `${LISTING_SELECT}, seller:profiles!${filter.sellerHasReviews ? 'inner' : 'listings_seller_id_fkey'}(*)`,
+        { count: 'exact' },
+      )
       .eq('status', 'active');
+    if (filter.sellerHasReviews) q = q.gt('seller.rating_count', 0);
 
     if (filter.games.length) q = q.in('game', filter.games);
     if (filter.conditions.length) q = q.in('condition', filter.conditions);
@@ -352,13 +432,52 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
 
     const { data, count, error } = await q;
     if (error) throw new Error(error.message);
-    const items = (data as (ListingRow & { seller: ProfileRow })[]).map((row) => ({
+    const rows = data as (ListingRow & { seller: ProfileRow })[];
+    const likes = await this.likesFor(rows.map((r) => r.id));
+    const items = rows.map((row) => ({
       ...this.mapListing(row),
       seller: this.mapProfile(row.seller),
       sellerActiveListingCount: 0, // filled on the detail page only
+      likes: likes.get(row.id) ?? 0,
     }));
     const total = count ?? items.length;
     return { items, total, hasMore: offset + items.length < total };
+  }
+
+  /** most_watched sort: page through the likes view, then backfill with
+      newest zero-like listings once the liked pool is exhausted. */
+  private async searchMostWatched(
+    filter: ListingFilter,
+    offset: number,
+    limit: number,
+  ): Promise<ListingPage> {
+    const { data: likedRows } = await this.sb
+      .from('listing_likes')
+      .select('*')
+      .order('likes', { ascending: false })
+      .limit(500);
+    const likedIds = ((likedRows ?? []) as { listing_id: string; likes: number }[]).map(
+      (r) => r.listing_id,
+    );
+    // Fetch a page worth of candidates: liked ones (in view order) that
+    // match the filter, then newest unliked ones.
+    const newestPageSize = offset + limit + likedIds.length;
+    const base = await this.searchListings(
+      { ...filter, sort: 'newest' },
+      0,
+      Math.min(newestPageSize, 1000),
+    );
+    const rankById = new Map(likedIds.map((id, i) => [id, i]));
+    const ordered = [...base.items].sort((a, b) => {
+      const ra = rankById.has(a.id) ? rankById.get(a.id)! : Number.MAX_SAFE_INTEGER;
+      const rb = rankById.has(b.id) ? rankById.get(b.id)! : Number.MAX_SAFE_INTEGER;
+      return ra - rb || b.createdAt.localeCompare(a.createdAt);
+    });
+    return {
+      items: ordered.slice(offset, offset + limit),
+      total: base.total,
+      hasMore: offset + limit < base.total,
+    };
   }
 
   async getListing(id: string): Promise<ListingWithSeller | null> {
@@ -374,10 +493,12 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .select('id', { count: 'exact', head: true })
       .eq('seller_id', row.seller_id)
       .eq('status', 'active');
+    const likes = await this.likesFor([row.id]);
     return {
       ...this.mapListing(row),
       seller: this.mapProfile(row.seller),
       sellerActiveListingCount: count ?? 0,
+      likes: likes.get(row.id) ?? 0,
     };
   }
 
@@ -528,15 +649,17 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       )
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
-    return (data ?? [])
+    const rows = (data ?? [])
       .map((r) => (r as unknown as { listing: (ListingRow & { seller: ProfileRow }) | null }).listing)
       .filter((row): row is ListingRow & { seller: ProfileRow } => row !== null)
-      .filter((row) => row.status !== 'removed')
-      .map((row) => ({
-        ...this.mapListing(row),
-        seller: this.mapProfile(row.seller),
-        sellerActiveListingCount: 0,
-      }));
+      .filter((row) => row.status !== 'removed');
+    const likes = await this.likesFor(rows.map((r) => r.id));
+    return rows.map((row) => ({
+      ...this.mapListing(row),
+      seller: this.mapProfile(row.seller),
+      sellerActiveListingCount: 0,
+      likes: likes.get(row.id) ?? 0,
+    }));
   }
 
   async setFavorite(listingId: string, favorited: boolean): Promise<void> {
@@ -668,6 +791,52 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     return { ...this.mapMessage(data as MessageRow), clientId };
   }
 
+  async sendOffer(
+    conversationId: string,
+    amount: number,
+    note: string,
+    clientId: string,
+  ): Promise<Message> {
+    const uid = this.uid();
+    const { data, error } = await this.sb
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: uid,
+        kind: 'offer',
+        body: note || 'Offer',
+        amount,
+        offer_status: 'proposed',
+      })
+      .select()
+      .single();
+    if (error) {
+      if (error.code === '42501') throw new Error('You cannot message this user.');
+      throw new Error(error.message);
+    }
+    return { ...this.mapMessage(data as MessageRow), clientId };
+  }
+
+  async respondToOffer(conversationId: string, messageId: string, accept: boolean): Promise<void> {
+    const { error } = await this.sb
+      .from('messages')
+      .update({ offer_status: accept ? 'accepted' : 'declined' })
+      .eq('id', messageId)
+      .eq('conversation_id', conversationId);
+    if (error) throw new Error(error.message);
+  }
+
+  sendTyping(conversationId: string): void {
+    const channel = this.convChannels.get(conversationId);
+    if (channel && this.auth.user) {
+      void channel.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { userId: this.auth.user.id },
+      });
+    }
+  }
+
   async markConversationRead(conversationId: string): Promise<void> {
     const uid = this.uid();
     await this.sb
@@ -723,11 +892,19 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
           table: 'messages',
           filter: `conversation_id=eq.${conversationId}`,
         },
-        () => cb({ type: 'read', conversationId }),
+        () => cb({ type: 'refresh', conversationId }),
       )
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        const from = (payload.payload as { userId?: string } | undefined)?.userId;
+        if (from && from !== this.auth.user?.id) {
+          cb({ type: 'typing', conversationId });
+        }
+      })
       .subscribe();
+    this.convChannels.set(conversationId, channel);
 
     return () => {
+      this.convChannels.delete(conversationId);
       void this.sb.removeChannel(channel);
       listingUnsub?.();
     };

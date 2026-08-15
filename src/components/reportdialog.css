@@ -2,39 +2,44 @@
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: var(--overlay-bg);
-  backdrop-filter: blur(4px);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sp-5);
+  padding: 20px;
 }
 
 .rdlg {
   width: min(480px, 100%);
-  padding: var(--sp-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
-  box-shadow: var(--shadow-pop);
-  max-height: 90dvh;
+  gap: 16px;
+  box-shadow: var(--shadow-card);
+  max-height: 90vh;
   overflow-y: auto;
 }
 .rdlg:focus { outline: none; }
 
 .rdlg-title { font-size: var(--fs-22); }
 
-.rdlg-sub { color: var(--text-2); font-size: var(--fs-13); }
+.rdlg-sub { color: var(--muted); font-size: var(--fs-13); }
 
 .rdlg-reasons {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-2);
+  gap: 8px;
 }
+
+.rdlg-field { display: block; }
+.rdlg-label { display: block; margin-bottom: 6px; }
 
 .rdlg-actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--sp-3);
-  margin-top: var(--sp-2);
+  gap: 10px;
+  margin-top: 4px;
 }

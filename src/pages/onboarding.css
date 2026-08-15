@@ -1,0 +1,130 @@
+/* Onboarding (/welcome) — first-run account setup, Sleeved-styled. */
+
+.onboard {
+  display: flex;
+  justify-content: center;
+  padding: 56px var(--pad-x) 72px;
+}
+
+.onboard-card {
+  width: min(560px, 100%);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.onboard-eyebrow {
+  color: var(--acid);
+}
+
+.onboard-card h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-28);
+}
+
+.onboard-sub {
+  color: var(--muted);
+  font-size: var(--fs-13);
+}
+.onboard-sub strong {
+  color: var(--text-2);
+}
+
+/* ---- Avatar picker -------------------------------------------------- */
+
+.onboard-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.onboard-avatar {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 1px dashed var(--border);
+  background: var(--input-bg);
+  color: var(--muted);
+  font-size: 26px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--t-fast), color var(--t-fast);
+}
+.onboard-avatar:hover {
+  border-color: var(--acid);
+  color: var(--acid);
+}
+.onboard-avatar.has-image {
+  border-style: solid;
+  border-color: var(--raised-2);
+}
+.onboard-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.onboard-avatar-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.onboard-avatar-btn {
+  min-height: 36px;
+}
+.onboard-hint {
+  color: var(--muted);
+}
+.onboard-file {
+  display: none;
+}
+
+/* ---- Fields ---------------------------------------------------------- */
+
+.onboard-field {
+  display: block;
+}
+.onboard-label {
+  display: block;
+  margin-bottom: 6px;
+}
+.onboard-field .field-error {
+  display: block;
+  margin-top: 6px;
+}
+.onboard-field .onboard-hint {
+  display: block;
+  margin-top: 6px;
+}
+
+.onboard-handle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.onboard-at {
+  color: var(--acid);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-18);
+}
+
+.onboard-submit {
+  min-height: 48px;
+  margin-top: 4px;
+}
+
+.onboard-signout {
+  align-self: center;
+}

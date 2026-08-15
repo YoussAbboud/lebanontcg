@@ -1,30 +1,23 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useApp } from '../state/AppContext';
 import './signin.css';
 
 /**
- * Live-mode auth: email magic link, then a one-time username claim.
- * In mock mode this page just points at the Dev switcher.
+ * Live-mode auth: email magic link. Account setup (username, photo, bio)
+ * happens on /welcome after the link is confirmed. In mock mode this page
+ * just points at the Dev switcher.
  */
 export function SignInPage() {
   const { client, user } = useApp();
-  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [state, setState] = useState<'idle' | 'busy' | 'sent' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
-  const [username, setUsername] = useState('');
-  const [claimState, setClaimState] = useState<'idle' | 'busy' | 'error'>('idle');
-  const [claimError, setClaimError] = useState('');
 
-  const needsUsername = Boolean(user && !user.username);
+  // Already signed in: finish onboarding, or head home.
+  if (user) return <Navigate to={user.username ? '/' : '/welcome'} replace />;
 
-  // Signed in and named — nothing to do here.
-  useEffect(() => {
-    if (user?.username) navigate('/', { replace: true });
-  }, [user, navigate]);
-
-  if (client.isMock && !user) {
+  if (client.isMock) {
     return (
       <div className="signin">
         <div className="signin-card panel">
@@ -34,53 +27,6 @@ export function SignInPage() {
             header to sign in instantly as any seeded user — no email needed.
           </p>
         </div>
-      </div>
-    );
-  }
-
-  if (needsUsername) {
-    const claim = async (e: React.FormEvent) => {
-      e.preventDefault();
-      const name = username.trim().toLowerCase();
-      if (!/^[a-z0-9_]{3,20}$/.test(name)) {
-        setClaimState('error');
-        setClaimError('3–20 characters: lowercase letters, numbers, underscores.');
-        return;
-      }
-      setClaimState('busy');
-      try {
-        await client.claimUsername(name);
-        navigate('/', { replace: true });
-      } catch (err) {
-        setClaimState('error');
-        setClaimError(err instanceof Error ? err.message : 'Could not claim that username.');
-      }
-    };
-    return (
-      <div className="signin">
-        <form className="signin-card panel" onSubmit={claim}>
-          <h1 className="display">Claim your handle</h1>
-          <p>This is your permanent @username — it can&apos;t be changed later.</p>
-          <label className="signin-field">
-            <span className="mono-label signin-label">Username</span>
-            <div className="signin-handle-row">
-              <span className="signin-at" aria-hidden="true">@</span>
-              <input
-                className="input"
-                value={username}
-                maxLength={20}
-                autoFocus
-                placeholder="cardshark"
-                aria-invalid={claimState === 'error'}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            {claimState === 'error' && <span className="field-error">{claimError}</span>}
-          </label>
-          <button className="btn-acid signin-btn" disabled={claimState === 'busy'}>
-            {claimState === 'busy' ? 'Claiming…' : 'Claim username'}
-          </button>
-        </form>
       </div>
     );
   }

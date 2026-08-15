@@ -12,6 +12,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { SafeTradingPage } from './pages/SafeTradingPage';
 import { SignInPage } from './pages/SignInPage';
+import { OnboardingPage } from './pages/OnboardingPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/safety" element={<SafeTradingPage />} />
           <Route path="/signin" element={<SignInPage />} />
+          <Route path="/welcome" element={<OnboardingPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

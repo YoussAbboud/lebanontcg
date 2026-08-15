@@ -55,6 +55,9 @@ export interface MarketplaceClient {
   /** Claim a username (immutable once set). Rejects if taken. */
   claimUsername(username: string): Promise<Profile>;
   updateProfile(patch: { displayName?: string; bio?: string; avatarUrl?: string | null }): Promise<Profile>;
+  /** Store a (client-compressed) avatar image; returns the value to save
+      as profile.avatarUrl (resolve for display via resolveImageUrl). */
+  uploadAvatar(image: Blob): Promise<string>;
 
   // ---- Profiles ----------------------------------------------------------
   getProfileByUsername(username: string): Promise<Profile | null>;

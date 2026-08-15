@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppContext';
 import { UserSwitcher } from './UserSwitcher';
 import { Avatar } from './Avatar';
@@ -13,6 +13,11 @@ export function AppShell() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Signed in but no username yet (fresh magic-link account): finish
+  // onboarding before anything else.
+  const needsOnboarding = Boolean(user && !user.username) && location.pathname !== '/welcome';
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -190,7 +195,7 @@ export function AppShell() {
       )}
 
       <main id="main" className="shell-main">
-        <Outlet />
+        {needsOnboarding ? <Navigate to="/welcome" replace /> : <Outlet />}
       </main>
 
       <footer className="shell-footer">

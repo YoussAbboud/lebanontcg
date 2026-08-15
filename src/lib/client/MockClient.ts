@@ -347,6 +347,16 @@ export class MockClient implements MarketplaceClient {
     return structuredClone(profile);
   }
 
+  async uploadAvatar(image: Blob): Promise<string> {
+    // Data URL so it survives cross-tab snapshots and reloads.
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('Could not read the image'));
+      reader.readAsDataURL(image);
+    });
+  }
+
   // ---- Profiles -----------------------------------------------------------
 
   async getProfileByUsername(username: string): Promise<Profile | null> {

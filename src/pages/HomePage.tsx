@@ -22,26 +22,31 @@ export function HomePage() {
   const [trending, setTrending] = useState<ListingWithSeller[]>([]);
   const [sellers, setSellers] = useState<SellerStats[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [errorMsg, setErrorMsg] = useState('');
   const stripRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let cancelled = false;
+    // Only the main listings query is fatal; featured/sellers degrade to
+    // empty sections so one broken view can't blank the whole home page.
     Promise.all([
       client.searchListings(DEFAULT_FILTER, 0, 15),
-      client.searchListings({ ...DEFAULT_FILTER, sort: 'most_watched' }, 0, 6),
-      client.listSellers(6),
+      client.searchListings({ ...DEFAULT_FILTER, sort: 'most_watched' }, 0, 6).catch(() => null),
+      client.listSellers(6).catch(() => []),
     ])
       .then(([newest, watched, topSellers]) => {
         if (cancelled) return;
         setTotal(newest.total);
         setFanItems(newest.items.slice(0, 7));
         setTrending(newest.items.slice(7, 15));
-        setFeatured(watched.items);
+        setFeatured(watched ? watched.items : []);
         setSellers(topSellers);
         setState('ready');
       })
-      .catch(() => {
-        if (!cancelled) setState('error');
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setErrorMsg(err instanceof Error ? err.message : String(err));
+        setState('error');
       });
     return () => {
       cancelled = true;
@@ -53,10 +58,20 @@ export function HomePage() {
   };
 
   if (state === 'error') {
+    const schemaMissing = /does not exist|schema cache|could not find/i.test(errorMsg);
     return (
       <div className="home-error empty-dashed">
         <h3>Couldn&apos;t load the marketplace</h3>
-        <p>Something went wrong on our side. Give it another try.</p>
+        {errorMsg && (
+          <p className="mono-label home-error-detail" role="alert">
+            {errorMsg}
+          </p>
+        )}
+        <p>
+          {schemaMissing
+            ? 'The database tables are missing — the schema hasn’t been applied to this Supabase project yet. Run supabase/apply-all.sql in the SQL Editor, then retry.'
+            : 'Something went wrong on our side. Give it another try.'}
+        </p>
         <button className="btn-acid" onClick={() => window.location.reload()}>
           Retry
         </button>

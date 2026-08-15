@@ -192,3 +192,28 @@ Setup per README (project, migrations, seed, .env, redirect URL).
    active listing.
 8. Sell wizard: step gating (no photos → error on Continue), condition
    tiles, live preview card on Review, publish → detail + toast.
+
+
+## R3 — Onboarding + post-sign-in recovery
+
+Automated (headless Chromium against a mock build with a seeded user's
+username temporarily nulled): home renders → dev-switch to that user →
+gate lands on /welcome → display name prefilled → taken handle shows the
+inline error → fresh handle + bio submits → home + welcome toast → header
+menu shows the new @handle → revisiting /welcome renders the form again
+while the username is missing.
+
+Manual (live mode):
+1. Sign in with a brand-new email → confirm the magic link → you land on
+   /welcome (not an error page). Every nav link bounces back to /welcome
+   until the handle is claimed.
+2. Claim a handle that exists → inline "That username is taken."; claim a
+   fresh one with photo + bio → home, and the photo shows in the header.
+3. Avatar upload failing (e.g. storage bucket missing) only toasts —
+   the account still completes; add the photo later in Settings.
+4. An account created BEFORE the schema was applied gets its profile row
+   self-created on next sign-in (0009 policy) and goes through the same
+   /welcome flow.
+5. If the schema was never applied, the home error state now prints the
+   real cause (e.g. `relation "public.listings" does not exist`) and
+   points at supabase/apply-all.sql.

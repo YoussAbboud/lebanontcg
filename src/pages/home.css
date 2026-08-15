@@ -38,6 +38,12 @@
 }
 
 .home-error { margin: 72px auto; max-width: 480px; }
+.home-error-detail {
+  color: var(--danger);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  word-break: break-word;
+}
 
 /* ---- Featured strip ---------------------------------------------------------- */
 .home-featured {

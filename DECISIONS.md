@@ -226,3 +226,28 @@ Running log of product/engineering decisions made while building, newest last.
   `VITE_MOCK=1` → mock, `VITE_MOCK=0` → live, unset → live when
   credentials resolve. `npm run dev:mock` stays fully offline;
   unit-tested in `src/lib/config.test.ts`.
+
+## R3 — Post-auth onboarding + first-load resilience
+
+- **Account setup moved to a dedicated `/welcome` page.** After the
+  magic-link confirm, a signed-in user without a username is routed there
+  by an AppShell gate (every route except `/welcome` redirects) and
+  claims the permanent @handle, display name, photo and bio in one form.
+  The old inline claim step on `/signin` became a redirect.
+- **Profile self-heal** (`0009_profile_selfheal.sql` + client): accounts
+  created before the schema was applied have no `profiles` row (the auth
+  trigger didn't exist yet), which used to break the whole app after
+  sign-in. The client now inserts the missing row (display name = email
+  prefix) under a new "insert own profile" RLS policy — RLS tests
+  T35/T36 cover it.
+- **Avatars reuse the `listing-images` bucket** at
+  `{uid}/avatar-{ts}.jpg` instead of a second bucket: the existing
+  storage policies already scope writes to the caller's own folder, and
+  one bucket keeps the storage story simple. Uploads are compressed
+  client-side to a 512px long edge; a failed avatar upload never fails
+  onboarding (profile first, photo later in Settings).
+- **Home page failures now name their cause.** Only the main listings
+  query is fatal — featured/top-sellers degrade to empty sections — and
+  the error state prints the underlying message, with a specific hint
+  when it looks like the schema was never applied ("relation … does not
+  exist" → run `supabase/apply-all.sql`).

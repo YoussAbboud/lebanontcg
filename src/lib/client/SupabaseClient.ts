@@ -225,11 +225,24 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       this.setAuth({ user: null, loading: false });
       return;
     }
-    const { data: row } = await this.sb
+    let { data: row } = await this.sb
       .from('profiles')
       .select('*')
       .eq('id', data.user.id)
-      .single();
+      .maybeSingle();
+    if (!row) {
+      // Accounts created before the schema was applied have no profile row
+      // (the auth trigger didn't exist yet) — self-heal it.
+      const { data: created } = await this.sb
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          display_name: data.user.email?.split('@')[0] ?? 'collector',
+        })
+        .select()
+        .maybeSingle();
+      row = created ?? null;
+    }
     this.setAuth({ user: row ? this.mapProfile(row as ProfileRow) : null, loading: false });
   }
 
@@ -284,6 +297,16 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     const profile = this.mapProfile(data as ProfileRow);
     this.setAuth({ user: profile, loading: false });
     return profile;
+  }
+
+  async uploadAvatar(image: Blob): Promise<string> {
+    const uid = this.uid();
+    const path = `${uid}/avatar-${Date.now()}.jpg`;
+    const { error } = await this.sb.storage
+      .from('listing-images')
+      .upload(path, image, { contentType: 'image/jpeg' });
+    if (error) throw new Error(`Avatar upload failed: ${error.message}`);
+    return path;
   }
 
   async updateProfile(patch: {
@@ -385,7 +408,10 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   /** Bulk like counts from the listing_likes view (0008). */
   private async likesFor(ids: string[]): Promise<Map<string, number>> {
     if (ids.length === 0) return new Map();
-    const { data } = await this.sb.from('listing_likes').select('*').in('listing_id', ids);
+    // Non-fatal: a missing listing_likes view (migration 0008 not applied)
+    // should degrade to zero counts, not break browsing.
+    const { data, error } = await this.sb.from('listing_likes').select('*').in('listing_id', ids);
+    if (error) return new Map();
     return new Map(
       ((data ?? []) as { listing_id: string; likes: number }[]).map((r) => [
         r.listing_id,
@@ -451,11 +477,15 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     offset: number,
     limit: number,
   ): Promise<ListingPage> {
-    const { data: likedRows } = await this.sb
+    const { data: likedRows, error: likesError } = await this.sb
       .from('listing_likes')
       .select('*')
       .order('likes', { ascending: false })
       .limit(500);
+    if (likesError) {
+      // View missing — fall back to newest ordering.
+      return this.searchListings({ ...filter, sort: 'newest' }, offset, limit);
+    }
     const likedIds = ((likedRows ?? []) as { listing_id: string; likes: number }[]).map(
       (r) => r.listing_id,
     );

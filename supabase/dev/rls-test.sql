@@ -184,3 +184,17 @@ select 'T33 like count visible to others: ' || (likes = 1)::text
   from public.listing_likes where listing_id = '10000000-0000-0000-0000-000000000001';
 select 'T34 raw favorites still hidden: ' || (count(*) = 0)::text from public.favorites;
 reset role;
+
+-- ---- 0009: profile self-heal ----------------------------------------------
+-- (setup as superuser: an auth user whose profile row is missing)
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000000042', 'late@test.dev')
+  on conflict do nothing;
+delete from public.profiles where id = '00000000-0000-0000-0000-000000000042';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000042';
+insert into public.profiles (id, display_name) values (auth.uid(), 'Late Signup');
+select 'T35 self-heal insert own profile: ' || (count(*) = 1)::text
+  from public.profiles where id = auth.uid();
+insert into public.profiles (id, display_name) values ('00000000-0000-0000-0000-000000000043', 'Forged');
+select 'T36 (expect error above: cannot insert someone else''s profile)';
+reset role;

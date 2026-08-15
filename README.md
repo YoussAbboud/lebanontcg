@@ -46,8 +46,8 @@ Open http://localhost:5173. You're in mock mode:
    | Variable | Where to find it |
    | --- | --- |
    | `VITE_MOCK` | set to `0` for live mode |
-   | `VITE_SUPABASE_URL` | Project Settings → API → Project URL |
-   | `VITE_SUPABASE_ANON_KEY` | Project Settings → API → anon public key |
+   | `VITE_SUPABASE_URL` | Project Settings → General (`https://<ref>.supabase.co`), also shown under the dashboard's **Connect** button |
+   | `VITE_SUPABASE_ANON_KEY` | Project Settings → API Keys → **Publishable key** (`sb_publishable_…`) on new projects, or the legacy "anon public" key on older ones. Never the secret/service_role key. |
 
 6. `npm run dev` and sign in with your email (magic link), then claim a
    username when prompted.

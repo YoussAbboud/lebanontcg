@@ -212,3 +212,17 @@ Running log of product/engineering decisions made while building, newest last.
   renders letter-glyph nebulas; real listings render their cover photo in
   the same frame, and photo-less listings get the nebula so the grid
   still reads exactly like the reference.
+
+## Deploy round — Vercel + Supabase hookup
+
+- **SPA fallback** (`vercel.json` rewrite to index.html) fixes direct
+  deep-link 404s on the deployed domain.
+- **Public Supabase credentials are baked as fallbacks**
+  (`src/lib/config.ts`): Vercel's git builds don't read committed .env
+  files, so the deployed bundle silently stayed in mock mode. The project
+  URL + publishable key are public by design (RLS protects the data;
+  they're in the public repo already), so they now ship as defaults with
+  environment variables taking precedence. Mode resolution:
+  `VITE_MOCK=1` → mock, `VITE_MOCK=0` → live, unset → live when
+  credentials resolve. `npm run dev:mock` stays fully offline;
+  unit-tested in `src/lib/config.test.ts`.

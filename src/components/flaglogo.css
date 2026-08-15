@@ -1,0 +1,30 @@
+.flaglogo {
+  position: relative;
+  display: inline-flex;
+  border-radius: 5px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-card);
+}
+
+/* Holo shine sweeping the card every few seconds (the "gif" feel) */
+.flaglogo-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    var(--shine-strong) 46%,
+    var(--shine-soft) 54%,
+    transparent 66%
+  );
+  transform: translateX(-120%);
+  animation: flag-shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes flag-shine {
+  0% { transform: translateX(-120%); }
+  38% { transform: translateX(120%); }
+  100% { transform: translateX(120%); }
+}

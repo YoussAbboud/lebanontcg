@@ -14,15 +14,35 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg-0);
+  background-color: var(--bg-0);
+  /* R4's violet field — fixed so scrolling content glides over it */
+  background-image: var(--page-gradient);
+  background-attachment: fixed;
+  background-size: cover;
   color: var(--text-1);
   font-family: var(--font-body);
   font-size: var(--fs-14);
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
-  /* R2's dotted-grid field, translated to the dark ground */
-  background-image: radial-gradient(var(--dot-ink) 1px, transparent 1px);
-  background-size: 22px 22px;
+}
+
+/* Soft vertical light rays under the header (R4) */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 46vh;
+  pointer-events: none;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 34px,
+    var(--ray-ink) 34px 40px,
+    transparent 40px 96px
+  );
+  filter: blur(7px);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 92%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent 92%);
 }
 
 h1, h2, h3, h4, p {
@@ -56,13 +76,13 @@ img {
 }
 
 :focus-visible {
-  outline: 2px solid var(--green);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: var(--green);
+  background: var(--accent);
   color: var(--text-inverse);
 }
 
@@ -75,7 +95,7 @@ img {
 
 /* ---- Shared utility classes (token-derived, used across components) ---- */
 
-/* Uppercase micro-label — R2 category captions, R1 nav items */
+/* Uppercase micro-label — metadata captions */
 .microlabel {
   font-size: var(--fs-11);
   font-weight: var(--label-weight);
@@ -84,18 +104,16 @@ img {
   color: var(--text-2);
 }
 
-/* Display caps — R1 hero / R2 sheet headline */
+/* Display voice — R4's sentence-case medium-weight headline */
 .display {
   font-weight: var(--display-weight);
-  font-stretch: var(--display-stretch);
   letter-spacing: var(--display-spacing);
   line-height: var(--lh-tight);
-  text-transform: uppercase;
 }
 
-/* Spectrum text — R1 "NFT ARTS" gradient emphasis */
-.spectrum-text {
-  background: var(--spectrum);
+/* Hero gradient text — white dissolving to translucent (R4) */
+.hero-text {
+  background: var(--hero-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

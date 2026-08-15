@@ -69,7 +69,7 @@
 .uswitch-item-name strong { font-size: var(--fs-13); }
 .uswitch-item-name span { font-size: var(--fs-11); color: var(--text-3); }
 
-.uswitch-check { margin-left: auto; color: var(--green); font-weight: 800; }
+.uswitch-check { margin-left: auto; color: var(--lime); font-weight: 800; }
 
 .uswitch-signout {
   justify-content: center;

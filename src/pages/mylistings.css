@@ -67,7 +67,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.mylist-title:hover { color: var(--green); }
+.mylist-title:hover { color: var(--text-2); }
 
 .mylist-meta {
   color: var(--text-3);

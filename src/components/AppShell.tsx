@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppContext';
 import { UserSwitcher } from './UserSwitcher';
 import { Avatar } from './Avatar';
+import { FlagLogo } from './FlagLogo';
 import './appshell.css';
 import '../styles/ui.css';
 
@@ -32,7 +33,7 @@ export function AppShell() {
   const navLinks = (
     <>
       <NavLink to="/" end className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
-        Browse
+        Home
       </NavLink>
       <NavLink to="/sell" className="shell-navlink" onClick={() => setMobileNavOpen(false)}>
         Sell
@@ -69,14 +70,15 @@ export function AppShell() {
             <span />
           </button>
 
-          <Link to="/" className="shell-logo" aria-label="Cardpost home">
-            <span className="shell-logo-mark" aria-hidden="true" />
+          <Link to="/" className="shell-logo" aria-label="LebanonTCG home">
+            <FlagLogo size={38} />
             <span className="shell-logo-word display">
-              Card<span className="shell-logo-accent">post</span>
+              Lebanon<span className="shell-logo-accent">TCG</span>
             </span>
           </Link>
 
-          <nav className="shell-nav" aria-label="Primary">
+          {/* R4's floating segmented pill nav */}
+          <nav className="shell-nav glass" aria-label="Primary">
             {navLinks}
           </nav>
 
@@ -90,7 +92,7 @@ export function AppShell() {
                   aria-expanded={menuOpen}
                   onClick={() => setMenuOpen((v) => !v)}
                 >
-                  <Avatar profile={user} size={34} />
+                  <Avatar profile={user} size={36} />
                 </button>
                 {menuOpen && (
                   <div className="shell-menu glass" role="menu">
@@ -154,7 +156,7 @@ export function AppShell() {
           </div>
         </div>
         {mobileNavOpen && (
-          <nav className="shell-nav-mobile" aria-label="Primary mobile">
+          <nav className="shell-nav-mobile glass" aria-label="Primary mobile">
             {navLinks}
           </nav>
         )}
@@ -166,7 +168,10 @@ export function AppShell() {
 
       <footer className="shell-footer">
         <div className="shell-footer-inner">
-          <span className="microlabel">Cardpost — trade cards, not risks</span>
+          <span className="shell-footer-brand">
+            <FlagLogo size={22} />
+            <span className="microlabel">LebanonTCG — trade cards, not risks</span>
+          </span>
           <nav className="shell-footer-nav" aria-label="Footer">
             <Link to="/safety">Safe trading tips</Link>
             <Link to="/">Browse</Link>

@@ -20,7 +20,7 @@
   gap: var(--sp-2);
 }
 .profile-id h1 { font-size: var(--fs-28); }
-.profile-handle { color: var(--green); font-size: var(--fs-13); font-weight: 600; }
+.profile-handle { color: var(--text-2); font-size: var(--fs-13); font-weight: 600; }
 
 .profile-meta {
   display: flex;
@@ -53,7 +53,7 @@
 }
 
 .profile-section-title {
-  color: var(--green);
+  color: var(--text-2);
   margin-bottom: var(--sp-3);
 }
 

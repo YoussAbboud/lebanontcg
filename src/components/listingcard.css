@@ -3,7 +3,7 @@
   overflow: hidden;
   transition: border-color var(--t-med), background var(--t-med), transform var(--t-med);
   content-visibility: auto;
-  contain-intrinsic-size: 240px 380px;
+  contain-intrinsic-size: 250px 400px;
 }
 .lcard:hover {
   border-color: var(--border-strong);
@@ -14,7 +14,38 @@
 .lcard-link {
   display: flex;
   flex-direction: column;
+  gap: var(--sp-2);
   height: 100%;
+  padding: var(--sp-3);
+}
+
+/* Seller header (R4: avatar + name + @handle) */
+.lcard-seller {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding-right: 36px; /* clear the favorite heart */
+}
+.lcard-seller-names {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
+}
+.lcard-seller-name {
+  font-size: var(--fs-12);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lcard-seller-handle {
+  font-size: var(--fs-11);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lcard-media {
@@ -22,6 +53,7 @@
   aspect-ratio: 5 / 6;
   overflow: hidden;
   background: var(--bg-3);
+  border-radius: var(--r-media);
 }
 .lcard-media img {
   width: 100%;
@@ -48,59 +80,56 @@
   position: absolute;
   top: var(--sp-2);
   right: var(--sp-2);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--glass-bg);
 }
 
-.lcard-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-1);
-  padding: var(--sp-3) var(--sp-4) var(--sp-4);
-  flex: 1;
+.lcard-title {
+  font-size: var(--fs-13);
+  font-weight: 700;
+  line-height: var(--lh-snug);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lcard-game {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-}
-
-.lcard-title {
-  font-size: var(--fs-14);
-  font-weight: 700;
-  line-height: var(--lh-snug);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.lcard-set {
-  font-size: var(--fs-12);
+  font-size: var(--fs-11);
   color: var(--text-3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
+.lcard-qty { font-weight: 700; color: var(--text-2); }
 
 .lcard-foot {
   margin-top: auto;
-  padding-top: var(--sp-3);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-2);
 }
 
-.lcard-price { font-size: var(--fs-16); }
-.lcard-qty { color: var(--text-3); font-weight: 600; font-size: var(--fs-12); }
+.lcard-price-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
 
-/* Favorite heart — glass chip over the media, top-right (R1's overlay chips) */
+.lcard-price { font-size: var(--fs-16); }
+
+/* Condition pill reuses the badge-cond-* text colors on the dark stat pill */
+.lcard-cond { letter-spacing: 0.05em; }
+
+/* Favorite heart — glass chip, top-right of the whole card (R4 corner) */
 .lcard-fav {
   position: absolute;
-  top: var(--sp-2);
-  right: var(--sp-2);
-  width: 34px;
-  height: 34px;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -111,9 +140,6 @@
   -webkit-backdrop-filter: blur(var(--glass-blur));
   color: var(--text-1);
   transition: transform var(--t-fast), color var(--t-fast);
+  z-index: 1;
 }
-.lcard-fav:hover { transform: scale(1.1); color: var(--lime); }
-
-/* When a status badge occupies the corner, shift the heart down */
-.lcard-status + .lcard-fav,
-.lcard:has(.lcard-status) .lcard-fav { top: calc(var(--sp-2) + 30px); }
+.lcard-fav:hover { transform: scale(1.1); color: var(--flag-red); }

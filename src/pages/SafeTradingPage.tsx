@@ -28,7 +28,7 @@ const TIPS: Array<{ title: string; body: string }> = [
   },
   {
     title: 'Cash or irreversible payments: hand-to-hand only',
-    body: 'Cardpost handles no payments. For remote deals, prefer payment methods with buyer protection; never wire money or send crypto to someone you haven\'t met.',
+    body: 'LebanonTCG handles no payments. For remote deals, prefer payment methods with buyer protection; never wire money or send crypto to someone you haven\'t met.',
   },
   {
     title: 'Trust your gut — and report',
@@ -41,10 +41,10 @@ export function SafeTradingPage() {
     <article className="safety">
       <header className="safety-hero">
         <h1 className="display">
-          Trade cards, <span className="spectrum-text">not risks</span>
+          Trade cards, <span className="hero-text">not risks</span>
         </h1>
         <p>
-          Cardpost is the venue, not the middleman — every deal is arranged directly between
+          LebanonTCG is the venue, not the middleman — every deal is arranged directly between
           collectors. These habits keep the hobby fun.
         </p>
       </header>

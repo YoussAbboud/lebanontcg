@@ -1,103 +1,133 @@
 /* ==========================================================================
-   CARDPOST DESIGN TOKENS
+   LEBANONTCG DESIGN TOKENS
    Extracted from design-reference/ (see DESIGN-NOTES.md for the rationale):
-     R1 — "XNFT" dark marketplace hero  → dark surfaces, vivid green accent,
-          pill buttons, glassy overlay chips, large-radius framed panels,
-          spectrum gradient on emphasis text.
-     R2 — "Cards for Marketplaces" grid → chartreuse/lime highlight color,
-          uppercase micro-labels, gradient product cards, dotted-grid field.
-     R3 — Graded slab mockups           → slab-label grade badges (white
-          label, colored bar, heavy grade numeral), condensed uppercase.
+     R4 — "NVC" purple marketplace hero → THE governing reference: violet
+          gradient field with light rays, floating white pill nav, huge
+          sentence-case hero with white→translucent gradient text, glassy
+          translucent cards (avatar header, rounded media, price row with
+          coin mark + tiny stat pill), white pill CTAs, auto-scrolling
+          card rail.
+     R5 — Lebanese flag trading card (gold-bordered slab) → brand mark;
+          red/white bands + cedar green appear only in the logo and small
+          national accents, never as UI chrome.
+     R1 — "XNFT" dark marketplace hero → glass overlay chips, framed
+          large-radius panels (kept from the first design round).
+     R3 — Graded slab mockups → slab-label grade badges (kept).
    Every visible style in the app derives from these variables.
    ========================================================================== */
 
 :root {
-  /* ---- Color: surfaces (R1 near-black stack) --------------------------- */
-  --bg-0: #101113;            /* page ground */
-  --bg-1: #17181c;            /* framed panels / header */
-  --bg-2: #1e2025;            /* cards, elevated surfaces */
-  --bg-3: #26282e;            /* hover / pressed / input fills */
-  --bg-4: #2f3138;            /* highest elevation (menus, tooltips) */
-  --border: #2a2c33;
-  --border-strong: #3a3d45;
+  /* ---- Color: the violet field (R4) ------------------------------------- */
+  /* Page ground is a fixed gradient: lilac top-left → violet → near-black
+     lower-right, with soft vertical light rays at the top (base.css). */
+  --field-1: #b6a2f6;
+  --field-2: #8452ee;
+  --field-3: #6d2ee0;
+  --field-4: #2c1a5e;
+  --field-5: #120e20;
+  --bg-0: #170f33;            /* fallback ground / solid fills */
+  --page-gradient: linear-gradient(118deg,
+      var(--field-1) 0%, var(--field-2) 26%, var(--field-3) 48%,
+      var(--field-4) 76%, var(--field-5) 100%);
+  --ray-ink: rgba(255, 255, 255, 0.07);
 
-  /* Glassy overlay chips (artist chip / price bar in R1) */
-  --glass-bg: rgba(23, 24, 28, 0.72);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 14px;
+  /* ---- Color: glass surface stack (R4 cards / R1 chips) ----------------- */
+  --bg-1: rgba(18, 12, 44, 0.52);      /* framed panels (dark glass) */
+  --bg-2: rgba(255, 255, 255, 0.10);   /* cards (light glass) */
+  --bg-3: rgba(255, 255, 255, 0.15);   /* hover / inputs */
+  --bg-4: rgba(255, 255, 255, 0.22);   /* highest elevation */
+  --bg-solid: #221650;                 /* opaque fallback (menus on blur-less UAs) */
+  --border: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.32);
 
-  /* Full-screen dialog scrim + the page's dotted-field ink (R2) */
-  --overlay-bg: rgba(10, 10, 12, 0.7);
-  --dot-ink: rgba(255, 255, 255, 0.045);
+  --glass-bg: rgba(24, 16, 56, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-blur: 16px;
+  --overlay-bg: rgba(10, 6, 24, 0.72);
 
   /* ---- Color: text ------------------------------------------------------ */
-  --text-1: #f2f3f5;
-  --text-2: #a6a8af;
-  --text-3: #71747c;
-  --text-inverse: #131313;    /* text on lime/green/white fills (R2 cards) */
+  --text-1: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.78);
+  --text-3: rgba(255, 255, 255, 0.55);
+  --text-inverse: #221650;    /* text on white pills (R4 nav/CTAs) */
 
-  /* ---- Color: accents --------------------------------------------------- */
-  --green: #3edc5c;           /* R1 CTA green — primary actions, active nav */
-  --green-hover: #55e871;
-  --green-dim: rgba(62, 220, 92, 0.14);
-  --green-border: rgba(62, 220, 92, 0.25);
-  --lime: #d8e627;            /* R2 chartreuse — prices, highlights, marks */
-  --lime-dim: rgba(216, 230, 39, 0.12);
-  --red: #e0483a;             /* R3 slab-label red — danger, destructive */
-  --red-dim: rgba(224, 72, 58, 0.14);
-  --amber: #ffb444;           /* reserved status, warnings */
-  --amber-dim: rgba(255, 180, 68, 0.14);
-  --blue: #5aa7ff;            /* links inside chat, info */
+  /* ---- Color: accents ---------------------------------------------------- */
+  /* R4's action color is white-on-violet. */
+  --accent: #ffffff;
+  --accent-hover: rgba(255, 255, 255, 0.88);
+  --accent-dim: rgba(255, 255, 255, 0.16);
+  --accent-border: rgba(255, 255, 255, 0.38);
+  --outline-on-accent: rgba(0, 0, 0, 0.2);
+  --text-on-lime: #17181c;
+  --stat-pill-bg: rgba(8, 4, 26, 0.45);
+  --header-fade: rgba(16, 8, 40, 0.55);
+  --footer-bg: rgba(10, 6, 26, 0.45);
+  --shine-strong: rgba(255, 255, 255, 0.55);
+  --shine-soft: rgba(255, 255, 255, 0.12);
+  --green: #4ade80;           /* success / "active" status only */
+  --green-dim: rgba(74, 222, 128, 0.18);
+  --lime: #d8e627;            /* condition scale midpoint (kept from R2 round) */
+  --lime-dim: rgba(216, 230, 39, 0.16);
+  --red: #ff6b5e;             /* danger, destructive */
+  --red-dim: rgba(255, 107, 94, 0.18);
+  --amber: #ffc45e;           /* reserved status, warnings */
+  --amber-dim: rgba(255, 196, 94, 0.18);
+  --blue: #8fc2ff;            /* links inside chat, info */
 
-  /* R1 headline spectrum — used ONLY for graded/holo emphasis + hero text */
-  --spectrum: linear-gradient(92deg, #8a5cff 0%, #e14fff 48%, #ff8a4c 100%);
+  /* Hero text fade — white dissolving to translucent (R4 headline) */
+  --hero-text: linear-gradient(92deg, #ffffff 0%, #ffffff 52%, rgba(255, 255, 255, 0.34) 100%);
 
-  /* ---- Condition scale (NM→DMG, green→red through R2 lime) -------------- */
-  --cond-nm: #3edc5c;
+  /* ---- Brand (R5 flag card) --------------------------------------------- */
+  --flag-red: #e8443c;
+  --flag-green: #17953f;
+  --flag-gold: #c9a24b;
+  --flag-white: #f7f4ec;
+
+  /* ---- Condition scale (NM→DMG, green→red) ------------------------------ */
+  --cond-nm: #4ade80;
   --cond-lp: #a8e03a;
-  --cond-lp-dim: rgba(168, 224, 58, 0.13);
+  --cond-lp-dim: rgba(168, 224, 58, 0.16);
   --cond-mp: #d8e627;
-  --cond-hp: #ffb444;
-  --cond-dmg: #e0483a;
+  --cond-hp: #ffc45e;
+  --cond-dmg: #ff6b5e;
 
-  /* ---- Game color coding (procedural card backs + game labels) ---------- */
+  /* ---- Game color coding (procedural card backs + game dots) ------------ */
   --game-pokemon: #ffcb3d;
-  --game-magic: #e77b3a;
-  --game-yugioh: #a06be0;
-  --game-onepiece: #e0485a;
-  --game-lorcana: #5aa7ff;
-  --game-other: #8a8d96;
+  --game-magic: #ff9257;
+  --game-yugioh: #c39bff;
+  --game-onepiece: #ff7a8c;
+  --game-lorcana: #7fc0ff;
+  --game-other: #b9bcd0;
 
   /* ---- Typography ------------------------------------------------------- */
-  /* Archivo Variable (wdth+wght axes) self-hosted via @fontsource.
-     Display = expanded + black, mirroring R1/R2 stretched headline caps. */
+  /* Archivo Variable self-hosted. R4's voice is sentence-case, medium
+     weight, tight tracking — no more stretched caps for headings. */
   --font-body: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
 
-  --fs-11: 0.6875rem;  /* micro labels, slab cert numbers */
-  --fs-12: 0.75rem;    /* badges, meta */
-  --fs-13: 0.8125rem;  /* secondary UI text */
-  --fs-14: 0.875rem;   /* body */
-  --fs-16: 1rem;       /* emphasized body, inputs */
-  --fs-18: 1.125rem;   /* card titles, section leads */
-  --fs-22: 1.375rem;   /* page titles */
-  --fs-28: 1.75rem;    /* display S */
-  --fs-36: 2.25rem;    /* display M */
-  --fs-52: 3.25rem;    /* display L (hero) */
+  --fs-11: 0.6875rem;
+  --fs-12: 0.75rem;
+  --fs-13: 0.8125rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-22: 1.375rem;
+  --fs-28: 1.75rem;
+  --fs-36: 2.25rem;
+  --fs-56: 3.5rem;            /* display L (hero) */
 
-  /* Display caps: wide + black, tight leading (R1 "UNIQUE COLLECTION") */
-  --display-stretch: 125%;
-  --display-weight: 800;
-  --display-spacing: 0.01em;
-  /* Micro labels: uppercase, loose tracking (R2 "KEYBOARD" / R1 nav) */
-  --label-spacing: 0.09em;
+  /* Display voice: R4 headline — medium weight, tight leading, no caps */
+  --display-weight: 560;
+  --display-spacing: -0.02em;
+  /* Micro labels: small caps captions (kept for metadata labels) */
+  --label-spacing: 0.08em;
   --label-weight: 600;
 
-  --lh-tight: 1.08;
+  --lh-tight: 1.06;
   --lh-snug: 1.3;
   --lh-body: 1.5;
 
-  /* ---- Spacing rhythm (4px base) ---------------------------------------- */
+  /* ---- Spacing rhythm (4px base) ----------------------------------------- */
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
   --sp-3: 0.75rem;
@@ -109,31 +139,32 @@
   --sp-12: 3rem;
   --sp-16: 4rem;
 
-  /* ---- Radii ------------------------------------------------------------ */
-  --r-pill: 999px;            /* buttons, chips, badges (R1) */
-  --r-panel: 24px;            /* big framed sections (R1 hero frame) */
-  --r-card: 16px;             /* listing cards (R1/R2) */
-  --r-control: 12px;          /* inputs, small cards */
-  --r-badge: 8px;             /* slab labels, tiny tags (R3) */
+  /* ---- Radii (R4: everything softly rounded) ------------------------------ */
+  --r-pill: 999px;
+  --r-panel: 28px;            /* framed sections */
+  --r-card: 22px;             /* listing cards (R4 card outer) */
+  --r-media: 14px;            /* imagery inside cards (R4 card inner) */
+  --r-control: 14px;          /* inputs, small cards */
+  --r-badge: 9px;             /* slab labels, tiny tags (R3) */
 
-  /* ---- Shadows (soft, deep — R1) ---------------------------------------- */
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow-pop: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --shadow-glow-green: 0 0 24px rgba(62, 220, 92, 0.35);
+  /* ---- Shadows ------------------------------------------------------------ */
+  --shadow-card: 0 10px 30px rgba(10, 5, 30, 0.25);
+  --shadow-pop: 0 18px 50px rgba(8, 4, 26, 0.55);
 
-  /* ---- Motion ------------------------------------------------------------ */
+  /* ---- Motion ------------------------------------------------------------- */
   --t-fast: 120ms ease;
   --t-med: 200ms ease;
+  --carousel-speed: 42s;      /* full loop of the home card rail */
 
-  /* ---- Layout ------------------------------------------------------------ */
+  /* ---- Layout ------------------------------------------------------------- */
   --w-content: 1200px;
-  --h-header: 64px;
+  --h-header: 76px;
 }
 
-/* Slab label surfaces (R3) keep light colors even in the dark theme —
-   they imitate a physical grading label. */
+/* Slab label surfaces (R3) keep light colors — they imitate a physical
+   grading label. */
 :root {
   --slab-bg: #f4f2ec;
   --slab-text: #17181c;
-  --slab-bar: var(--red);
+  --slab-bar: #d9412e;
 }

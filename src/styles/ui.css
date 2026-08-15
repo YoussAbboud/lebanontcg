@@ -22,14 +22,14 @@
 .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
 .btn-primary {
-  background: var(--green);
+  background: var(--accent);
   color: var(--text-inverse);
 }
-.btn-primary:hover:not(:disabled) { background: var(--green-hover); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
 
 .btn-lime {
   background: var(--lime);
-  color: var(--text-inverse);
+  color: var(--text-on-lime);
 }
 .btn-lime:hover:not(:disabled) { filter: brightness(1.08); }
 
@@ -76,10 +76,12 @@
 .chip:hover { border-color: var(--text-3); color: var(--text-1); }
 .chip[aria-pressed='true'],
 .chip.chip-on {
-  background: var(--green-dim);
-  border-color: var(--green);
-  color: var(--green);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-inverse);
 }
+.chip[aria-pressed='true'] .game-dot,
+.chip.chip-on .game-dot { outline: 1px solid var(--outline-on-accent); }
 
 .glass {
   background: var(--glass-bg);
@@ -106,7 +108,7 @@
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: var(--green);
+  border-color: var(--accent-border);
   background: var(--bg-2);
 }
 .input[aria-invalid='true'],
@@ -139,12 +141,16 @@
   background: var(--bg-1);
   border: 1px solid var(--border);
   border-radius: var(--r-panel);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 .card-surface {
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--r-card);
   box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 /* ---- Status + condition badges ------------------------------------------ */
@@ -214,9 +220,37 @@
 
 /* ---- Price -------------------------------------------------------------- */
 .price {
-  color: var(--lime);
+  color: var(--text-1);
   font-weight: 800;
   letter-spacing: 0.01em;
+}
+
+/* Coin mark preceding prices (R4's "◦ 0.328 NVC" row) */
+.coin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--text-inverse);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+/* Tiny dark stat pill next to prices (R4's percentage chip) */
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  background: var(--stat-pill-bg);
+  border: 1px solid var(--border);
+  font-size: var(--fs-11);
+  font-weight: 700;
 }
 .price-currency {
   color: var(--text-2);
@@ -228,6 +262,8 @@
 /* ---- Skeletons ----------------------------------------------------------- */
 .skeleton {
   background: linear-gradient(100deg, var(--bg-2) 40%, var(--bg-3) 50%, var(--bg-2) 60%);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   background-size: 200% 100%;
   animation: skeleton-sweep 1.4s infinite linear;
   border-radius: var(--r-control);

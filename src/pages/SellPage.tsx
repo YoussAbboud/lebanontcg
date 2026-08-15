@@ -399,7 +399,7 @@ export function SellPage() {
           </label>
         </div>
         <p className="field-hint">
-          Cardpost takes no cut and handles no payments — settle directly with the buyer.
+          LebanonTCG takes no cut and handles no payments — settle directly with the buyer.
         </p>
       </section>
 

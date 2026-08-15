@@ -41,7 +41,7 @@
 
 .safety-num {
   font-size: var(--fs-22);
-  color: var(--green);
+  color: var(--text-2);
   flex-shrink: 0;
   min-width: 44px;
 }

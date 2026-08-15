@@ -33,7 +33,7 @@ import {
 import { avatarDataUrl, cardImageUrl } from '../../mock/cardImage';
 import type { Condition, Finish, Game } from '../types';
 
-const AUTH_KEY = 'cardpost.mock.currentUser';
+const AUTH_KEY = 'lebanontcg.mock.currentUser';
 
 // IDs must be unique across tabs (each tab runs its own MockClient over a
 // shared BroadcastChannel world), so a per-tab counter would collide.
@@ -93,7 +93,7 @@ export class MockClient implements MarketplaceClient {
       this.favorites.get(f.userId)!.add(f.listingId);
     }
     if (typeof BroadcastChannel !== 'undefined') {
-      this.channel = new BroadcastChannel('cardpost-mock');
+      this.channel = new BroadcastChannel('lebanontcg-mock');
       this.channel.onmessage = (ev) => this.applyRemote(ev.data);
       // Ask any already-open tab for its state so a reloaded tab rejoins the
       // same mock world instead of resetting to the seed.

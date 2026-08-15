@@ -1,4 +1,4 @@
--- Demo dataset for a fresh Cardpost project. Run AFTER all migrations
+-- Demo dataset for a fresh LebanonTCG project. Run AFTER all migrations
 -- (SQL editor or `supabase db push` + psql -f seed.sql).
 --
 -- Notes:
@@ -13,9 +13,9 @@
 begin;
 
 insert into auth.users (id, email) values
-  ('a0000000-0000-4000-8000-000000000001', 'maya.demo@cardpost.local'),
-  ('a0000000-0000-4000-8000-000000000002', 'karim.demo@cardpost.local'),
-  ('a0000000-0000-4000-8000-000000000003', 'lina.demo@cardpost.local')
+  ('a0000000-0000-4000-8000-000000000001', 'maya.demo@lebanontcg.local'),
+  ('a0000000-0000-4000-8000-000000000002', 'karim.demo@lebanontcg.local'),
+  ('a0000000-0000-4000-8000-000000000003', 'lina.demo@lebanontcg.local')
 on conflict (id) do nothing;
 
 update public.profiles set

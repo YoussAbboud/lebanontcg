@@ -24,8 +24,7 @@
   object-fit: cover;
 }
 .imgr-thumb-over {
-  border-color: var(--green);
-  box-shadow: var(--shadow-glow-green);
+  border-color: var(--accent);
 }
 
 .imgr-cover {
@@ -79,8 +78,8 @@
   transition: border-color var(--t-fast), color var(--t-fast);
 }
 .imgr-add:hover {
-  border-color: var(--green);
-  color: var(--green);
+  border-color: var(--accent);
+  color: var(--text-1);
 }
 .imgr-add small {
   display: block;

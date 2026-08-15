@@ -1,9 +1,9 @@
-# Cardpost
+# LebanonTCG
 
-A peer-to-peer trading card marketplace. Sellers list cards, buyers browse
+Lebanon's peer-to-peer trading card marketplace. Sellers list cards, buyers browse
 and search, and the two parties negotiate and arrange the transaction
 themselves through built-in live chat. **There are no payments in the app**
-— Cardpost is the venue, the chat is the transaction layer.
+— LebanonTCG is the venue, the chat is the transaction layer.
 
 - Frontend: Vite + React + TypeScript, plain CSS on a design-token system
   (`src/styles/tokens.css`, see `DESIGN-NOTES.md`).

@@ -4,19 +4,49 @@
   gap: var(--sp-6);
 }
 
-/* Compact take on R1's hero: stretched caps, spectrum emphasis word */
+/* R4 hero: small pill chip, huge sentence-case headline with the
+   white→translucent gradient, quiet sub line */
 .browse-hero {
   text-align: center;
-  padding: var(--sp-8) 0 var(--sp-2);
+  padding: var(--sp-10) 0 var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
 }
-.browse-hero-title {
-  font-size: clamp(var(--fs-28), 5vw, var(--fs-52));
+
+.browse-hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 7px 16px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-12);
+  font-weight: 600;
   color: var(--text-1);
 }
+
+.browse-hero-title {
+  font-size: clamp(var(--fs-28), 5.4vw, var(--fs-56));
+}
+
 .browse-hero-sub {
-  margin-top: var(--sp-3);
   color: var(--text-2);
   font-size: var(--fs-14);
+  max-width: 480px;
+}
+
+.browse-explore {
+  display: flex;
+  justify-content: center;
+  padding-bottom: var(--sp-6);
+}
+
+.browse-market {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  scroll-margin-top: calc(var(--h-header) + var(--sp-4));
 }
 
 .browse-count {
@@ -26,7 +56,7 @@
 
 .browse-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: var(--sp-4);
 }
 
@@ -42,9 +72,9 @@
 }
 
 @media (max-width: 640px) {
-  .browse-hero { padding-top: var(--sp-4); }
+  .browse-hero { padding-top: var(--sp-5); }
   .browse-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: var(--sp-3);
   }
 }

@@ -1,4 +1,4 @@
-# Cardpost — Manual test script
+# LebanonTCG — Manual test script
 
 Run the relevant sections at every milestone checkpoint. Mock mode first
 (`npm run dev:mock`); the same script must pass in live mode (`VITE_MOCK=0`)
@@ -10,8 +10,8 @@ sizing math).
 
 ## M1 — Foundation
 
-1. `npm run dev:mock`, open http://localhost:5173 → app boots on the Browse
-   route with the Cardpost header, no console errors.
+1. `npm run dev:mock`, open http://localhost:5173 → app boots on the Home
+   route with the LebanonTCG header (flag logo, pill nav, hero, auto-scrolling carousel), no console errors.
 2. Header shows the dashed **Dev** switcher (mock only). Pick “Maya Haddad”
    → avatar appears; menu shows profile/listings/settings/sign-out.
 3. Switch to “Karim Nassar” → identity changes instantly, survives reload
@@ -26,9 +26,10 @@ sizing math).
 
 ## M2 — Listings read path
 
-1. Browse shows the seeded grid (~35 active listings) with cover image,
-   game label + dot, title, set/number line, condition badge, slab badge on
-   graded cards, price in lime.
+1. Home shows the hero + auto-scrolling featured rail (pauses on hover);
+   below it the seeded grid (~35 active listings) with seller header, cover
+   image, game label + dot, title, condition pill, slab badge on graded
+   cards, white price with coin mark.
 2. Type “charizard” in search → grid narrows after a beat (debounce);
    clearing restores. The `q=` appears in the URL.
 3. Filter by game=Pokémon + condition=NM → results intersect; “Filters (2)”

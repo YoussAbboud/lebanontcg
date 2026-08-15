@@ -21,7 +21,7 @@
   gap: var(--sp-2);
 }
 .signin-at {
-  color: var(--green);
+  color: var(--text-1);
   font-weight: 800;
   font-size: var(--fs-18);
 }

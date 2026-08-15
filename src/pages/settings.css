@@ -15,7 +15,7 @@
   gap: var(--sp-4);
 }
 
-.settings-section-title { color: var(--green); }
+.settings-section-title { color: var(--text-2); }
 
 .settings-identity {
   display: flex;
@@ -25,7 +25,7 @@
 
 .settings-username {
   font-weight: 700;
-  color: var(--green);
+  color: var(--text-1);
   display: flex;
   flex-direction: column;
 }
@@ -41,7 +41,7 @@
   align-items: center;
   gap: var(--sp-3);
 }
-.settings-saved { color: var(--green); font-size: var(--fs-13); font-weight: 600; }
+.settings-saved { color: var(--lime); font-size: var(--fs-13); font-weight: 600; }
 
 .settings-muted { color: var(--text-2); font-size: var(--fs-13); }
 

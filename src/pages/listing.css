@@ -106,7 +106,7 @@
 }
 .ldetail-seller-id > span { display: flex; flex-direction: column; }
 .ldetail-seller-id strong { font-size: var(--fs-16); }
-.ldetail-seller-id:hover strong { color: var(--green); }
+.ldetail-seller-id:hover strong { color: var(--text-2); }
 .ldetail-seller-handle { color: var(--text-3); font-size: var(--fs-12); }
 
 .ldetail-seller-meta {

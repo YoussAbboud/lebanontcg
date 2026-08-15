@@ -1,4 +1,4 @@
-# Cardpost — Decisions log
+# LebanonTCG — Decisions log
 
 Running log of product/engineering decisions made while building, newest last.
 
@@ -9,9 +9,10 @@ Running log of product/engineering decisions made while building, newest last.
   three reference images were attached to the brief itself. Extracted tokens
   from those images and recorded a textual description of each in
   `design-reference/README.md` so the traceability chain survives.
-- **Name: Cardpost.** The brief titles the project "CARDPOST"; repo name
-  (`lebanontcg`) suggests a Lebanon-focused TCG market, so seed data leans
-  into Beirut-flavored users/locations without hardcoding any locale logic.
+- **Name: Cardpost → LebanonTCG.** The brief titled the project "CARDPOST";
+  the owner's review renamed it **LebanonTCG** (see the R1 redesign round
+  below). Seed data leans into Beirut-flavored users/locations without
+  hardcoding any locale logic.
 - **Plain CSS files with component prefixes, not CSS Modules.** All values
   come from `src/styles/tokens.css`; prefixes (`shell-`, `uswitch-`, …) keep
   scoping honest without build tooling. One shared `ui.css` holds the
@@ -143,3 +144,29 @@ Running log of product/engineering decisions made while building, newest last.
 - **Anti-drift audit automated ad hoc:** `grep -rn "#\|rgba(" src
   --include="*.css" | grep -v tokens.css` returns nothing — every color in
   component CSS flows through the token file.
+
+## R1 — Design review round (owner feedback)
+
+- **Renamed to LebanonTCG** across UI, docs, package metadata, meta tags,
+  mock storage keys, and demo seed emails.
+- **New governing reference (R4).** The owner supplied a purple "NVC"
+  marketplace hero and asked for the site to match it: violet gradient
+  field with light rays, floating segmented pill nav, sentence-case hero
+  with white→translucent gradient text, glassy cards with avatar headers
+  and coin+stat-pill price rows, white pill CTAs. The token file was
+  rebuilt around it; green/lime demoted to status/condition semantics.
+  The stretched-caps display voice from the first round was retired.
+- **Auto-scrolling carousel** on the home page (explicit request): a
+  duplicated-track marquee (~42s loop) of the newest active listings,
+  pausing on hover/focus, edge-faded, degrading to a plain scrollable row
+  under `prefers-reduced-motion` (the aria-hidden clone is display:none
+  there and inert always, so keyboard/AT users never traverse it twice).
+- **Flag-card logo (R5).** The supplied Lebanese-flag trading-card gif is
+  recreated as an inline SVG (`FlagLogo`) — gold slab border, red bands,
+  cedar — with a recurring CSS holo-shine sweep standing in for the gif
+  animation (no binary assets, works at any size, animates the favicon's
+  static twin). Flag red doubles as the unread/favorite accent.
+- **Listing cards adopt R4 anatomy** (seller avatar + @handle header,
+  rounded inner media, coin mark + white price + dark condition pill),
+  which also surfaces the seller identity that used to require opening
+  the detail page.

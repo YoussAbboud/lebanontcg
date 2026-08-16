@@ -20,6 +20,7 @@ import type {
   AuthState,
   ConversationEvent,
   MarketplaceClient,
+  SignUpResult,
   Unsubscribe,
 } from './MarketplaceClient';
 import { listingMatchesFilter, sortListings } from '../filter';
@@ -72,7 +73,14 @@ export class MockClient implements MarketplaceClient {
   private blocks = new Map<string, Set<string>>();
   private reports: ReportInput[] = [];
 
-  private auth: AuthState = { user: null, loading: true };
+  /**
+   * Mock credential store, keyed by lowercased email. `password: null`
+   * models an account created by magic link that hasn't set one yet — the
+   * same state the real pre-password users are in.
+   */
+  private credentials = new Map<string, { userId: string; password: string | null }>();
+
+  private auth: AuthState = { user: null, loading: true, needsPassword: false };
   private authListeners = new Set<(s: AuthState) => void>();
   private conversationListeners = new Map<string, Set<(ev: ConversationEvent) => void>>();
   private inboxListeners = new Set<() => void>();
@@ -104,7 +112,7 @@ export class MockClient implements MarketplaceClient {
     // Restore per-tab session
     const savedId = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(AUTH_KEY) : null;
     const user = savedId ? (this.profiles.find((p) => p.id === savedId) ?? null) : null;
-    setTimeout(() => this.setAuth({ user, loading: false }), 30);
+    setTimeout(() => this.setAuth({ user, loading: false, needsPassword: this.needsPasswordFor(user) }), 30);
   }
 
   // ---- cross-tab state sync ----------------------------------------------
@@ -132,10 +140,15 @@ export class MockClient implements MarketplaceClient {
         this.reports = s.reports;
         this.favorites = new Map(s.favorites.map(([k, v]) => [k, new Set(v)]));
         this.blocks = new Map(s.blocks.map(([k, v]) => [k, new Set(v)]));
+        this.credentials = new Map(s.credentials ?? []);
         // Re-resolve the signed-in user against the shared world.
         const savedId = sessionStorage.getItem(AUTH_KEY);
         const user = savedId ? (this.profiles.find((p) => p.id === savedId) ?? null) : null;
-        this.setAuth({ user: user ? structuredClone(user) : null, loading: false });
+        this.setAuth({
+          user: user ? structuredClone(user) : null,
+          loading: false,
+          needsPassword: this.needsPasswordFor(user ?? null),
+        });
         this.emitInbox();
         break;
       }
@@ -229,12 +242,16 @@ export class MockClient implements MarketplaceClient {
         this.reports.push(patch.report);
         break;
       }
+      case 'credential': {
+        this.credentials.set(patch.email, { userId: patch.userId, password: patch.password });
+        break;
+      }
       case 'profile': {
         const i = this.profiles.findIndex((p) => p.id === patch.profile.id);
         if (i >= 0) this.profiles[i] = patch.profile;
         // If it's the signed-in user in this tab, refresh auth state too.
         if (this.auth.user?.id === patch.profile.id) {
-          this.setAuth({ user: structuredClone(patch.profile), loading: false });
+          this.setAuth({ ...this.auth, user: structuredClone(patch.profile), loading: false });
         }
         break;
       }
@@ -251,10 +268,18 @@ export class MockClient implements MarketplaceClient {
       reports: this.reports,
       favorites: [...this.favorites.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
       blocks: [...this.blocks.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
+      credentials: [...this.credentials.entries()],
     });
   }
 
   // ---- emit helpers -------------------------------------------------------
+
+  /** A signed-in mock user needs a password when their credential has none. */
+  private needsPasswordFor(user: Profile | null): boolean {
+    if (!user) return false;
+    const cred = [...this.credentials.values()].find((c) => c.userId === user.id);
+    return cred ? cred.password === null : false;
+  }
 
   private setAuth(state: AuthState) {
     this.auth = state;
@@ -299,13 +324,99 @@ export class MockClient implements MarketplaceClient {
     return () => this.authListeners.delete(cb);
   }
 
-  async signInWithEmail(_email: string): Promise<void> {
-    throw new Error('Magic-link sign-in is unavailable in mock mode. Use the dev user switcher.');
+  /** Credential lookup key. */
+  private credKey(email: string): string {
+    return email.trim().toLowerCase();
+  }
+
+  private signInAs(userId: string, needsPassword: boolean) {
+    const user = this.profiles.find((p) => p.id === userId);
+    if (!user) throw new Error('Account not found');
+    sessionStorage.setItem(AUTH_KEY, userId);
+    this.setAuth({ user: structuredClone(user), loading: false, needsPassword });
+  }
+
+  /** Creates a fresh mock account (profile + credential) for an email. */
+  private createAccount(email: string, password: string | null): string {
+    const profile: Profile = {
+      id: nextId('u'),
+      username: null,
+      displayName: email.split('@')[0] ?? 'collector',
+      avatarUrl: null,
+      bio: '',
+      createdAt: new Date().toISOString(),
+      ratingAvg: null,
+      ratingCount: 0,
+    };
+    this.profiles.push(profile);
+    this.credentials.set(this.credKey(email), { userId: profile.id, password });
+    this.broadcast({ type: 'profile', profile: structuredClone(profile) });
+    this.broadcast({
+      type: 'credential',
+      email: this.credKey(email),
+      userId: profile.id,
+      password,
+    });
+    return profile.id;
+  }
+
+  async signUpWithPassword(email: string, password: string): Promise<SignUpResult> {
+    await sleep(netDelay());
+    if (this.credentials.has(this.credKey(email))) {
+      throw new Error('An account with that email already exists — sign in instead.');
+    }
+    const userId = this.createAccount(email, password);
+    // Mock has no inbox, so the account is usable immediately; live mode
+    // requires the emailed confirmation first.
+    this.signInAs(userId, false);
+    return { needsEmailConfirmation: false };
+  }
+
+  async signInWithPassword(email: string, password: string): Promise<void> {
+    await sleep(netDelay());
+    const cred = this.credentials.get(this.credKey(email));
+    if (!cred || cred.password === null || cred.password !== password) {
+      throw new Error('Invalid email or password.');
+    }
+    this.signInAs(cred.userId, false);
+  }
+
+  /** Mock magic link: signs in straight away (no inbox to check). */
+  async signInWithEmail(email: string): Promise<void> {
+    await sleep(netDelay());
+    const key = this.credKey(email);
+    const cred = this.credentials.get(key);
+    if (cred) {
+      this.signInAs(cred.userId, cred.password === null);
+      return;
+    }
+    // Unknown email → a new magic-link account, which still needs a password.
+    this.signInAs(this.createAccount(email, null), true);
+  }
+
+  async setPassword(password: string): Promise<void> {
+    const me = this.me();
+    await sleep(netDelay());
+    let entry = [...this.credentials.entries()].find(([, c]) => c.userId === me.id);
+    if (!entry) {
+      const email = `${me.username ?? me.id}@mock.test`;
+      this.credentials.set(email, { userId: me.id, password });
+      entry = [email, { userId: me.id, password }];
+    } else {
+      entry[1].password = password;
+    }
+    this.broadcast({ type: 'credential', email: entry[0], userId: me.id, password });
+    this.setAuth({ ...this.auth, needsPassword: false });
+  }
+
+  async sendPasswordReset(_email: string): Promise<void> {
+    await sleep(netDelay());
+    // No inbox in mock mode — the dev switcher is the escape hatch.
   }
 
   async signOut(): Promise<void> {
     sessionStorage.removeItem(AUTH_KEY);
-    this.setAuth({ user: null, loading: false });
+    this.setAuth({ user: null, loading: false, needsPassword: false });
   }
 
   async listMockUsers(): Promise<Profile[]> {
@@ -316,7 +427,8 @@ export class MockClient implements MarketplaceClient {
     const user = this.profiles.find((p) => p.id === userId);
     if (!user) throw new Error('Unknown mock user');
     sessionStorage.setItem(AUTH_KEY, userId);
-    this.setAuth({ user: structuredClone(user), loading: false });
+    // The switcher is an explicit dev bypass — no password gate.
+    this.setAuth({ user: structuredClone(user), loading: false, needsPassword: false });
   }
 
   async claimUsername(username: string): Promise<Profile> {
@@ -327,7 +439,7 @@ export class MockClient implements MarketplaceClient {
     }
     const profile = this.profiles.find((p) => p.id === me.id)!;
     profile.username = username;
-    this.setAuth({ user: structuredClone(profile), loading: false });
+    this.setAuth({ ...this.auth, user: structuredClone(profile), loading: false });
     this.broadcast({ type: 'profile', profile: structuredClone(profile) });
     return structuredClone(profile);
   }
@@ -342,7 +454,7 @@ export class MockClient implements MarketplaceClient {
     if (patch.displayName !== undefined) profile.displayName = patch.displayName;
     if (patch.bio !== undefined) profile.bio = patch.bio;
     if (patch.avatarUrl !== undefined) profile.avatarUrl = patch.avatarUrl;
-    this.setAuth({ user: structuredClone(profile), loading: false });
+    this.setAuth({ ...this.auth, user: structuredClone(profile), loading: false });
     this.broadcast({ type: 'profile', profile: structuredClone(profile) });
     return structuredClone(profile);
   }
@@ -868,6 +980,15 @@ export class MockClient implements MarketplaceClient {
       .map((r) => structuredClone(r));
   }
 
+  async getReviewsWritten(): Promise<Review[]> {
+    const me = this.me();
+    await sleep(netDelay());
+    return this.reviews
+      .filter((r) => r.reviewerId === me.id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((r) => structuredClone(r));
+  }
+
   async getPendingReviews(): Promise<PendingReview[]> {
     const me = this.me();
     await sleep(netDelay());
@@ -973,6 +1094,7 @@ interface SnapshotState {
   reports: ReportInput[];
   favorites: Array<[string, string[]]>;
   blocks: Array<[string, string[]]>;
+  credentials: Array<[string, { userId: string; password: string | null }]>;
 }
 
 type RemotePatch =
@@ -988,4 +1110,5 @@ type RemotePatch =
   | { type: 'block'; blockerId: string; blockedId: string; on: boolean }
   | { type: 'review'; review: Review }
   | { type: 'report'; report: ReportInput }
-  | { type: 'profile'; profile: Profile };
+  | { type: 'profile'; profile: Profile }
+  | { type: 'credential'; email: string; userId: string; password: string | null };

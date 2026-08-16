@@ -10,9 +10,11 @@ import { ChatPage } from './pages/ChatPage';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ReviewsPage } from './pages/ReviewsPage';
 import { SafeTradingPage } from './pages/SafeTradingPage';
 import { SignInPage } from './pages/SignInPage';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { SetPasswordPage } from './pages/SetPasswordPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
@@ -32,9 +34,11 @@ export default function App() {
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/u/:username" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/safety" element={<SafeTradingPage />} />
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/welcome" element={<OnboardingPage />} />
+          <Route path="/set-password" element={<SetPasswordPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

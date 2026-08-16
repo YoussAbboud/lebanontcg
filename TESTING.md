@@ -217,3 +217,29 @@ Manual (live mode):
 5. If the schema was never applied, the home error state now prints the
    real cause (e.g. `relation "public.listings" does not exist`) and
    points at supabase/apply-all.sql.
+
+
+## R4 — Passwords, reviews hub, trending grid
+
+Automated (headless Chromium, mock build — 20 assertions in one run):
+trending grid renders cards with a small inventory and no empty panel;
+sign-up rejects a weak password (live checklist) and a mismatched
+confirmation, then completes into onboarding; sign out and sign back in
+with email + password; a wrong password is rejected and offers the
+email-link fallback; a magic-link account is forced to `/set-password`
+and the gate blocks other routes until it's set; confirming a deal shows
+the thread prompt, badges the user menu, lists the trade in `/reviews`,
+submits from the hub, and clears the home banner.
+
+Manual (live mode):
+1. Create account → confirm the email → `/welcome` → home. Sign out and
+   back in with the password only (no inbox).
+2. An account created before this round: sign in with the email link →
+   prompted to set a password → next sign-in works with the password.
+3. Forgot password → reset email → `/set-password` → new password works.
+4. Settings → Password: change it, then re-sign-in with the new one.
+5. Confirm a deal in chat: both buyer and seller see the trade in
+   `/reviews`, each can rate once, ratings land on the profile and move
+   the sellers board.
+6. With only a couple of listings live, the home grid shows them instead
+   of the empty state.

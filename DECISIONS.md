@@ -251,3 +251,40 @@ Running log of product/engineering decisions made while building, newest last.
   the error state prints the underlying message, with a specific hint
   when it looks like the schema was never applied ("relation … does not
   exist" → run `supabase/apply-all.sql`).
+
+## R4 — Passwords, review hub, home grid fix
+
+- **Email + password is now the everyday sign-in**, with the magic link
+  demoted to a fallback. Sign-up sends one confirmation email; after that
+  no inbox trip is needed. Password reset uses Supabase's reset email and
+  lands on `/set-password`.
+- **Policy lives in one pure module** (`src/lib/password.ts`, 18 unit
+  tests): 10+ characters, lower + upper + digit, plus rejections for
+  over-72-byte (bcrypt truncation), common passwords, single repeated
+  characters, and passwords containing the email's local part. The
+  sign-up form, set-password page and Settings all consume the same
+  functions, so the rules can't drift between screens.
+- **"Has this account got a password?" rides in auth user metadata**
+  (`has_password`) rather than a profiles column. It gates a UI prompt
+  only — worst case a user who edits their own metadata skips a prompt —
+  and it avoids a migration plus an extra round-trip on every sign-in.
+  `AuthState.needsPassword` exposes it; the AppShell runs two ordered
+  gates: set a password, then claim a username.
+- **The mock client models the whole flow offline**: an in-memory
+  credential store (`password: null` = magic-link account that still
+  needs one), sign-up, password sign-in, and a mock magic link that signs
+  in immediately. The Dev switcher stays a full bypass (no gates) so
+  two-tab chat testing is unaffected. The header's Sign in link is no
+  longer hidden in mock mode, since the form now works there.
+- **Home's trending grid took `items.slice(7, 15)`** — the fan carousel
+  claimed the first 7 — so any marketplace with fewer than 8 listings
+  showed "Nothing else listed yet" no matter how many cards existed. The
+  grid now falls back to the full newest set when there's no remainder;
+  the empty state is reserved for a genuinely empty marketplace.
+- **Reviews existed but were invisible.** The data layer (post-sale, one
+  review per party per conversation, RLS-enforced) was only surfaced
+  inside a sold chat thread. Added a `/reviews` hub (trades awaiting a
+  rating, received, written), a pending count in AppContext refreshed off
+  the same inbox signal that carries deal confirmations, a badge in the
+  user menu, and a home banner after a deal closes. No schema change —
+  `getReviewsWritten` reads the existing publicly-readable table.

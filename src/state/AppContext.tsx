@@ -21,6 +21,9 @@ interface AppContextValue {
   /** Unread message count across all conversations (header badge). */
   unreadCount: number;
   refreshUnread(): void;
+  /** Completed trades still waiting for this user's review. */
+  pendingReviewCount: number;
+  refreshPendingReviews(): void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -29,6 +32,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
   const [auth, setAuth] = useState<AuthState>(client.getAuthState());
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingReviewCount, setPendingReviewCount] = useState(0);
   const userId = auth.user?.id ?? null;
   const unreadTimer = useRef<number | null>(null);
 
@@ -39,6 +43,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
     if (!userId) {
       setFavoriteIds(new Set());
       setUnreadCount(0);
+      setPendingReviewCount(0);
       return;
     }
     client.getFavoriteIds().then((ids) => {
@@ -47,6 +52,12 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
     client.getTotalUnreadCount().then((n) => {
       if (!cancelled) setUnreadCount(n);
     });
+    client
+      .getPendingReviews()
+      .then((p) => {
+        if (!cancelled) setPendingReviewCount(p.length);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -60,10 +71,23 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
     }, 80);
   }, [client]);
 
+  const refreshPendingReviews = useCallback(() => {
+    if (!userId) return;
+    client
+      .getPendingReviews()
+      .then((p) => setPendingReviewCount(p.length))
+      .catch(() => {});
+  }, [client, userId]);
+
   useEffect(() => {
     if (!userId) return;
-    return client.subscribeToInbox(refreshUnread);
-  }, [client, userId, refreshUnread]);
+    // A deal being confirmed arrives as a system message, so the same
+    // signal that refreshes unread counts also opens a review.
+    return client.subscribeToInbox(() => {
+      refreshUnread();
+      refreshPendingReviews();
+    });
+  }, [client, userId, refreshUnread, refreshPendingReviews]);
 
   const toggleFavorite = useCallback(
     async (listingId: string) => {
@@ -99,8 +123,19 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       toggleFavorite,
       unreadCount,
       refreshUnread,
+      pendingReviewCount,
+      refreshPendingReviews,
     }),
-    [client, auth, favoriteIds, toggleFavorite, unreadCount, refreshUnread],
+    [
+      client,
+      auth,
+      favoriteIds,
+      toggleFavorite,
+      unreadCount,
+      refreshUnread,
+      pendingReviewCount,
+      refreshPendingReviews,
+    ],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -187,6 +187,21 @@
 .shell-menu-item:hover { background: var(--hover-row); }
 .shell-menu-item-danger { color: var(--danger); }
 
+.shell-menu-badge {
+  float: right;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--acid);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+}
+
 /* ---- Mobile nav ------------------------------------------------------------------- */
 .shell-burger {
   display: none;

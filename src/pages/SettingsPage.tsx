@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import type { Profile } from '../lib/types';
 import { useApp } from '../state/AppContext';
 import { Avatar } from '../components/Avatar';
+import { PasswordField } from '../components/PasswordField';
+import { checkPassword, confirmationError } from '../lib/password';
 import './settings.css';
 
 export function SettingsPage() {
@@ -11,6 +13,10 @@ export function SettingsPage() {
   const [bio, setBio] = useState('');
   const [saveState, setSaveState] = useState<'idle' | 'busy' | 'saved' | 'error'>('idle');
   const [blockedProfiles, setBlockedProfiles] = useState<Profile[]>([]);
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [pwState, setPwState] = useState<'idle' | 'busy' | 'saved'>('idle');
+  const [pwError, setPwError] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -49,6 +55,32 @@ export function SettingsPage() {
       window.setTimeout(() => setSaveState('idle'), 2500);
     } catch {
       setSaveState('error');
+    }
+  };
+
+  const savePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const check = checkPassword(password);
+    if (!check.ok) {
+      setPwError(check.message);
+      return;
+    }
+    const mismatch = confirmationError(password, passwordConfirm);
+    if (mismatch) {
+      setPwError(mismatch);
+      return;
+    }
+    setPwError('');
+    setPwState('busy');
+    try {
+      await client.setPassword(password);
+      setPassword('');
+      setPasswordConfirm('');
+      setPwState('saved');
+      window.setTimeout(() => setPwState('idle'), 2500);
+    } catch (err) {
+      setPwError(err instanceof Error ? err.message : 'Could not update the password.');
+      setPwState('idle');
     }
   };
 
@@ -99,6 +131,38 @@ export function SettingsPage() {
           {saveState === 'saved' && <span className="settings-saved" role="status">Saved ✓</span>}
           <button className="btn-acid" disabled={saveState === 'busy' || !displayName.trim()}>
             {saveState === 'busy' ? 'Saving…' : 'Save profile'}
+          </button>
+        </div>
+      </form>
+
+      <form className="settings-section panel" onSubmit={savePassword}>
+        <h2 className="mono-label settings-section-title">Password</h2>
+        <PasswordField
+          label="New password"
+          value={password}
+          onChange={setPassword}
+          showPolicy
+          autoComplete="new-password"
+        />
+        <PasswordField
+          label="Confirm new password"
+          value={passwordConfirm}
+          onChange={setPasswordConfirm}
+          autoComplete="new-password"
+        />
+        {pwError && (
+          <p className="field-error" role="alert">
+            {pwError}
+          </p>
+        )}
+        <div className="settings-save-row">
+          {pwState === 'saved' && (
+            <span className="settings-saved" role="status">
+              Password updated ✓
+            </span>
+          )}
+          <button className="btn-acid" disabled={pwState === 'busy' || !password}>
+            {pwState === 'busy' ? 'Saving…' : 'Update password'}
           </button>
         </div>
       </form>

@@ -37,6 +37,27 @@
   border-radius: var(--r-card);
 }
 
+/* ---- Pending-review banner --------------------------------------------------- */
+.home-review-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px var(--pad-x) 0;
+  padding: 14px 18px;
+  border-color: var(--acid);
+  background: var(--acid-tint);
+  text-decoration: none;
+  color: inherit;
+}
+.home-review-eyebrow { color: var(--acid); flex: 0 0 auto; }
+.home-review-text { flex: 1; font-size: var(--fs-13); color: var(--text-2); }
+.home-review-cta { flex: 0 0 auto; }
+
+@media (max-width: 640px) {
+  .home-review-banner { flex-wrap: wrap; }
+  .home-review-cta { width: 100%; text-align: center; }
+}
+
 .home-error { margin: 72px auto; max-width: 480px; }
 .home-error-detail {
   color: var(--danger);

@@ -23,6 +23,16 @@ export interface AuthState {
   user: Profile | null;
   /** True while the initial session restore is running. */
   loading: boolean;
+  /**
+   * True for accounts that have no password yet — the magic-link-era
+   * users. The app prompts them to set one before letting them continue.
+   */
+  needsPassword: boolean;
+}
+
+export interface SignUpResult {
+  /** True when a confirmation email was sent and there's no session yet. */
+  needsEmailConfirmation: boolean;
 }
 
 export interface ConversationEvent {
@@ -45,8 +55,18 @@ export interface MarketplaceClient {
   // ---- Auth --------------------------------------------------------------
   getAuthState(): AuthState;
   onAuthChange(cb: (state: AuthState) => void): Unsubscribe;
-  /** Sends a magic link (live) — resolves when the email is queued. */
+  /** Create an account. The address must be confirmed by email before the
+      password works, so this usually resolves with needsEmailConfirmation. */
+  signUpWithPassword(email: string, password: string): Promise<SignUpResult>;
+  /** Everyday sign-in for confirmed accounts. */
+  signInWithPassword(email: string, password: string): Promise<void>;
+  /** Sends a magic link — account recovery and the path for accounts that
+      predate passwords. */
   signInWithEmail(email: string): Promise<void>;
+  /** Set (or replace) the signed-in user's password. Clears needsPassword. */
+  setPassword(password: string): Promise<void>;
+  /** Sends a password-reset email. */
+  sendPasswordReset(email: string): Promise<void>;
   signOut(): Promise<void>;
   /** Mock-mode only: seeded users for the dev switcher. */
   listMockUsers(): Promise<Profile[]>;
@@ -109,6 +129,8 @@ export interface MarketplaceClient {
 
   // ---- Trust -------------------------------------------------------------
   getReviewsForUser(userId: string): Promise<Review[]>;
+  /** Reviews the signed-in user has written (the /reviews hub). */
+  getReviewsWritten(): Promise<Review[]>;
   getPendingReviews(): Promise<PendingReview[]>;
   submitReview(conversationId: string, rating: number, body: string): Promise<Review>;
   submitReport(input: ReportInput): Promise<void>;

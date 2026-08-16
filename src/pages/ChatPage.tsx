@@ -171,7 +171,7 @@ export function ChatPage() {
 }
 
 function Thread({ conversationId, onAnyChange }: { conversationId: string; onAnyChange(): void }) {
-  const { client, user } = useApp();
+  const { client, user, refreshPendingReviews } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
   const [conv, setConv] = useState<ConversationSummary | null>(null);
@@ -664,7 +664,10 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
           <ReviewPrompt
             conversationId={conversationId}
             otherParty={conv.otherParty}
-            onDone={() => setReviewState('done')}
+            onDone={() => {
+              setReviewState('done');
+              refreshPendingReviews();
+            }}
           />
         )}
         {reviewState === 'done' && (

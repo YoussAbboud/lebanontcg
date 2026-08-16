@@ -23,6 +23,7 @@ import type {
   AuthState,
   ConversationEvent,
   MarketplaceClient,
+  SignUpResult,
   Unsubscribe,
 } from './MarketplaceClient';
 
@@ -109,7 +110,7 @@ const LISTING_SELECT = '*, listing_images(*)';
 export class SupabaseMarketplaceClient implements MarketplaceClient {
   readonly isMock = false;
   private sb: SupabaseClient;
-  private auth: AuthState = { user: null, loading: true };
+  private auth: AuthState = { user: null, loading: true, needsPassword: false };
   private authListeners = new Set<(s: AuthState) => void>();
   /** Open realtime channels per conversation (used for typing broadcast). */
   private convChannels = new Map<string, ReturnType<SupabaseClient['channel']>>();
@@ -222,9 +223,13 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   private async refreshAuthProfile(): Promise<void> {
     const { data } = await this.sb.auth.getUser();
     if (!data.user) {
-      this.setAuth({ user: null, loading: false });
+      this.setAuth({ user: null, loading: false, needsPassword: false });
       return;
     }
+    // Accounts created by magic link have no password. The flag is written
+    // at sign-up / set-password time; treating "absent" as "needs one"
+    // means every pre-password account gets prompted exactly once.
+    const needsPassword = data.user.user_metadata?.has_password !== true;
     let { data: row } = await this.sb
       .from('profiles')
       .select('*')
@@ -243,12 +248,21 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
         .maybeSingle();
       row = created ?? null;
     }
-    this.setAuth({ user: row ? this.mapProfile(row as ProfileRow) : null, loading: false });
+    this.setAuth({
+      user: row ? this.mapProfile(row as ProfileRow) : null,
+      loading: false,
+      needsPassword,
+    });
   }
 
   private setAuth(state: AuthState) {
     this.auth = state;
     for (const cb of this.authListeners) cb(state);
+  }
+
+  /** Replace the profile while keeping the auth flags intact. */
+  private setUser(profile: Profile) {
+    this.setAuth({ ...this.auth, user: profile, loading: false });
   }
 
   // ---- Auth ---------------------------------------------------------------
@@ -262,10 +276,43 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     return () => this.authListeners.delete(cb);
   }
 
+  async signUpWithPassword(email: string, password: string): Promise<SignUpResult> {
+    const { data, error } = await this.sb.auth.signUp({
+      email,
+      password,
+      // has_password is the flag the set-password gate reads; it rides in
+      // user metadata so no extra table round-trip is needed at sign-in.
+      options: { emailRedirectTo: window.location.origin, data: { has_password: true } },
+    });
+    if (error) throw new Error(error.message);
+    return { needsEmailConfirmation: !data.session };
+  }
+
+  async signInWithPassword(email: string, password: string): Promise<void> {
+    const { error } = await this.sb.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+  }
+
   async signInWithEmail(email: string): Promise<void> {
     const { error } = await this.sb.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin },
+    });
+    if (error) throw new Error(error.message);
+  }
+
+  async setPassword(password: string): Promise<void> {
+    const { error } = await this.sb.auth.updateUser({
+      password,
+      data: { has_password: true },
+    });
+    if (error) throw new Error(error.message);
+    await this.refreshAuthProfile();
+  }
+
+  async sendPasswordReset(email: string): Promise<void> {
+    const { error } = await this.sb.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/set-password`,
     });
     if (error) throw new Error(error.message);
   }
@@ -295,7 +342,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       throw new Error(error.message);
     }
     const profile = this.mapProfile(data as ProfileRow);
-    this.setAuth({ user: profile, loading: false });
+    this.setUser(profile);
     return profile;
   }
 
@@ -327,7 +374,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .single();
     if (error) throw new Error(error.message);
     const profile = this.mapProfile(data as ProfileRow);
-    this.setAuth({ user: profile, loading: false });
+    this.setUser(profile);
     return profile;
   }
 
@@ -976,6 +1023,16 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .from('reviews')
       .select('*, reviewer:profiles!reviews_reviewer_id_fkey(*)')
       .eq('reviewee_id', userId)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as ReviewRow[]).map((r) => this.mapReview(r));
+  }
+
+  async getReviewsWritten(): Promise<Review[]> {
+    const { data, error } = await this.sb
+      .from('reviews')
+      .select('*, reviewer:profiles!reviews_reviewer_id_fkey(*)')
+      .eq('reviewer_id', this.uid())
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
     return ((data ?? []) as ReviewRow[]).map((r) => this.mapReview(r));

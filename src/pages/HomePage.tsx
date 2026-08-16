@@ -14,7 +14,7 @@ import { isAcid } from '../lib/face';
 import './home.css';
 
 export function HomePage() {
-  const { client } = useApp();
+  const { client, pendingReviewCount } = useApp();
   const navigate = useNavigate();
   const [total, setTotal] = useState<number | null>(null);
   const [fanItems, setFanItems] = useState<ListingWithSeller[]>([]);
@@ -38,7 +38,12 @@ export function HomePage() {
         if (cancelled) return;
         setTotal(newest.total);
         setFanItems(newest.items.slice(0, 7));
-        setTrending(newest.items.slice(7, 15));
+        // The fan showcases the 7 newest; the grid takes what's left. On a
+        // young marketplace there is nothing left, so it shows the same
+        // cards rather than an empty "nothing listed yet" panel.
+        setTrending(
+          newest.items.length > 7 ? newest.items.slice(7, 15) : newest.items,
+        );
         setFeatured(watched ? watched.items : []);
         setSellers(topSellers);
         setState('ready');
@@ -81,6 +86,17 @@ export function HomePage() {
 
   return (
     <div className="home">
+      {pendingReviewCount > 0 && (
+        <Link to="/reviews" className="home-review-banner panel">
+          <span className="mono-label home-review-eyebrow">Deal closed</span>
+          <span className="home-review-text">
+            You have {pendingReviewCount} trade{pendingReviewCount === 1 ? '' : 's'} to rate —
+            your review builds the other collector&apos;s reputation.
+          </span>
+          <span className="btn-acid home-review-cta">Rate now</span>
+        </Link>
+      )}
+
       <section className="home-hero">
         <div className="mono-label home-eyebrow">
           Peer-to-peer{total !== null ? ` · ${total.toLocaleString()} cards listed` : ''}

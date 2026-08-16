@@ -1,0 +1,170 @@
+/* Reviews hub (/reviews) — rate completed trades, see what you've earned. */
+
+.reviews {
+  padding: 32px var(--pad-x) 72px;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.reviews-head h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-28);
+  margin-bottom: 8px;
+}
+.reviews-eyebrow { color: var(--acid); }
+.reviews-sub {
+  color: var(--muted);
+  font-size: var(--fs-13);
+  max-width: 60ch;
+}
+
+.reviews-stats {
+  display: flex;
+  gap: 28px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--hairline);
+}
+.reviews-stat-value {
+  font-size: var(--fs-22);
+  color: var(--text-1);
+  margin-top: 4px;
+}
+
+.reviews-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reviews-empty {
+  color: var(--muted);
+  font-size: var(--fs-13);
+}
+
+/* ---- Pending trades ---------------------------------------------------- */
+
+.reviews-pending {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reviews-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reviews-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.reviews-thumb {
+  width: 58px;
+  height: 78px;
+  flex: 0 0 auto;
+  border-radius: var(--r-thumb);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+}
+.reviews-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.reviews-thumb-glyph {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--glyph-ink-strong);
+}
+
+.reviews-card-id {
+  flex: 1;
+  min-width: 0;
+}
+.reviews-card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-15);
+}
+.reviews-card-meta {
+  color: var(--muted);
+  margin: 4px 0 8px;
+}
+
+.reviews-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--text-2);
+  font-size: var(--fs-13);
+  cursor: pointer;
+}
+.reviews-party:hover { color: var(--acid); }
+
+.reviews-thread { flex: 0 0 auto; }
+
+/* The shared prompt sits inside the card here: full width, own ground. */
+.reviews-card .rvw {
+  background: var(--input-bg);
+  margin: 0;
+  max-width: none;
+}
+
+/* ---- Received / written lists ------------------------------------------ */
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reviews-row {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.reviews-row-body { flex: 1; min-width: 0; }
+
+.reviews-row-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.reviews-stars {
+  color: var(--acid);
+  letter-spacing: 0.08em;
+}
+.reviews-time { color: var(--muted); }
+
+.reviews-body {
+  color: var(--text-2);
+  font-size: var(--fs-13);
+  margin-top: 6px;
+}
+
+@media (max-width: 640px) {
+  .reviews-card-head { flex-wrap: wrap; }
+  .reviews-thread { width: 100%; text-align: center; }
+}

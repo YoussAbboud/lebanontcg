@@ -39,8 +39,9 @@ Open http://localhost:5173. You're in mock mode:
    - Or paste each file from `supabase/migrations/` into the SQL editor,
      in filename order.
 3. Seed demo data (optional): run `supabase/seed.sql` in the SQL editor.
-4. In **Auth → URL Configuration**, add `http://localhost:5173` to the
-   redirect allow-list (magic links land there).
+4. In **Auth → URL Configuration**, add `http://localhost:5173` (and your
+   production domain) to the redirect allow-list — confirmation, sign-in
+   and password-reset links land there.
 5. Copy `.env.example` to `.env` and fill in:
 
    | Variable | Where to find it |
@@ -49,8 +50,18 @@ Open http://localhost:5173. You're in mock mode:
    | `VITE_SUPABASE_URL` | Project Settings → General (`https://<ref>.supabase.co`), also shown under the dashboard's **Connect** button |
    | `VITE_SUPABASE_ANON_KEY` | Project Settings → API Keys → **Publishable key** (`sb_publishable_…`) on new projects, or the legacy "anon public" key on older ones. Never the secret/service_role key. |
 
-6. `npm run dev` and sign in with your email (magic link), then claim a
-   username when prompted.
+6. `npm run dev`, then **Create account** with an email and password.
+   Confirm the emailed link once; after that it's email + password. New
+   accounts continue to `/welcome` to pick a username, photo and bio.
+
+   Accounts created before passwords existed sign in with **Email me a
+   sign-in link** and are prompted to set a password at `/set-password`.
+
+   Password policy (client-side, `src/lib/password.ts`): 10+ characters
+   with a lowercase letter, an uppercase letter and a number; common
+   passwords and ones containing the email address are rejected. To
+   enforce a floor server-side too, set **Auth → Providers → Email →
+   Minimum password length** in the dashboard.
 
 ## Scripts
 

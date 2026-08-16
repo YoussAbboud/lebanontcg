@@ -8,16 +8,22 @@ import './appshell.css';
 import '../styles/ui.css';
 
 export function AppShell() {
-  const { user, unreadCount, client } = useApp();
+  const { user, auth, unreadCount, pendingReviewCount, client } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Signed in but no username yet (fresh magic-link account): finish
-  // onboarding before anything else.
-  const needsOnboarding = Boolean(user && !user.username) && location.pathname !== '/welcome';
+  // Two one-time gates, in order: set a password (accounts that predate
+  // passwords), then claim a handle (fresh accounts).
+  const gate =
+    user && auth.needsPassword
+      ? '/set-password'
+      : user && !user.username
+        ? '/welcome'
+        : null;
+  const redirectTo = gate && gate !== location.pathname ? gate : null;
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -152,6 +158,21 @@ export function AppShell() {
                     className="shell-menu-item"
                     onClick={() => {
                       setMenuOpen(false);
+                      navigate('/reviews');
+                    }}
+                  >
+                    Reviews
+                    {pendingReviewCount > 0 && (
+                      <span className="shell-menu-badge" aria-label={`${pendingReviewCount} to rate`}>
+                        {pendingReviewCount}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    role="menuitem"
+                    className="shell-menu-item"
+                    onClick={() => {
+                      setMenuOpen(false);
                       navigate('/settings');
                     }}
                   >
@@ -172,11 +193,9 @@ export function AppShell() {
               )}
             </div>
           ) : (
-            !client.isMock && (
-              <Link to="/signin" className="btn-outline shell-signin">
-                Sign in
-              </Link>
-            )
+            <Link to="/signin" className="btn-outline shell-signin">
+              Sign in
+            </Link>
           )}
           <Link to="/sell" className="btn-acid shell-sell">
             List a card
@@ -195,13 +214,14 @@ export function AppShell() {
       )}
 
       <main id="main" className="shell-main">
-        {needsOnboarding ? <Navigate to="/welcome" replace /> : <Outlet />}
+        {redirectTo ? <Navigate to={redirectTo} replace /> : <Outlet />}
       </main>
 
       <footer className="shell-footer">
         <div className="mono-label">We connect collectors. You handle the deal.</div>
         <nav className="shell-footer-nav" aria-label="Footer">
           <Link to="/safety">Trading safely</Link>
+          <Link to="/reviews">Reviews</Link>
           <Link to="/favorites">Watchlist</Link>
           <Link to="/settings">Settings</Link>
         </nav>

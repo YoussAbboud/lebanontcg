@@ -1,16 +1,16 @@
--- ============================================================================
+-- ==========================================================================
 -- LebanonTCG — one-paste setup
--- Generated from supabase/migrations/0001–0009 (do not edit; edit the
+-- Generated from supabase/migrations/0001–0010 (do not edit; edit the
 -- individual migration files and regenerate instead).
 --
 -- HOW TO USE: Supabase dashboard → SQL Editor → New query → paste this
 -- entire file → Run. Run supabase/seed.sql afterwards if you want demo data.
 -- Run this ONCE on a FRESH project only.
--- ============================================================================
+-- ==========================================================================
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0001_profiles.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0001: profiles + auth bootstrap
 -- Every table ships with its RLS in the same migration.
 
@@ -97,9 +97,9 @@ create policy "users update own profile"
 -- No insert/delete policies: rows are created by the auth trigger and die
 -- with the auth user (cascade).
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0002_listings.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0002: listings + listing_images (+ enums, status transition enforcement)
 
 create type public.game_type as enum
@@ -248,9 +248,9 @@ create policy "sellers delete own listing images"
     where l.id = listing_id and l.seller_id = auth.uid()
   ));
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0003_chat.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0003: conversations + messages + blocks + system messages on status change
 -- (blocks live here because message policies depend on them)
 
@@ -528,9 +528,9 @@ alter publication supabase_realtime add table public.messages;
 alter publication supabase_realtime add table public.listings;
 alter publication supabase_realtime add table public.conversations;
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0004_favorites.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0004: favorites
 
 create table public.favorites (
@@ -556,9 +556,9 @@ create policy "users remove own favorites"
   on public.favorites for delete
   using (user_id = auth.uid());
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0005_reviews.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0005: reviews (post-sale, one per party per conversation) + rating rollup
 
 create table public.reviews (
@@ -629,9 +629,9 @@ create policy "participants review sold trades"
     )
   );
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0006_reports.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0006: reports (moderation queue; write-only for users)
 
 create type public.report_target as enum ('listing', 'user', 'message');
@@ -659,9 +659,9 @@ create policy "users file reports"
   on public.reports for insert
   with check (reporter_id = auth.uid());
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0007_storage.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0007: storage bucket for listing photos + avatars
 -- Public read; writes only inside the caller's own {uid}/... folder.
 
@@ -701,9 +701,9 @@ create policy "users delete own objects"
     and (storage.foldername(name))[1] = auth.uid()::text
   );
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0008_offers_likes.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0008: offers in chat + public like counts
 -- (design round R2: offer bubbles with accept/decline, ♡ counts on cards)
 
@@ -792,9 +792,9 @@ create view public.listing_likes as
 
 grant select on public.listing_likes to anon, authenticated;
 
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- BEGIN supabase/migrations/0009_profile_selfheal.sql
--- ────────────────────────────────────────────────────────────────────────────
+-- ──────────────────────────────────────────────────────────────────────────
 -- 0009: let a signed-in user create their own missing profile row.
 -- Normally the on_auth_user_created trigger inserts it, but accounts that
 -- signed up BEFORE the schema was applied have no row; the app now
@@ -803,3 +803,32 @@ grant select on public.listing_likes to anon, authenticated;
 create policy "users insert own profile"
   on public.profiles for insert
   with check (auth.uid() = id);
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- BEGIN supabase/migrations/0010_reviews_buyer_only.sql
+-- ──────────────────────────────────────────────────────────────────────────
+-- 0010: reviews are buyer → seller only.
+--
+-- 0005 let either party review the other. In practice the review is the
+-- buyer's verdict on the seller — it feeds the seller's rating and the
+-- sellers board — so the seller no longer reviews the buyer back.
+-- Existing rows are untouched and stay readable.
+
+drop policy if exists "participants review sold trades" on public.reviews;
+
+create policy "buyers review sold trades"
+  on public.reviews for insert
+  with check (
+    reviewer_id = auth.uid()
+    and exists (
+      select 1
+      from public.conversations c
+      join public.listings l on l.id = c.listing_id
+      where c.id = conversation_id
+        and l.id = listing_id
+        and l.status = 'sold'
+        and c.buyer_id = auth.uid()
+        and c.seller_id = reviewee_id
+    )
+  );
+

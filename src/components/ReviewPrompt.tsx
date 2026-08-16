@@ -10,7 +10,7 @@ interface Props {
   onDone(): void;
 }
 
-/** Post-sale review card shown in the thread once the listing is sold. */
+/** Post-sale review card: the buyer rates the seller once the deal closes. */
 export function ReviewPrompt({ conversationId, otherParty, onDone }: Props) {
   const { client } = useApp();
   const toast = useToast();

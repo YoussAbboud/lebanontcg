@@ -97,7 +97,7 @@ sizing math).
 7. As Maya (seller), from the thread’s pinned header mark the listing
    Reserved “for this conversation” → system message appears in both tabs
    live and the pinned header badge flips to Reserved.
-8. Mark Sold → same live propagation; both parties now see the review
+8. Mark Sold → same live propagation; the buyer now sees the review
    prompt (M5).
 9. Composer: Enter sends, Shift+Enter newlines, 2000-char limit with
    counter near the end, empty sends blocked.
@@ -243,3 +243,23 @@ Manual (live mode):
    the sellers board.
 6. With only a couple of listings live, the home grid shows them instead
    of the empty state.
+
+
+## R5 — Reviews are buyer → seller
+
+Automated (headless Chromium, mock build — 12 assertions): the seller
+confirms a deal and is NOT shown a review prompt and NOT told "You
+reviewed this trade" (they see "@buyer can now rate this trade"), gets no
+pending-review badge and an empty `/reviews` queue; the buyer gets the
+badge, the prompt and the queue entry, submits a rating, and is then told
+"You reviewed this trade"; back on the seller side the thread reads
+"@buyer rated this trade".
+
+RLS (local Postgres 16, `supabase/dev/rls-test.sql`): 22 true, 0 false,
+including T18 (buyer's review accepted) and the new T37 (seller's review
+of the buyer rejected by policy). Migrations 0001–0010 plus
+`apply-all.sql` apply cleanly on a fresh database.
+
+Manual (live mode): confirm a deal as the seller — the thread should say
+the buyer can rate it, never that you reviewed it; the rating only
+appears once the buyer submits.

@@ -994,7 +994,8 @@ export class MockClient implements MarketplaceClient {
     await sleep(netDelay());
     const out: PendingReview[] = [];
     for (const conv of this.conversations) {
-      if (conv.buyerId !== me.id && conv.sellerId !== me.id) continue;
+      // Reviews run buyer → seller only (migration 0010).
+      if (conv.buyerId !== me.id) continue;
       const listing = this.listings.find((l) => l.id === conv.listingId);
       if (!listing || listing.status !== 'sold') continue;
       const already = this.reviews.some(
@@ -1019,6 +1020,9 @@ export class MockClient implements MarketplaceClient {
     if (!conv || (conv.buyerId !== me.id && conv.sellerId !== me.id)) {
       throw new Error('Conversation not found');
     }
+    if (conv.buyerId !== me.id) {
+      throw new Error('Only the buyer reviews the seller on a completed deal.');
+    }
     const listing = this.listings.find((l) => l.id === conv.listingId);
     if (!listing || listing.status !== 'sold') {
       throw new Error('Reviews open once the listing is marked sold.');
@@ -1032,7 +1036,7 @@ export class MockClient implements MarketplaceClient {
       conversationId,
       listingId: conv.listingId,
       reviewerId: me.id,
-      revieweeId: conv.buyerId === me.id ? conv.sellerId : conv.buyerId,
+      revieweeId: conv.sellerId,
       rating,
       body,
       createdAt: new Date().toISOString(),

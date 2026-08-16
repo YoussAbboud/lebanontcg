@@ -1,9 +1,22 @@
 -- Minimal Supabase-environment shim so migrations can be validated on a
 -- plain Postgres 16: auth schema/users/uid(), storage schema, roles,
 -- realtime publication.
-create role anon nologin;
-create role authenticated nologin;
-create role service_role nologin;
+-- Roles are cluster-wide, so they outlive the scratch database. Create
+-- them only when missing, otherwise a second run dies on the first role
+-- and leaves the shim half-applied.
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'anon') then
+    create role anon nologin;
+  end if;
+  if not exists (select 1 from pg_roles where rolname = 'authenticated') then
+    create role authenticated nologin;
+  end if;
+  if not exists (select 1 from pg_roles where rolname = 'service_role') then
+    create role service_role nologin;
+  end if;
+end
+$$;
 
 create schema auth;
 create table auth.users (

@@ -1047,19 +1047,20 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     const reviewed = new Set(
       ((myReviews ?? []) as { conversation_id: string }[]).map((r) => r.conversation_id),
     );
+    // Only the buyer reviews, and only once the listing is sold.
     const pending = ((convs ?? []) as (ConversationRow & { listing: ListingRow })[]).filter(
-      (c) => c.listing.status === 'sold' && !reviewed.has(c.id),
+      (c) => c.buyer_id === me && c.listing.status === 'sold' && !reviewed.has(c.id),
     );
     if (pending.length === 0) return [];
-    const otherIds = [...new Set(pending.map((c) => (c.buyer_id === me ? c.seller_id : c.buyer_id)))];
-    const { data: profiles } = await this.sb.from('profiles').select('*').in('id', otherIds);
+    const sellerIds = [...new Set(pending.map((c) => c.seller_id))];
+    const { data: profiles } = await this.sb.from('profiles').select('*').in('id', sellerIds);
     const profileById = new Map((profiles ?? []).map((p: ProfileRow) => [p.id, this.mapProfile(p)]));
     return pending
-      .filter((c) => profileById.has(c.buyer_id === me ? c.seller_id : c.buyer_id))
+      .filter((c) => profileById.has(c.seller_id))
       .map((c) => ({
         conversationId: c.id,
         listing: this.mapListing(c.listing),
-        otherParty: profileById.get(c.buyer_id === me ? c.seller_id : c.buyer_id)!,
+        otherParty: profileById.get(c.seller_id)!,
       }));
   }
 
@@ -1071,7 +1072,11 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .eq('id', conversationId)
       .single();
     const c = conv as ConversationRow;
-    const revieweeId = c.buyer_id === me ? c.seller_id : c.buyer_id;
+    // Buyer → seller only (migration 0010); RLS enforces it too.
+    if (c.buyer_id !== me) {
+      throw new Error('Only the buyer reviews the seller on a completed deal.');
+    }
+    const revieweeId = c.seller_id;
     const { data, error } = await this.sb
       .from('reviews')
       .insert({

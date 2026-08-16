@@ -288,3 +288,24 @@ Running log of product/engineering decisions made while building, newest last.
   the same inbox signal that carries deal confirmations, a badge in the
   user menu, and a home banner after a deal closes. No schema change —
   `getReviewsWritten` reads the existing publicly-readable table.
+
+## R5 — Reviews run buyer → seller
+
+- **Reviews are the buyer's verdict on the seller** (migration 0010
+  replaces 0005's both-directions insert policy). The rating feeds the
+  seller's profile score and the sellers board, which is what a review is
+  for here; sellers no longer rate buyers back. Existing rows are left
+  alone and stay readable. Enforced in three places: RLS (T37),
+  `submitReview` in both clients, and `getPendingReviews` (buyer side
+  only).
+- **"You reviewed this trade" was inferred from an empty pending list**,
+  so anyone who wasn't eligible — every seller — was told they had
+  reviewed. The thread now derives its state from a review that actually
+  exists: the buyer sees prompt → "You reviewed this trade", the seller
+  sees "@buyer can now rate this trade" → "@buyer rated this trade".
+  Absence of a pending review never again means "done".
+- **Dev harness fixes found while verifying**: `local-shim.sql` now
+  creates its roles only when missing (roles are cluster-wide, so a
+  second run used to die half-applied), and T01 counts only its own two
+  fixture profiles so the suite passes with or without `seed.sql`
+  loaded in the same database.

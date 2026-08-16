@@ -183,7 +183,9 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
   const [offerNote, setOfferNote] = useState('');
   const [typing, setTyping] = useState(false);
   const [statusBusy, setStatusBusy] = useState(false);
-  const [reviewState, setReviewState] = useState<'none' | 'pending' | 'done'>('none');
+  const [reviewState, setReviewState] = useState<
+    'none' | 'pending' | 'done' | 'awaiting_buyer' | 'buyer_rated'
+  >('none');
   const [blockedOther, setBlockedOther] = useState(false);
   const [reportMessage, setReportMessage] = useState<Message | null>(null);
   const [newBelow, setNewBelow] = useState(false);
@@ -268,22 +270,41 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
     });
   }, [client, conversationId, meId, onAnyChange, scrollLog]);
 
-  // Review prompt once sold
+  // Review state once sold. Reviews run buyer → seller: the buyer gets the
+  // prompt, the seller gets the buyer's verdict. "You reviewed this trade"
+  // is only ever shown off a review that actually exists — never inferred
+  // from an empty pending list, which is also the seller's normal state.
   const listingStatus = conv?.listing.status;
+  const isBuyerHere = Boolean(conv && meId && conv.buyerId === meId);
   useEffect(() => {
-    if (listingStatus !== 'sold') {
+    if (listingStatus !== 'sold' || !meId) {
       setReviewState('none');
       return;
     }
     let cancelled = false;
-    client.getPendingReviews().then((pending) => {
-      if (cancelled) return;
-      setReviewState(pending.some((p) => p.conversationId === conversationId) ? 'pending' : 'done');
-    });
+    const load = async () => {
+      if (isBuyerHere) {
+        const [pending, written] = await Promise.all([
+          client.getPendingReviews().catch(() => []),
+          client.getReviewsWritten().catch(() => []),
+        ]);
+        if (cancelled) return;
+        if (written.some((r) => r.conversationId === conversationId)) setReviewState('done');
+        else if (pending.some((p) => p.conversationId === conversationId)) setReviewState('pending');
+        else setReviewState('none');
+      } else {
+        const mine = await client.getReviewsForUser(meId).catch(() => []);
+        if (cancelled) return;
+        setReviewState(
+          mine.some((r) => r.conversationId === conversationId) ? 'buyer_rated' : 'awaiting_buyer',
+        );
+      }
+    };
+    void load();
     return () => {
       cancelled = true;
     };
-  }, [client, conversationId, listingStatus]);
+  }, [client, conversationId, listingStatus, isBuyerHere, meId]);
 
   // Block state
   const otherPartyId = conv?.otherParty.id;
@@ -673,6 +694,21 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
         {reviewState === 'done' && (
           <div className="chat-system">
             <div className="chat-system-pill mono-label">You reviewed this trade</div>
+          </div>
+        )}
+        {reviewState === 'awaiting_buyer' && (
+          <div className="chat-system">
+            <div className="chat-system-pill mono-label">
+              Deal confirmed · @{conv.otherParty.username ?? conv.otherParty.displayName} can now
+              rate this trade
+            </div>
+          </div>
+        )}
+        {reviewState === 'buyer_rated' && (
+          <div className="chat-system">
+            <div className="chat-system-pill mono-label">
+              @{conv.otherParty.username ?? conv.otherParty.displayName} rated this trade
+            </div>
           </div>
         )}
       </div>

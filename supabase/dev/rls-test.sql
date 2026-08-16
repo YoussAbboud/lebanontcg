@@ -7,7 +7,10 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000000001', 'maya@test.dev'),
   ('00000000-0000-0000-0000-000000000002', 'karim@test.dev');
 
-select 'T01 profiles auto-created: ' || (count(*) = 2)::text from public.profiles;
+-- Scoped to this test's own users so the assertion holds whether or not
+-- supabase/seed.sql was loaded into the same database.
+select 'T01 profiles auto-created: ' || (count(*) = 2)::text from public.profiles
+  where id in ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002');
 
 -- claim usernames
 set role authenticated;
@@ -197,4 +200,13 @@ select 'T35 self-heal insert own profile: ' || (count(*) = 1)::text
   from public.profiles where id = auth.uid();
 insert into public.profiles (id, display_name) values ('00000000-0000-0000-0000-000000000043', 'Forged');
 select 'T36 (expect error above: cannot insert someone else''s profile)';
+reset role;
+
+-- ---- 0010: reviews are buyer → seller only --------------------------------
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+insert into public.reviews (conversation_id, listing_id, reviewer_id, reviewee_id, rating, body)
+select c.id, c.listing_id, auth.uid(), c.buyer_id, 5, 'nice buyer'
+  from public.conversations c limit 1;
+select 'T37 (expect error above: seller cannot review the buyer)';
 reset role;

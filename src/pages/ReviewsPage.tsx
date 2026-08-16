@@ -12,8 +12,8 @@ const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
 
 /**
  * Post-transaction review hub: trades waiting to be rated, reviews
- * received, reviews written. Reviews open once a deal is confirmed
- * (the listing is marked sold) and each party rates the other once.
+ * received, reviews written. Reviews open once a deal is confirmed (the
+ * listing is marked sold) and run buyer → seller, once per trade.
  */
 export function ReviewsPage() {
   const { client, user, refreshPendingReviews } = useApp();
@@ -73,8 +73,8 @@ export function ReviewsPage() {
         <div className="mono-label reviews-eyebrow">Trust</div>
         <h1 className="display">Reviews</h1>
         <p className="reviews-sub">
-          Every confirmed deal opens a review for both sides. Ratings show on your profile and
-          rank you on the sellers board.
+          When a seller confirms a deal, the buyer rates the seller. Ratings show on the
+          seller&apos;s profile and rank them on the sellers board.
         </p>
         <div className="reviews-stats">
           <div className="reviews-stat">
@@ -112,7 +112,7 @@ export function ReviewsPage() {
           <p className="reviews-empty">
             {state === 'loading'
               ? 'Loading…'
-              : 'Nothing to rate right now. When a deal is confirmed in chat, it lands here.'}
+              : 'Nothing to rate right now. Buy a card and the seller confirms the deal in chat — it lands here.'}
           </p>
         ) : (
           <div className="reviews-pending">

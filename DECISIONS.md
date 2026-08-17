@@ -440,3 +440,21 @@ Running log of product/engineering decisions made while building, newest last.
   edge. One trap: ui.css loads after appshell.css, so hiding the header
   CTA needed a two-class selector — `.btn-acid { display: inline-flex }`
   wins a specificity tie against a bare `.shell-sell { display: none }`.
+
+## R10 — Glow clipping, properly this time
+
+- Round one gave the strip scrollport 48px of clearance — but the glow's
+  visible extent (blur + spread) was ~64px, so it still died on a hard
+  line, just further out. The real constraint surfaced on the horizontal
+  axis: the app frame is `overflow: hidden`, so no amount of scrollport
+  padding buys more than `--pad-x` (28px) of room before the frame edge
+  becomes the next hard line.
+- Resolution: clearance where it's free (72px vertically) and glow sized
+  to the room that exists — breathing peak `0 0 30px -4px` (26px extent)
+  and hover glow `0 0 48px -26px` (22px), both fading to nothing before
+  any clipping boundary.
+- Verification moved to pixels: the suite screenshots the real page,
+  decodes the PNG (stdlib zlib + unfilter), and asserts the brightness
+  profile above, below and beside the pinned card is a smooth gradient —
+  a clip shows as a >6-step jump between adjacent rows. The two style
+  passes that "verified" earlier rounds could not see this class of bug.

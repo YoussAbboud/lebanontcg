@@ -30,9 +30,10 @@
 }
 
 /* Pinned acid (the most-liked card): permanent, with a slow breathing glow. */
+/* Peak extent (blur + spread) stays under the frame's 28px clearance. */
 @keyframes acid-breathe {
-  0%, 100% { box-shadow: var(--shadow-card), 0 0 46px -22px var(--acid); }
-  50% { box-shadow: var(--shadow-card), 0 0 78px -14px var(--acid); }
+  0%, 100% { box-shadow: var(--shadow-card), 0 0 18px -8px var(--acid); }
+  50% { box-shadow: var(--shadow-card), 0 0 30px -4px var(--acid); }
 }
 .lcard.is-acid { animation: acid-breathe 3.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {

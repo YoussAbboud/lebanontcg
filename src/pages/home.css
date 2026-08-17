@@ -86,10 +86,15 @@
   scroll-snap-type: x mandatory;
   /* A scroll container clips anything outside its box — the breathing
      glow and the hover lift both paint past the cards, so the scrollport
-     carries padding for them (negative margins keep the layout put). */
-  padding: 48px 14px;
-  margin: -48px -14px -44px;
-  scroll-padding: 0 14px;
+     carries padding for them (negative margins keep the layout put).
+     The clearance must EXCEED the glow's visible extent (blur + spread),
+     or the halo dies on a hard line instead of fading out. */
+  /* Horizontal clearance is capped by the app frame (overflow: hidden at
+     var(--pad-x) out) — pushing further just moves the hard edge there.
+     The glow extents below are sized to fade out inside this room. */
+  padding: 72px var(--pad-x);
+  margin: -72px calc(var(--pad-x) * -1) -68px;
+  scroll-padding: 0 var(--pad-x);
 }
 /* Live mouse drag (useDragScroll): snap would fight the hand mid-drag. */
 .home-strip.is-dragscroll {
@@ -134,9 +139,10 @@
 
 /* Pinned acid (the newest listing): permanent, with a breathing glow. */
 .home-strip-card.is-acid-strip { animation: strip-acid-breathe 3.2s ease-in-out infinite; }
+/* Peak extent (blur + spread) stays under the 28px frame clearance. */
 @keyframes strip-acid-breathe {
-  0%, 100% { box-shadow: var(--shadow-card), 0 0 46px -22px var(--acid); }
-  50% { box-shadow: var(--shadow-card), 0 0 78px -14px var(--acid); }
+  0%, 100% { box-shadow: var(--shadow-card), 0 0 18px -8px var(--acid); }
+  50% { box-shadow: var(--shadow-card), 0 0 30px -4px var(--acid); }
 }
 @media (prefers-reduced-motion: reduce) {
   .home-strip-card.is-acid-strip { animation: none; }

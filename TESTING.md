@@ -347,3 +347,18 @@ Manual: hover any card — every line of text must stay readable on the
 acid. The pinned cards should glow gently at rest with the halo visible
 on all four sides (not sliced flat by the strip), and read identically
 to a hovered card.
+
+
+## R10 — Glow clipping (pixel-verified)
+
+Automated (`glow-pixels.mjs`): freezes the breathing animation at full
+extent, hides the legitimate hard edges that cross the scan bands (the
+section heading, neighbouring cards, the app frame's own border), then
+screenshots the page, decodes the PNG and asserts the brightness profile
+above, below and to the left of the pinned card fades smoothly — max
+adjacent-row jump < 6/255 — and that the glow is actually visible. The
+worst case is exercised by scrolling the pinned card flush to the
+strip's start.
+
+Manual: the pinned card's halo must fade out on all four sides with no
+visible line, including when it's the first card in the strip.

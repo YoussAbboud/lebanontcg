@@ -95,7 +95,7 @@
   --shadow-fan: 0 30px 70px -28px rgb(0 0 0 / 0.9);
   --shadow-fan-centre: 0 0 110px -40px rgba(214, 255, 63, 0.55);
   --shadow-toast: 0 18px 40px -20px rgb(0 0 0 / 0.8);
-  --glow-acid-soft: 0 0 60px -30px var(--acid);
+  --glow-acid-soft: 0 0 48px -26px var(--acid); /* extent ≤ frame clearance */
 
   /* ---- Motion ------------------------------------------------------------ */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);

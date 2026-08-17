@@ -173,7 +173,23 @@ def read_ani(buf):
 
 
 # --------------------------------------------------------------------- run
-def convert_cur(name, out_stem):
+def upscale(w, h, rgba, factor):
+    """Nearest-neighbour scale — keeps the pixel-art edges crisp, which is
+    what these cursors are; a smooth resampler would just blur them."""
+    nw, nh = w * factor // 1, h * factor // 1
+    nw, nh = int(round(w * factor)), int(round(h * factor))
+    out = bytearray(nw * nh * 4)
+    for y in range(nh):
+        sy = min(h - 1, int(y * h / nh))
+        for x in range(nw):
+            sx = min(w - 1, int(x * w / nw))
+            so = (sy * w + sx) * 4
+            do = (y * nw + x) * 4
+            out[do : do + 4] = rgba[so : so + 4]
+    return nw, nh, out
+
+
+def convert_cur(name, out_stem, big=None):
     buf = (SRC / name).read_bytes()
     entries = read_cur(buf)
     e = best(entries, buf)
@@ -181,6 +197,12 @@ def convert_cur(name, out_stem):
     write_png(HERE / f"{out_stem}.png", w, h, rgba)
     print(f"{name}: {len(entries)} sizes {[x['w'] for x in entries]} -> "
           f"{out_stem}.png {w}x{h} hotspot ({e['hx']}, {e['hy']})")
+    if big:
+        bw, bh, brgba = upscale(w, h, rgba, big / w)
+        bx = int(e["hx"] * big / w + 0.5)
+        by = int(e["hy"] * big / w + 0.5)
+        write_png(HERE / f"{out_stem}-{big}.png", bw, bh, brgba)
+        print(f"  + {out_stem}-{big}.png {bw}x{bh} hotspot ({bx}, {by})")
     return e["hx"], e["hy"], w, h
 
 
@@ -206,6 +228,6 @@ def convert_ani(name, out_stem, keep=None):
 if __name__ == "__main__":
     if not SRC.exists():
         sys.exit(f"put Link.cur / Move.cur / Busy.ani in {SRC}")
-    convert_cur("Link.cur", "link")
-    convert_cur("Move.cur", "move")
+    convert_cur("Link.cur", "link", big=48)
+    convert_cur("Move.cur", "move", big=48)
     convert_ani("Busy.ani", "busy", keep=12)

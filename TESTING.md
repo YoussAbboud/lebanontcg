@@ -298,9 +298,10 @@ time, reference-counts concurrent calls, doesn't blink between
 back-to-back calls, and clears after a rejected promise.
 
 Automated browser (headless Chromium, desktop + iPhone 13 — 16
-assertions): Link is the default (hotspot 5 0) and is used by nav links,
+assertions): Link is the default — served at 48x48 with the 32px
+original as fallback (hotspots 8 0 / 5 0) — and is used by nav links,
 buttons and cards rather than the system pointer; pressing swaps to Move
-(hotspot 15 15) and releasing swaps back; each busy frame resolves to a
+(48px, hotspot 23 23) and releasing swaps back; each busy frame resolves to a
 distinct spinner image and applies over cards as well as the page;
 clearing the attribute restores Link; text inputs keep the caret; touch
 devices get no custom cursor.

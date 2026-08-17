@@ -349,6 +349,11 @@ Running log of product/engineering decisions made while building, newest last.
   converter picks the 32-bit one (the 1-bit copy is a black-and-white
   stencil). Hotspots come out of the CUR directory entries: (5, 0) for
   Link, (15, 15) for Move and Busy.
+- **Link and Move ship at 48px** — the .cur files only carry 32px art,
+  so the converter upscales nearest-neighbour (crisp pixel edges, no
+  blur) and scales the hotspots to (8, 0) / (23, 23). The 32px original
+  stays second in the cursor fallback chain for any browser that rejects
+  the larger image. Busy stays 32px so the spinner doesn't dominate.
 - **Mapping:** Link is the default everywhere, Move covers pressing and
   dragging (`:active`, `[data-dragging]`, `[aria-grabbed]`), Busy runs
   while data is in flight.

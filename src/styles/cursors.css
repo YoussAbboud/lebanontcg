@@ -1,18 +1,25 @@
 /* ==========================================================================
    CURSORS — the owner-supplied Windows cursor set, converted to PNG by
    src/assets/cursors/convert.py (sources kept in .../cursors/source).
-     · Link.cur  → default everywhere            hotspot (5, 0)
-     · Move.cur  → while pressing or dragging    hotspot (15, 15)
+     · Link.cur  → default everywhere            48px, hotspot (8, 0)
+     · Move.cur  → while pressing or dragging    48px, hotspot (23, 23)
      · Busy.ani  → while data is loading         hotspot (15, 15)
    PNG rather than .cur because Safari ignores .cur, and per-frame PNGs
    because no browser animates .ani — src/lib/busyCursor.ts steps the
-   frame attribute instead.
+   frame attribute instead. Link/Move are the 32px originals upscaled
+   nearest-neighbour to 48px (the .cur files only carry 32px art); the
+   32px original stays in the fallback chain for any browser that
+   rejects the larger image.
    ========================================================================== */
 
 :root {
-  --cursor-default: url('../assets/cursors/link.png') 5 0, auto;
+  --cursor-default:
+    url('../assets/cursors/link-48.png') 8 0,
+    url('../assets/cursors/link.png') 5 0, auto;
   /* "move" reads as the pressed/dragging state in this set. */
-  --cursor-press: url('../assets/cursors/move.png') 15 15, move;
+  --cursor-press:
+    url('../assets/cursors/move-48.png') 23 23,
+    url('../assets/cursors/move.png') 15 15, move;
 }
 
 /* Pointer devices only — touch has no cursor to theme. */

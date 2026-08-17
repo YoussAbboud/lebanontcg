@@ -139,7 +139,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.fan-listed { margin-left: auto; white-space: nowrap; }
+.fan-listed { white-space: nowrap; color: var(--muted); }
 
 .fan-asking-row {
   display: flex;
@@ -150,11 +150,20 @@
 }
 .fan-asking {
   color: var(--text-1);
+  font-size: var(--fs-15);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Bottom row: More → on the left, listing age on the right. */
+.fan-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
 .fan-more {
   font-family: var(--font-mono);
   font-weight: 500;
@@ -162,7 +171,6 @@
   letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--acid);
-  margin-top: 10px;
   white-space: nowrap;
 }
 
@@ -187,4 +195,13 @@
 .fan-dotbtn-on {
   width: 26px;
   background: var(--acid);
+}
+
+/* Phones: the desktop clamp bottoms out at 150px, which makes the info
+   panel unreadable — the fan gets fewer, larger cards instead. */
+@media (max-width: 640px) {
+  .fan-stage { height: clamp(340px, 96vw, 430px); }
+  .fan-card { width: clamp(205px, 57vw, 250px); }
+  .fan-caption { padding: 14px; }
+  .fan-title { font-size: 15px; }
 }

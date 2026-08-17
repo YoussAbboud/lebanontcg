@@ -458,3 +458,13 @@ Running log of product/engineering decisions made while building, newest last.
   profile above, below and beside the pinned card is a smooth gradient —
   a clip shows as a >6-step jump between adjacent rows. The two style
   passes that "verified" earlier rounds could not see this class of bug.
+
+## R11 — Fan card legibility on phones
+
+- The fan card's desktop clamp bottomed out at 150px on phones, which
+  made the info panel unreadable. Under 640px the fan renders fewer,
+  larger cards (~57vw, min 205px) on a taller stage.
+- The info panel slimmed down to what matters at that size: title,
+  seller, bare price (the "Asking" label dropped — the number speaks for
+  itself), and a bottom row with "More →" on the left and the listing
+  age on the right.

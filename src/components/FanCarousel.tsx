@@ -196,15 +196,16 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
                         aria-hidden="true"
                       />
                       <div className="fan-handle">{handle}</div>
-                      <div className="fan-listed mono-label">{relativeTime(item.createdAt)}</div>
                     </div>
                     <div className="fan-asking-row">
-                      <span className="mono-label">Asking</span>
                       <span className="fan-asking mono-value">
                         {formatPrice(item.price, item.currency)}
                       </span>
                     </div>
-                    <div className="fan-more">More →</div>
+                    <div className="fan-foot">
+                      <div className="fan-more">More →</div>
+                      <div className="fan-listed mono-label">{relativeTime(item.createdAt)}</div>
+                    </div>
                   </div>
                 </div>
               </div>

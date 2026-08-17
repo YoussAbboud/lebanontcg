@@ -339,6 +339,10 @@ animation and readable text; the mobile header hides the List-a-card CTA
 and keeps search, the burger sits off the edge, and the burger menu
 contains a working List a card button.
 
+Fan-card legibility on phones is asserted too: the centre card is at
+least 200px wide, its info panel contains no "Asking" label, and the
+listing age sits on the same row as "More →".
+
 Four more assertions cover clipping: the strip scrollport leaves ≥40px
 of glow clearance above and below the cards, the phone has no horizontal
 overflow, and the sign-in button sits fully inside the viewport.

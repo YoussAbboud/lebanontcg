@@ -1,8 +1,29 @@
-/* Grid listing card (Sleeved article card). Acid cards flip ink colors. */
+/* Grid listing card (Sleeved article card). Hovering or pressing a card
+   floods it acid and flips the ink colors — the design's acid variant as
+   an interaction state rather than a hash-picked permanent one. */
 
 .lcard {
   content-visibility: auto;
   contain-intrinsic-size: 240px 380px;
+}
+
+/* Acid flood: a gradient overlay fading in beats animating the gradient
+   itself (background-image can't transition). Text and positioned children
+   paint above a sibling pseudo-element's background, so nothing else in
+   the card needs touching. */
+.lcard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--acid), var(--acid-press));
+  opacity: 0;
+  transition: opacity var(--t-fast);
+  pointer-events: none;
+}
+.lcard:is(:hover, :focus-visible, :active)::before { opacity: 1; }
+.lcard:is(:hover, :focus-visible, :active) {
+  border-color: transparent;
+  box-shadow: var(--shadow-card), var(--glow-acid-soft);
 }
 
 .lcard-top {
@@ -135,20 +156,31 @@
 }
 .lcard-cta:hover { border-color: var(--acid); color: var(--acid); }
 
-/* ---- Acid card ink flips ----------------------------------------------------- */
-.is-acid .lcard-handle,
-.is-acid .lcard-title { color: var(--ink); }
-.is-acid .lcard-eyebrow,
-.is-acid .lcard-oneliner,
-.is-acid .lcard-stat-k { color: var(--ink-soft); }
-.is-acid .lcard-stat-v { color: var(--ink); }
-.is-acid .lcard-likes {
+/* ---- Ink flips while the card is acid (hover/press) --------------------------- */
+.lcard .lcard-handle,
+.lcard .lcard-title,
+.lcard .lcard-eyebrow,
+.lcard .lcard-oneliner,
+.lcard .lcard-stat-k,
+.lcard .lcard-stat-v,
+.lcard .lcard-likes,
+.lcard .lcard-cta {
+  transition: color var(--t-fast), border-color var(--t-fast), background-color var(--t-fast);
+}
+.lcard:is(:hover, :focus-visible, :active) .lcard-handle,
+.lcard:is(:hover, :focus-visible, :active) .lcard-title { color: var(--ink); }
+.lcard:is(:hover, :focus-visible, :active) .lcard-eyebrow,
+.lcard:is(:hover, :focus-visible, :active) .lcard-oneliner,
+.lcard:is(:hover, :focus-visible, :active) .lcard-stat-k { color: var(--ink-soft); }
+.lcard:is(:hover, :focus-visible, :active) .lcard-stat-v { color: var(--ink); }
+.lcard:is(:hover, :focus-visible, :active) .lcard-likes {
   border-color: var(--ink-rule);
   color: var(--ink);
 }
-.is-acid .lcard-stats { border-top-color: var(--ink-rule); }
-.is-acid .lcard-cta {
+.lcard:is(:hover, :focus-visible, :active) .lcard-stats { border-top-color: var(--ink-rule); }
+.lcard:is(:hover, :focus-visible, :active) .lcard-cta {
   border-color: var(--ink);
   background: var(--ink);
   color: var(--acid);
 }
+.lcard:is(:hover, :focus-visible, :active) .cardface-glyph { color: var(--glyph-on-acid); }

@@ -374,3 +374,35 @@ Running log of product/engineering decisions made while building, newest last.
   untouched. Component-level `cursor:` rules were converted to the shared
   variables rather than overridden, since a plain `cursor: pointer`
   outranks a global `html` rule.
+
+## R8 — Interaction pass: parallax fan, hover-acid, draggable strip
+
+- **The fan reacts to the cursor.** The hovered card gets a parallax
+  tilt: rotateX/rotateY follow the pointer (±10°/±14°) and the photo
+  counter-shifts a few pixels, so the card reads as a physical object
+  under the hand. The fan's own settle animation is 950ms; the tilt and
+  a live drag override to a 130ms transition so they track the pointer,
+  then the slow ease returns. Skipped under prefers-reduced-motion.
+- **The fan slides by drag/swipe** (pointer events, so mouse and touch
+  share one path): the whole fan follows the hand live, and release
+  steps one card per ~140px in the drag direction. `touch-action:
+  pan-y` keeps vertical page scrolling intact on phones, and the click
+  that ends a drag is swallowed so dragging never opens a listing.
+- **Acid is now the hover/press state, not a lottery.** The hash-picked
+  permanent acid cards (grid + featured strip) are gone; instead any
+  card floods acid on hover/focus/press. Gradients can't be transitioned,
+  so a gradient overlay (::before) fades in and the ink-flip colors
+  transition alongside — text and positioned children already paint
+  above a sibling pseudo-element's background, so the markup didn't
+  change. On touch there is no hover; the :active flash on tap is the
+  "click state".
+- **The featured strip drag-scrolls with the mouse** (touch already
+  scrolled natively). Two traps found: the hook must bind after the strip
+  mounts (it renders behind the data load, and a ref change alone never
+  re-runs an effect — hence the `enabled` flag), and mandatory
+  scroll-snap rewinds any drag shorter than half a card the moment it's
+  re-enabled — so snap is suspended during the drag and the hook settles
+  to the next card in the drag direction itself before restoring it.
+- **Top Sellers matches the column width on phones** — the desktop
+  `max-width: 320px` cap was leaking into the stacked layout and read as
+  stray right padding.

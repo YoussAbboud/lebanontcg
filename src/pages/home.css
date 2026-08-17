@@ -86,8 +86,15 @@
   scroll-snap-type: x mandatory;
   padding-bottom: 4px;
 }
+/* Live mouse drag (useDragScroll): snap would fight the hand mid-drag. */
+.home-strip.is-dragscroll {
+  scroll-snap-type: none;
+  user-select: none;
+}
+.home-strip img { -webkit-user-drag: none; }
 
 .home-strip-card {
+  position: relative;
   flex: none;
   width: 300px;
   cursor: var(--cursor-default);
@@ -97,10 +104,23 @@
   border: 1px solid var(--border);
   background: linear-gradient(180deg, var(--raised-1), var(--raised-2));
   box-shadow: var(--shadow-card);
+  transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
 }
-.home-strip-card.is-acid-strip {
-  border-color: transparent;
+/* Acid on hover/press — overlay fade, same technique as .lcard. */
+.home-strip-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: linear-gradient(180deg, var(--acid), var(--acid-press));
+  opacity: 0;
+  transition: opacity var(--t-fast);
+  pointer-events: none;
+}
+.home-strip-card:is(:hover, :focus-visible, :active)::before { opacity: 1; }
+.home-strip-card:is(:hover, :focus-visible, :active) {
+  border-color: transparent;
+  box-shadow: var(--shadow-card), var(--glow-acid-soft);
+  transform: translateY(-4px);
 }
 
 .home-strip-face {
@@ -129,7 +149,7 @@
   font-size: 96px;
   color: var(--glyph-ink);
 }
-.is-acid-strip .home-strip-glyph { color: var(--glyph-on-acid); }
+.home-strip-card:is(:hover, :focus-visible, :active) .home-strip-glyph { color: var(--glyph-on-acid); }
 
 .home-strip-body { padding: 16px 18px 18px; }
 
@@ -138,9 +158,12 @@
   margin-top: 8px;
   color: var(--text-1);
 }
-.is-acid-strip .home-strip-title { color: var(--ink); }
-.is-acid-strip .home-strip-eyebrow { color: var(--ink-soft); }
-.is-acid-strip .mono-value { color: var(--ink); }
+.home-strip-title,
+.home-strip-eyebrow,
+.home-strip-body .mono-value { transition: color var(--t-fast); }
+.home-strip-card:is(:hover, :focus-visible, :active) .home-strip-title { color: var(--ink); }
+.home-strip-card:is(:hover, :focus-visible, :active) .home-strip-eyebrow { color: var(--ink-soft); }
+.home-strip-card:is(:hover, :focus-visible, :active) .mono-value { color: var(--ink); }
 
 .home-strip-asking {
   display: flex;
@@ -168,6 +191,11 @@
 .home-sellers {
   flex: 1 1 236px;
   max-width: 320px;
+}
+/* Stacked layout: the panel matches the card column width instead of
+   keeping the desktop cap (it looked like stray right padding). */
+@media (max-width: 640px) {
+  .home-sellers { max-width: none; width: 100%; }
 }
 
 .home-sellers-title { margin-bottom: 14px; }

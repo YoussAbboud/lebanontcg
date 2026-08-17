@@ -135,12 +135,7 @@
 }
 .card-raised:hover { transform: translateY(-4px); }
 
-/* Acid variant — every Nth card (hash-picked) */
-.card-raised.is-acid {
-  border-color: transparent;
-  background: linear-gradient(180deg, var(--acid), var(--acid-press));
-  box-shadow: var(--shadow-card), var(--glow-acid-soft);
-}
+/* The acid treatment is a hover/press state now — see listingcard.css. */
 
 /* ---- Inputs ------------------------------------------------------------------- */
 .input {

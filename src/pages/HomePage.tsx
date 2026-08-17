@@ -10,7 +10,7 @@ import { FanCarousel } from '../components/FanCarousel';
 import { ListingCard } from '../components/ListingCard';
 import { listingEyebrow } from '../components/ListingCard';
 import { Avatar } from '../components/Avatar';
-import { isAcid } from '../lib/face';
+import { useDragScroll } from '../lib/useDragScroll';
 import './home.css';
 
 export function HomePage() {
@@ -24,6 +24,9 @@ export function HomePage() {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
   const stripRef = useRef<HTMLDivElement>(null);
+  // Mouse drag scrolls the featured strip (touch already scrolls natively).
+  // The strip mounts only after data lands, hence the enabled flag.
+  useDragScroll(stripRef, state === 'ready' && featured.length > 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,14 +147,13 @@ export function HomePage() {
             </div>
           </div>
           <div className="scrollx home-strip" ref={stripRef}>
-            {featured.map((f, i) => {
-              const acid = i === 1 || isAcid(f.id);
+            {featured.map((f) => {
               return (
                 <div
                   key={f.id}
                   role="button"
                   tabIndex={0}
-                  className={`home-strip-card ${acid ? 'is-acid-strip' : ''}`}
+                  className="home-strip-card"
                   onClick={() => navigate(`/listing/${f.id}`)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') navigate(`/listing/${f.id}`);

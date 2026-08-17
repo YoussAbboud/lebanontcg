@@ -309,3 +309,20 @@ devices get no custom cursor.
 Manual: load a slow page (throttle the network) — the spinner should
 appear after a beat, animate smoothly, and clear without flicker. Press
 and hold anywhere for the Move hand.
+
+
+## R8 — Interaction pass
+
+Automated (headless Chromium, desktop + iPhone 13 — 17 assertions): the
+hovered fan card tilts and the tilt follows the cursor; the photo
+counter-shifts; the tilt clears off-hover; dragging the fan advances it
+without navigating; no card is permanently acid; strip and grid cards
+flood acid on hover with ink-flipped titles and return to idle; mouse
+drag scrolls the strip with snap suspended mid-drag, settles on a card,
+and never opens a listing; the mobile Top Sellers panel spans the same
+width as the cards below it.
+
+Manual: hover a fan card and circle the cursor — the card should tilt
+toward it smoothly and settle back when you leave. Flick the fan on a
+phone. Drag the featured strip with the mouse; release mid-card and it
+should glide to the next card, not snap back.

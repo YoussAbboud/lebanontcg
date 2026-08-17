@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ListingWithSeller } from '../lib/types';
 import { GAME_LABELS } from '../lib/types';
 import { formatPrice, relativeTime } from '../lib/format';
-import { isAcid, sellerDotBackground } from '../lib/face';
+import { sellerDotBackground } from '../lib/face';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { CardFace } from './CardFace';
@@ -24,12 +24,12 @@ function oneLinerOf(l: ListingWithSeller): string {
 
 // Grid listing card — the Sleeved design's article card, wired to real
 // data: seller dot + handle, ♡ like count, watch star (favorite), title,
-// asking/listed columns, Message seller CTA. Every Nth card is acid.
+// asking/listed columns, Message seller CTA. The acid treatment is the
+// hover/press state (CSS), not a hash-picked permanent variant.
 export const ListingCard = memo(function ListingCard({ listing }: { listing: ListingWithSeller }) {
   const { favoriteIds, toggleFavorite, user, client } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
-  const acid = isAcid(listing.id);
   const watched = favoriteIds.has(listing.id);
   const isOwner = user?.id === listing.sellerId;
   const handle = listing.seller.username
@@ -67,7 +67,7 @@ export const ListingCard = memo(function ListingCard({ listing }: { listing: Lis
       role="button"
       tabIndex={0}
       aria-label={`${listing.title}, asking ${formatPrice(listing.price, listing.currency)}`}
-      className={`lcard card-raised ${acid ? 'is-acid' : ''}`}
+      className="lcard card-raised"
       onClick={open}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && e.target === e.currentTarget) open();
@@ -84,7 +84,7 @@ export const ListingCard = memo(function ListingCard({ listing }: { listing: Lis
       </div>
 
       <div className="lcard-facewrap">
-        <CardFace listing={listing} className="lcard-face" onAcid={acid} />
+        <CardFace listing={listing} className="lcard-face" />
         {listing.status !== 'active' && (
           <div className="lcard-status mono-label">{listing.status}</div>
         )}

@@ -22,6 +22,9 @@
   height: clamp(300px, 42vw, 480px);
   perspective: 1600px;
   perspective-origin: 50% 45%;
+  /* Horizontal drags slide the fan; vertical stays with the page scroll. */
+  touch-action: pan-y;
+  user-select: none;
 }
 
 .fan-card {
@@ -56,6 +59,10 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Counter-shifted by the cursor tilt (parallax) on the hovered card. */
+  transition: transform 130ms var(--ease-out);
+  will-change: transform;
+  -webkit-user-drag: none;
 }
 
 .fan-glyph {

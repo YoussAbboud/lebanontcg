@@ -409,6 +409,18 @@ Running log of product/engineering decisions made while building, newest last.
 
 ## R9 — Hover-acid visibility fix, pinned acid cards, mobile navbar
 
+- **Scroll containers clip shadows.** The featured strip is an
+  overflow-x scroller, so the breathing glow and the hover lift painted
+  past the cards and got sliced flat at the strip's edges. The scrollport
+  now carries 48px block padding (negative margins keep the layout
+  unchanged, `scroll-padding` keeps the snap points aligned) so glows
+  render inside it. The suite asserts the clearance geometry.
+- **The phone header overflowed when signed out** — burger + logo +
+  search + Sign in didn't fit 390px and the button clipped at the edge.
+  Everything shrinks a notch under 640px and the dev switcher collapses
+  to its dot; asserted as "no horizontal overflow" plus the sign-in
+  button's right edge inside the viewport.
+
 - **The R8 hover-acid overlay covered the card text.** The overlay is
   absolutely positioned, and positioned boxes paint above static text —
   the automated pass had only checked computed colors and overlay

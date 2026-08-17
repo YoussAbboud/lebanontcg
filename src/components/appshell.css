@@ -284,4 +284,16 @@
 @media (max-width: 640px) {
   :root { --pad-x: 16px; }
   body { padding: 8px; }
+
+  /* Phone header: everything shrinks a notch so burger + logo + search +
+     sign-in/avatar fit a 360px viewport without clipping. */
+  .shell-header { gap: 8px; padding: 14px 12px; }
+  .shell-actions { gap: 8px; }
+  .shell-logo { font-size: 14px; letter-spacing: 0.04em; gap: 6px; min-width: 0; }
+  .shell-logo-gif { width: 26px; height: 26px; }
+  .shell-search { width: 36px; height: 36px; }
+  .shell-signin { min-height: 36px; padding: 8px 12px; white-space: nowrap; }
+  .shell-burger { width: 36px; height: 36px; }
+  /* Dev switcher (mock only): collapse to the dot so it can't crowd the row. */
+  .uswitch-btn { font-size: 0; gap: 0; padding: 10px; }
 }

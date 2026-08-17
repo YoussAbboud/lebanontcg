@@ -84,7 +84,12 @@
   gap: 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  padding-bottom: 4px;
+  /* A scroll container clips anything outside its box — the breathing
+     glow and the hover lift both paint past the cards, so the scrollport
+     carries padding for them (negative margins keep the layout put). */
+  padding: 48px 14px;
+  margin: -48px -14px -44px;
+  scroll-padding: 0 14px;
 }
 /* Live mouse drag (useDragScroll): snap would fight the hand mid-drag. */
 .home-strip.is-dragscroll {

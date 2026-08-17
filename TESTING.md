@@ -339,6 +339,11 @@ animation and readable text; the mobile header hides the List-a-card CTA
 and keeps search, the burger sits off the edge, and the burger menu
 contains a working List a card button.
 
+Four more assertions cover clipping: the strip scrollport leaves ≥40px
+of glow clearance above and below the cards, the phone has no horizontal
+overflow, and the sign-in button sits fully inside the viewport.
+
 Manual: hover any card — every line of text must stay readable on the
-acid. The pinned cards should glow gently at rest and read identically
+acid. The pinned cards should glow gently at rest with the halo visible
+on all four sides (not sliced flat by the strip), and read identically
 to a hovered card.

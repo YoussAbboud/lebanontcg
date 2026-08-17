@@ -59,7 +59,7 @@
   gap: 12px;
   align-items: center;
   width: 100%;
-  cursor: var(--cursor-hand);
+  cursor: var(--cursor-default);
   padding: 11px;
   border-radius: var(--r-tile);
   border: 1px solid transparent;

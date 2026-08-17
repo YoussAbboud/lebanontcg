@@ -38,7 +38,7 @@
   border-radius: var(--r-thumb);
   overflow: hidden;
   flex: none;
-  cursor: var(--cursor-hand);
+  cursor: var(--cursor-default);
   display: flex;
   align-items: center;
   justify-content: center;

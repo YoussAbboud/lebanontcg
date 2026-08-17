@@ -291,13 +291,20 @@ Manual:
 
 ## R7 — Custom cursors
 
-Automated (headless Chromium, desktop + iPhone 13 — 12 assertions): both
-cursor assets resolve and are different images; the page default is the
-custom hand; nav links, buttons and listing cards use it rather than
-falling back to the system `pointer`; holding the mouse down swaps to the
-fist and releasing swaps back; text inputs keep the caret; a coarse
-pointer gets no custom cursor at all.
+Unit (`src/lib/busyCursor.test.ts`, 7 tests): the spinner stays hidden
+for calls that finish inside the grace period, appears once one outlives
+it, steps through every frame and wraps, honours the minimum visible
+time, reference-counts concurrent calls, doesn't blink between
+back-to-back calls, and clears after a rejected promise.
 
-Manual: hover the header, cards and the sell wizard — the hand should
-never flicker back to an arrow or system hand. Press and hold anywhere:
-the fist should appear without the pointer jumping position.
+Automated browser (headless Chromium, desktop + iPhone 13 — 16
+assertions): Link is the default (hotspot 5 0) and is used by nav links,
+buttons and cards rather than the system pointer; pressing swaps to Move
+(hotspot 15 15) and releasing swaps back; each busy frame resolves to a
+distinct spinner image and applies over cards as well as the page;
+clearing the attribute restores Link; text inputs keep the caret; touch
+devices get no custom cursor.
+
+Manual: load a slow page (throttle the network) — the spinner should
+appear after a beat, animate smoothly, and clear without flicker. Press
+and hold anywhere for the Move hand.

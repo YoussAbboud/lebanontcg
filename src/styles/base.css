@@ -40,7 +40,7 @@ button {
   background: none;
   border: none;
   padding: 0;
-  cursor: var(--cursor-hand);
+  cursor: var(--cursor-default);
 }
 
 input, textarea, select {

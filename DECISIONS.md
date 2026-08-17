@@ -338,28 +338,34 @@ Running log of product/engineering decisions made while building, newest last.
   (mouse, pen and touch in one path) plus a touch-swipe handler for
   moving between photos.
 
-## R7 — Custom cursors
+## R7 — Custom cursors (owner's Windows cursor set)
 
-- **Two cursors, hand and fist**, from the owner-supplied reference: the
-  open hand is the default everywhere, the closed fist shows while the
-  pointer is held down. Artwork is generated from a polygon spec
-  (`src/assets/cursors/gen.py`) so it can be regenerated or nudged
-  without hand-editing binaries.
-- **PNG ships, not SVG.** Safari doesn't support SVG cursors; the PNGs
-  are small enough (<2KB) that Vite inlines them as data URIs, which also
-  sidesteps relative-URL resolution inside custom properties. A second
-  `cursor: image-set(1x, 2x)` declaration upgrades hi-dpi screens and is
-  ignored by browsers that don't parse it.
-- **Component rules had to be converted, not overridden.** Every
-  `cursor: pointer` in the codebase (buttons, cards, nav links) beat a
-  global `html` rule on specificity — i.e. the system hand would have
-  returned on exactly the elements people point at. They now all read
-  `var(--cursor-hand)`; `grab`/`grabbing` in the lightbox and image
-  manager map onto the hand/fist pair, which is what those gestures mean
-  anyway.
-- **What keeps a system cursor:** text fields (a hand hides the caret and
-  reads as "not editable"), disabled controls (`not-allowed`), and
-  coarse-pointer devices, where the whole block is behind
-  `@media (hover: hover) and (pointer: fine)`.
-- Hotspots: index fingertip (9, 5) for the hand, top knuckle (10, 10) for
-  the fist, so the shape clenches roughly in place instead of jumping.
+- **The supplied files are the source of truth**, kept in
+  `src/assets/cursors/source/` (Link.cur, Move.cur, Busy.ani) with
+  `convert.py` turning them into web assets — no external tooling, stdlib
+  only, so the pipeline is reproducible.
+- **PNG ships, not .cur/.ani.** Safari ignores `.cur`, and no browser
+  animates `.ani`. Each cursor carries four copies at 32/8/4/1 bpp; the
+  converter picks the 32-bit one (the 1-bit copy is a black-and-white
+  stencil). Hotspots come out of the CUR directory entries: (5, 0) for
+  Link, (15, 15) for Move and Busy.
+- **Mapping:** Link is the default everywhere, Move covers pressing and
+  dragging (`:active`, `[data-dragging]`, `[aria-grabbed]`), Busy runs
+  while data is in flight.
+- **The busy cursor animates by stepping an attribute.** CSS can't
+  animate `cursor`, so the 15-frame ANI becomes 12 PNGs and
+  `src/lib/busyCursor.ts` writes `data-busy="<frame>"` on `<html>` every
+  33ms (the ANI's own rate: 2 jiffies at 60Hz), with one CSS rule per
+  frame.
+- **One integration point for "loading":** `createClient()` wraps the
+  client in a Proxy that brackets every promise-returning method with
+  the busy counter, so all data access raises the spinner without page
+  code having to opt in. A 150ms grace period keeps fast calls from
+  strobing the cursor and a 300ms minimum keeps it from flashing once
+  shown; back-to-back calls hold it steady rather than blinking.
+- **Unchanged on purpose:** text fields keep the caret, disabled controls
+  keep `not-allowed`, and everything sits behind
+  `@media (hover: hover) and (pointer: fine)` so touch devices are
+  untouched. Component-level `cursor:` rules were converted to the shared
+  variables rather than overridden, since a plain `cursor: pointer`
+  outranks a global `html` rule.

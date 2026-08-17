@@ -75,7 +75,7 @@
   flex: 0 0 auto;
   border-radius: var(--r-thumb);
   overflow: hidden;
-  cursor: var(--cursor-hand);
+  cursor: var(--cursor-default);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,7 +117,7 @@
   padding: 0;
   color: var(--text-2);
   font-size: var(--fs-13);
-  cursor: var(--cursor-hand);
+  cursor: var(--cursor-default);
 }
 .reviews-party:hover { color: var(--acid); }
 

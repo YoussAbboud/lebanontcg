@@ -90,7 +90,7 @@
 .home-strip-card {
   flex: none;
   width: 300px;
-  cursor: var(--cursor-hand);
+  cursor: var(--cursor-default);
   scroll-snap-align: start;
   border-radius: var(--r-card);
   overflow: hidden;
@@ -184,7 +184,7 @@
   gap: 12px;
   padding: 9px 6px;
   border-radius: var(--r-thumb);
-  cursor: var(--cursor-hand);
+  cursor: var(--cursor-default);
   transition: background var(--t-fast);
 }
 .home-seller-row:hover { background: var(--hover-row); }

@@ -326,3 +326,19 @@ Manual: hover a fan card and circle the cursor — the card should tilt
 toward it smoothly and settle back when you leave. Flick the fan on a
 phone. Drag the featured strip with the mouse; release mid-card and it
 should glide to the next card, not snap back.
+
+
+## R9 — Hover-acid visibility, pinned cards, mobile navbar
+
+Automated (headless Chromium, desktop + iPhone 13 — 29 assertions): all
+of R8 plus occlusion checks (`elementFromPoint` at the title and price
+centres must resolve to the text, not the overlay — the check that would
+have caught the R8 regression), exactly one pinned strip card (newest)
+and a likes-gated pinned grid card, both with the breathing-glow
+animation and readable text; the mobile header hides the List-a-card CTA
+and keeps search, the burger sits off the edge, and the burger menu
+contains a working List a card button.
+
+Manual: hover any card — every line of text must stay readable on the
+acid. The pinned cards should glow gently at rest and read identically
+to a hovered card.

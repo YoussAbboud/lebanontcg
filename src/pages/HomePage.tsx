@@ -61,6 +61,18 @@ export function HomePage() {
     };
   }, [client]);
 
+  // Permanent acid pins: the newest listing in the featured strip and the
+  // most-liked card in the trending grid (nothing pinned on a likes tie at 0).
+  const newestFeaturedId = featured.reduce(
+    (best, f) => (best === null || f.createdAt > best.createdAt ? f : best),
+    null as ListingWithSeller | null,
+  )?.id;
+  const mostLiked = trending.reduce(
+    (best, l) => (best === null || l.likes > best.likes ? l : best),
+    null as ListingWithSeller | null,
+  );
+  const mostLikedId = mostLiked && mostLiked.likes > 0 ? mostLiked.id : undefined;
+
   const scrollStrip = (dir: number) => {
     stripRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
   };
@@ -153,7 +165,7 @@ export function HomePage() {
                   key={f.id}
                   role="button"
                   tabIndex={0}
-                  className="home-strip-card"
+                  className={`home-strip-card ${f.id === newestFeaturedId ? 'is-acid-strip' : ''}`}
                   onClick={() => navigate(`/listing/${f.id}`)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') navigate(`/listing/${f.id}`);
@@ -247,7 +259,7 @@ export function HomePage() {
 
           <div className="home-trending-grid">
             {trending.map((l) => (
-              <ListingCard key={l.id} listing={l} />
+              <ListingCard key={l.id} listing={l} pinned={l.id === mostLikedId} />
             ))}
             {state === 'ready' && trending.length === 0 && (
               <div className="empty-dashed home-trending-empty">

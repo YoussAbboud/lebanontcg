@@ -106,21 +106,35 @@
   box-shadow: var(--shadow-card);
   transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
 }
-/* Acid on hover/press — overlay fade, same technique as .lcard. */
+/* Acid on hover/press — overlay fade, same technique as .lcard: the card
+   isolates a stacking context so the z-index -1 overlay sits above the
+   card background but under all its content. */
+.home-strip-card { isolation: isolate; }
 .home-strip-card::before {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: -1;
   background: linear-gradient(180deg, var(--acid), var(--acid-press));
   opacity: 0;
   transition: opacity var(--t-fast);
   pointer-events: none;
 }
-.home-strip-card:is(:hover, :focus-visible, :active)::before { opacity: 1; }
-.home-strip-card:is(:hover, :focus-visible, :active) {
+.home-strip-card:is(:hover, :focus-visible, :active, .is-acid-strip)::before { opacity: 1; }
+.home-strip-card:is(:hover, :focus-visible, :active, .is-acid-strip) {
   border-color: transparent;
   box-shadow: var(--shadow-card), var(--glow-acid-soft);
-  transform: translateY(-4px);
+}
+.home-strip-card:is(:hover, :focus-visible, :active) { transform: translateY(-4px); }
+
+/* Pinned acid (the newest listing): permanent, with a breathing glow. */
+.home-strip-card.is-acid-strip { animation: strip-acid-breathe 3.2s ease-in-out infinite; }
+@keyframes strip-acid-breathe {
+  0%, 100% { box-shadow: var(--shadow-card), 0 0 46px -22px var(--acid); }
+  50% { box-shadow: var(--shadow-card), 0 0 78px -14px var(--acid); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-strip-card.is-acid-strip { animation: none; }
 }
 
 .home-strip-face {
@@ -149,7 +163,7 @@
   font-size: 96px;
   color: var(--glyph-ink);
 }
-.home-strip-card:is(:hover, :focus-visible, :active) .home-strip-glyph { color: var(--glyph-on-acid); }
+.home-strip-card:is(:hover, :focus-visible, :active, .is-acid-strip) .home-strip-glyph { color: var(--glyph-on-acid); }
 
 .home-strip-body { padding: 16px 18px 18px; }
 
@@ -161,9 +175,9 @@
 .home-strip-title,
 .home-strip-eyebrow,
 .home-strip-body .mono-value { transition: color var(--t-fast); }
-.home-strip-card:is(:hover, :focus-visible, :active) .home-strip-title { color: var(--ink); }
-.home-strip-card:is(:hover, :focus-visible, :active) .home-strip-eyebrow { color: var(--ink-soft); }
-.home-strip-card:is(:hover, :focus-visible, :active) .mono-value { color: var(--ink); }
+.home-strip-card:is(:hover, :focus-visible, :active, .is-acid-strip) .home-strip-title { color: var(--ink); }
+.home-strip-card:is(:hover, :focus-visible, :active, .is-acid-strip) .home-strip-eyebrow { color: var(--ink-soft); }
+.home-strip-card:is(:hover, :focus-visible, :active, .is-acid-strip) .mono-value { color: var(--ink); }
 
 .home-strip-asking {
   display: flex;

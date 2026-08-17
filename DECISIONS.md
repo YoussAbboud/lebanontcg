@@ -406,3 +406,25 @@ Running log of product/engineering decisions made while building, newest last.
 - **Top Sellers matches the column width on phones** — the desktop
   `max-width: 320px` cap was leaking into the stacked layout and read as
   stray right padding.
+
+## R9 — Hover-acid visibility fix, pinned acid cards, mobile navbar
+
+- **The R8 hover-acid overlay covered the card text.** The overlay is
+  absolutely positioned, and positioned boxes paint above static text —
+  the automated pass had only checked computed colors and overlay
+  opacity, not what actually painted on top. Fixed by isolating a
+  stacking context on the card and giving the overlay `z-index: -1`
+  (above the card's own background, below everything in it). The suite
+  now asserts occlusion with `elementFromPoint` at the title's centre.
+- **Two cards earn permanent acid**, each with a slow breathing glow
+  (3.2s box-shadow animation, off under prefers-reduced-motion): the
+  newest listing in the featured strip and the most-liked card in the
+  trending grid (no pin when every card is at zero likes). The pinned
+  class simply joins the hover selector lists, so pinned and hovered
+  render identically.
+- **Mobile header slimmed to search + profile.** The acid "List a card"
+  CTA moved into the burger menu as a full-width button, the search
+  button is back on phones, and the burger got breathing room from the
+  edge. One trap: ui.css loads after appshell.css, so hiding the header
+  CTA needed a two-class selector — `.btn-acid { display: inline-flex }`
+  wins a specificity tie against a bare `.shell-sell { display: none }`.

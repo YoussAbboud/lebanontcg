@@ -226,12 +226,15 @@
 
 @media (max-width: 920px) {
   .shell-nav { display: none; }
-  .shell-burger { display: flex; }
+  .shell-burger { display: flex; margin-left: 4px; }
   .shell-header { gap: 12px; }
   .shell-logo { font-size: 16px; }
   .shell-logo-gif { width: 30px; height: 30px; }
-  .shell-search { display: none; }
-  .shell-sell { padding: 10px 14px; min-height: 40px; }
+  /* Header keeps just search + profile; the acid CTA moves to the burger.
+     (.shell-actions prefix: ui.css loads after this file, so a bare
+     .shell-sell would lose the display tie against .btn-acid.) */
+  .shell-search { display: inline-flex; width: 38px; height: 38px; }
+  .shell-actions .shell-sell { display: none; }
   .shell-nav-mobile {
     display: flex;
     flex-direction: column;
@@ -242,7 +245,16 @@
   }
   .shell-nav-mobile .shell-navlink { padding: 12px 4px; }
   .shell-nav-mobile .shell-navtab { display: none; }
+  .shell-mobile-sell {
+    margin: 10px 4px 4px;
+    min-height: 44px;
+    justify-content: center;
+    text-align: center;
+  }
 }
+
+/* Desktop never shows the burger-menu CTA (the nav itself is hidden). */
+.shell-mobile-sell { width: auto; }
 
 /* ---- Main + footer ------------------------------------------------------------------ */
 .shell-main {

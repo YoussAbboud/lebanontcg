@@ -210,6 +210,14 @@ export function AppShell() {
             <span className="shell-navtab" aria-hidden="true" />
             Watchlist
           </NavLink>
+          {/* On phones the acid CTA lives here instead of the header. */}
+          <Link
+            to="/sell"
+            className="btn-acid shell-mobile-sell"
+            onClick={() => setMobileNavOpen(false)}
+          >
+            List a card
+          </Link>
         </nav>
       )}
 

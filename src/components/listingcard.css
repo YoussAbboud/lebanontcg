@@ -8,22 +8,35 @@
 }
 
 /* Acid flood: a gradient overlay fading in beats animating the gradient
-   itself (background-image can't transition). Text and positioned children
-   paint above a sibling pseudo-element's background, so nothing else in
-   the card needs touching. */
+   itself (background-image can't transition). The overlay is absolutely
+   positioned, which paints ABOVE static text — so the card isolates a
+   stacking context and the overlay takes z-index -1: above the card's own
+   background, below everything in it. */
+.lcard { isolation: isolate; }
 .lcard::before {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: -1;
   background: linear-gradient(180deg, var(--acid), var(--acid-press));
   opacity: 0;
   transition: opacity var(--t-fast);
   pointer-events: none;
 }
-.lcard:is(:hover, :focus-visible, :active)::before { opacity: 1; }
-.lcard:is(:hover, :focus-visible, :active) {
+.lcard:is(:hover, :focus-visible, :active, .is-acid)::before { opacity: 1; }
+.lcard:is(:hover, :focus-visible, :active, .is-acid) {
   border-color: transparent;
   box-shadow: var(--shadow-card), var(--glow-acid-soft);
+}
+
+/* Pinned acid (the most-liked card): permanent, with a slow breathing glow. */
+@keyframes acid-breathe {
+  0%, 100% { box-shadow: var(--shadow-card), 0 0 46px -22px var(--acid); }
+  50% { box-shadow: var(--shadow-card), 0 0 78px -14px var(--acid); }
+}
+.lcard.is-acid { animation: acid-breathe 3.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .lcard.is-acid { animation: none; }
 }
 
 .lcard-top {
@@ -167,20 +180,20 @@
 .lcard .lcard-cta {
   transition: color var(--t-fast), border-color var(--t-fast), background-color var(--t-fast);
 }
-.lcard:is(:hover, :focus-visible, :active) .lcard-handle,
-.lcard:is(:hover, :focus-visible, :active) .lcard-title { color: var(--ink); }
-.lcard:is(:hover, :focus-visible, :active) .lcard-eyebrow,
-.lcard:is(:hover, :focus-visible, :active) .lcard-oneliner,
-.lcard:is(:hover, :focus-visible, :active) .lcard-stat-k { color: var(--ink-soft); }
-.lcard:is(:hover, :focus-visible, :active) .lcard-stat-v { color: var(--ink); }
-.lcard:is(:hover, :focus-visible, :active) .lcard-likes {
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-handle,
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-title { color: var(--ink); }
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-eyebrow,
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-oneliner,
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-stat-k { color: var(--ink-soft); }
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-stat-v { color: var(--ink); }
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-likes {
   border-color: var(--ink-rule);
   color: var(--ink);
 }
-.lcard:is(:hover, :focus-visible, :active) .lcard-stats { border-top-color: var(--ink-rule); }
-.lcard:is(:hover, :focus-visible, :active) .lcard-cta {
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-stats { border-top-color: var(--ink-rule); }
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-cta {
   border-color: var(--ink);
   background: var(--ink);
   color: var(--acid);
 }
-.lcard:is(:hover, :focus-visible, :active) .cardface-glyph { color: var(--glyph-on-acid); }
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .cardface-glyph { color: var(--glyph-on-acid); }

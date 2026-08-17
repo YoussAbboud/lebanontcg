@@ -25,8 +25,15 @@ function oneLinerOf(l: ListingWithSeller): string {
 // Grid listing card — the Sleeved design's article card, wired to real
 // data: seller dot + handle, ♡ like count, watch star (favorite), title,
 // asking/listed columns, Message seller CTA. The acid treatment is the
-// hover/press state (CSS), not a hash-picked permanent variant.
-export const ListingCard = memo(function ListingCard({ listing }: { listing: ListingWithSeller }) {
+// hover/press state (CSS); `pinned` keeps one card permanently acid with
+// a breathing glow (the home page pins its most-liked card).
+export const ListingCard = memo(function ListingCard({
+  listing,
+  pinned = false,
+}: {
+  listing: ListingWithSeller;
+  pinned?: boolean;
+}) {
   const { favoriteIds, toggleFavorite, user, client } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
@@ -67,7 +74,7 @@ export const ListingCard = memo(function ListingCard({ listing }: { listing: Lis
       role="button"
       tabIndex={0}
       aria-label={`${listing.title}, asking ${formatPrice(listing.price, listing.currency)}`}
-      className="lcard card-raised"
+      className={`lcard card-raised ${pinned ? 'is-acid' : ''}`}
       onClick={open}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && e.target === e.currentTarget) open();

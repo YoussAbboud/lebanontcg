@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReportReason, ReportTargetType } from '../lib/types';
 import { REPORT_REASONS, REPORT_REASON_LABELS } from '../lib/types';
 import { useApp } from '../state/AppContext';
@@ -39,7 +40,9 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
     }
   };
 
-  return (
+  // Portalled for the same reason as the photo viewer: .shell-main is a
+  // stacking context, so an in-page modal renders beneath the header.
+  return createPortal(
     <div className="rdlg-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
         className="rdlg"
@@ -111,6 +114,7 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

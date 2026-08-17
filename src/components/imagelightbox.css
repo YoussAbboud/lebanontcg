@@ -1,0 +1,98 @@
+/* Full-screen photo viewer (listing gallery). */
+
+.lbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--overlay);
+  backdrop-filter: blur(6px);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  animation: lbox-in 160ms var(--ease-out);
+}
+
+@keyframes lbox-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lbox { animation: none; }
+}
+
+.lbox-bar {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+.lbox-count { color: var(--text-2); }
+.lbox-close {
+  background: var(--surface);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+}
+
+.lbox-stage {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.lbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--r-panel);
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform 220ms var(--ease-out);
+  box-shadow: var(--shadow-fan);
+}
+.lbox-img.is-zoomed {
+  cursor: grab;
+  transition: none; /* panning must track the pointer exactly */
+}
+.lbox-img.is-zoomed:active { cursor: grabbing; }
+
+.lbox-nav {
+  grid-row: 2;
+  background: var(--surface);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+  width: 44px;
+  height: 44px;
+}
+.lbox-prev { grid-column: 1; }
+.lbox-next { grid-column: 3; }
+
+.lbox-hint {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  text-align: center;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .lbox { padding: 10px; gap: 4px; }
+  .lbox-nav { width: 40px; height: 40px; }
+}
+
+/* One hint, worded for the input device actually in use. */
+.lbox-hint-touch { display: none; }
+@media (hover: none) {
+  .lbox-hint-pointer { display: none; }
+  .lbox-hint-touch { display: inline; }
+}

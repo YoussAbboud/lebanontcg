@@ -263,3 +263,25 @@ of the buyer rejected by policy). Migrations 0001–0010 plus
 Manual (live mode): confirm a deal as the seller — the thread should say
 the buyer can rate it, never that you reviewed it; the rating only
 appears once the buyer submits.
+
+
+## R6 — Listing photo zoom
+
+Automated (headless Chromium, desktop + iPhone 13 emulation — 17
+assertions): the photo is marked zoomable; hovering scales it and the
+zoom origin follows the cursor; leaving resets it; click opens the
+viewer and the viewer covers the header (nothing behind stays
+clickable); clicking the photo zooms, dragging pans, clicking again
+zooms out; Esc closes; Enter opens it from the keyboard; body scroll is
+locked while open and released on close. On touch: the hint is visible,
+no hover zoom is applied, tap opens the viewer and the close button
+dismisses it.
+
+Manual:
+1. Desktop: hover across the photo — the zoom should track the cursor,
+   not jump. Open the viewer, drag while zoomed, release: it must stay
+   zoomed.
+2. Multi-photo listing: arrows and ←/→ move between photos; on a phone,
+   swipe does the same and the counter tracks it.
+3. Phone: the photo should not zoom on touch-and-hold; tapping opens the
+   viewer, and pinch works inside it.

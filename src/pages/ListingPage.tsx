@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { ListingStatus, ListingWithSeller } from '../lib/types';
 import { CONDITION_LABELS, FINISH_LABELS, GAME_LABELS } from '../lib/types';
@@ -9,6 +9,7 @@ import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { Avatar } from '../components/Avatar';
 import { ReportDialog } from '../components/ReportDialog';
+import { ImageLightbox } from '../components/ImageLightbox';
 import './listing.css';
 
 type LoadState = 'loading' | 'ready' | 'error' | 'missing';
@@ -23,6 +24,12 @@ export function ListingPage() {
   const [photo, setPhoto] = useState(0);
   const [busy, setBusy] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [lightbox, setLightbox] = useState(false);
+  // Desktop hover zoom: the cursor drives transform-origin so the point
+  // under the pointer stays put while the photo scales.
+  const [hoverZoom, setHoverZoom] = useState(false);
+  const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
+  const faceRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -150,11 +157,46 @@ export function ListingPage() {
       <div className="ldetail-cols">
         <div className="ldetail-media">
           <div
-            className="ldetail-face"
+            ref={faceRef}
+            className={`ldetail-face ${cover ? 'is-zoomable' : ''}`}
             style={cover ? undefined : { background: faceBackground(listing.id) }}
+            role={cover ? 'button' : undefined}
+            tabIndex={cover ? 0 : undefined}
+            aria-label={cover ? `Open ${listing.title} photo full screen` : undefined}
+            onClick={() => cover && setLightbox(true)}
+            onKeyDown={(e) => {
+              if (cover && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                setLightbox(true);
+              }
+            }}
+            onMouseEnter={() => cover && setHoverZoom(true)}
+            onMouseLeave={() => setHoverZoom(false)}
+            onMouseMove={(e) => {
+              if (!cover) return;
+              const r = e.currentTarget.getBoundingClientRect();
+              setZoomOrigin({
+                x: ((e.clientX - r.left) / r.width) * 100,
+                y: ((e.clientY - r.top) / r.height) * 100,
+              });
+            }}
           >
             {cover ? (
-              <img src={cover.url} alt={`${listing.title} — photo ${photo + 1}`} />
+              <>
+                <img
+                  src={cover.url}
+                  alt={`${listing.title} — photo ${photo + 1}`}
+                  className={hoverZoom ? 'is-hover-zoom' : ''}
+                  style={
+                    hoverZoom
+                      ? { transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%` }
+                      : undefined
+                  }
+                />
+                <span className="mono-label ldetail-zoom-hint" aria-hidden="true">
+                  ⤢ Click to enlarge
+                </span>
+              </>
             ) : (
               <div className="ldetail-glyph" aria-hidden="true">{glyphOf(listing.title)}</div>
             )}
@@ -315,6 +357,16 @@ export function ListingPage() {
           </div>
         </div>
       </div>
+
+      {lightbox && cover && (
+        <ImageLightbox
+          images={listing.images}
+          index={photo}
+          alt={listing.title}
+          onIndexChange={setPhoto}
+          onClose={() => setLightbox(false)}
+        />
+      )}
 
       {reportOpen && (
         <ReportDialog

@@ -34,6 +34,46 @@
   background: var(--input-bg);
 }
 
+/* ---- Zoom affordances ------------------------------------------------- */
+.ldetail-face.is-zoomable { cursor: zoom-in; }
+.ldetail-face.is-zoomable:focus-visible {
+  outline: 2px solid var(--acid);
+  outline-offset: 2px;
+}
+
+.ldetail-zoom-hint {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1;
+  padding: 6px 10px;
+  border-radius: var(--r-pill);
+  background: var(--watch-bg);
+  color: var(--text-1);
+  opacity: 0;
+  transition: opacity var(--t-fast);
+  pointer-events: none;
+}
+.ldetail-face.is-zoomable:hover .ldetail-zoom-hint,
+.ldetail-face.is-zoomable:focus-visible .ldetail-zoom-hint { opacity: 1; }
+
+/* Hover zoom is a pointer-device affordance only: touch gets the tap-to-
+   open viewer instead, where pinch and drag do the same job better. */
+@media (hover: hover) and (pointer: fine) {
+  .ldetail-face img.is-hover-zoom {
+    transform: scale(2);
+    transition: transform 240ms var(--ease-out);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ldetail-face img.is-hover-zoom { transition: none; }
+}
+
+/* Touch devices: the hint is the only cue, so keep it visible. */
+@media (hover: none) {
+  .ldetail-zoom-hint { opacity: 1; }
+}
+
 .ldetail-glyph {
   position: absolute;
   inset: 0;

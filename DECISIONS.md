@@ -309,3 +309,24 @@ Running log of product/engineering decisions made while building, newest last.
   second run used to die half-applied), and T01 counts only its own two
   fixture profiles so the suite passes with or without `seed.sql`
   loaded in the same database.
+
+## R6 — Listing photo zoom
+
+- **Two zoom affordances, split by input device.** Pointer devices get a
+  hover zoom on the listing photo (2×, `transform-origin` tracking the
+  cursor so the point under the pointer stays put) behind
+  `@media (hover: hover) and (pointer: fine)`; touch gets nothing on
+  hover and opens the viewer on tap instead, where pinch and drag do the
+  job better. Click/tap/Enter opens a full-screen viewer on every device.
+- **The viewer is a portal.** `.shell-main` is `position: relative;
+  z-index: 1`, which makes it a stacking context — an in-page modal
+  renders *beneath* the sticky header no matter how high its z-index, and
+  the nav stays clickable over it. Both the photo viewer and the existing
+  report dialog now render through `createPortal` into `document.body`.
+  (The report dialog had shipped with this defect.)
+- **A pan must not toggle the zoom.** Releasing a drag fires a click on
+  the image, which would zoom straight back out; a 4px movement threshold
+  marks the gesture as a drag and swallows that click.
+- No new dependency: the viewer is ~150 lines over pointer events
+  (mouse, pen and touch in one path) plus a touch-swipe handler for
+  moving between photos.

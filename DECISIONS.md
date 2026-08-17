@@ -337,3 +337,29 @@ Running log of product/engineering decisions made while building, newest last.
 - No new dependency: the viewer is ~150 lines over pointer events
   (mouse, pen and touch in one path) plus a touch-swipe handler for
   moving between photos.
+
+## R7 — Custom cursors
+
+- **Two cursors, hand and fist**, from the owner-supplied reference: the
+  open hand is the default everywhere, the closed fist shows while the
+  pointer is held down. Artwork is generated from a polygon spec
+  (`src/assets/cursors/gen.py`) so it can be regenerated or nudged
+  without hand-editing binaries.
+- **PNG ships, not SVG.** Safari doesn't support SVG cursors; the PNGs
+  are small enough (<2KB) that Vite inlines them as data URIs, which also
+  sidesteps relative-URL resolution inside custom properties. A second
+  `cursor: image-set(1x, 2x)` declaration upgrades hi-dpi screens and is
+  ignored by browsers that don't parse it.
+- **Component rules had to be converted, not overridden.** Every
+  `cursor: pointer` in the codebase (buttons, cards, nav links) beat a
+  global `html` rule on specificity — i.e. the system hand would have
+  returned on exactly the elements people point at. They now all read
+  `var(--cursor-hand)`; `grab`/`grabbing` in the lightbox and image
+  manager map onto the hand/fist pair, which is what those gestures mean
+  anyway.
+- **What keeps a system cursor:** text fields (a hand hides the caret and
+  reads as "not editable"), disabled controls (`not-allowed`), and
+  coarse-pointer devices, where the whole block is behind
+  `@media (hover: hover) and (pointer: fine)`.
+- Hotspots: index fingertip (9, 5) for the hand, top knuckle (10, 10) for
+  the fist, so the shape clenches roughly in place instead of jumping.

@@ -55,7 +55,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   overflow: hidden;
   transition: border-color var(--t-fast), color var(--t-fast);
 }

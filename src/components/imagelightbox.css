@@ -14,9 +14,9 @@
   padding: 16px;
   animation: lbox-in 160ms var(--ease-out);
   /* Empty space closes the viewer; the photo and controls opt out below. */
-  cursor: zoom-out;
+  cursor: var(--cursor-hand);
 }
-.lbox button { cursor: pointer; }
+.lbox button { cursor: var(--cursor-hand); }
 
 @keyframes lbox-in {
   from { opacity: 0; }
@@ -58,17 +58,17 @@
   max-height: 100%;
   object-fit: contain;
   border-radius: var(--r-panel);
-  cursor: zoom-in;
+  cursor: var(--cursor-hand);
   user-select: none;
   -webkit-user-drag: none;
   transition: transform 220ms var(--ease-out);
   box-shadow: var(--shadow-fan);
 }
 .lbox-img.is-zoomed {
-  cursor: grab;
+  cursor: var(--cursor-hand);
   transition: none; /* panning must track the pointer exactly */
 }
-.lbox-img.is-zoomed:active { cursor: grabbing; }
+.lbox-img.is-zoomed:active { cursor: var(--cursor-fist); }
 
 .lbox-nav {
   grid-row: 2;

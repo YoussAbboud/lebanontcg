@@ -30,7 +30,7 @@
   left: 50%;
   width: clamp(150px, 19vw, 260px);
   aspect-ratio: 5 / 7;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   border-radius: var(--r-card);
   overflow: hidden;
   transform-style: preserve-3d;
@@ -172,7 +172,7 @@
   height: 8px;
   border-radius: var(--r-pill);
   border: none;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   padding: 0;
   background: var(--raised-2);
   transition: width 300ms ease, background 300ms ease;

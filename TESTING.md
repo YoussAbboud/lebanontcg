@@ -287,3 +287,17 @@ Manual:
    swipe does the same and the counter tracks it.
 3. Phone: the photo should not zoom on touch-and-hold; tapping opens the
    viewer, and pinch works inside it.
+
+
+## R7 — Custom cursors
+
+Automated (headless Chromium, desktop + iPhone 13 — 12 assertions): both
+cursor assets resolve and are different images; the page default is the
+custom hand; nav links, buttons and listing cards use it rather than
+falling back to the system `pointer`; holding the mouse down swaps to the
+fist and releasing swaps back; text inputs keep the caret; a coarse
+pointer gets no custom cursor at all.
+
+Manual: hover the header, cards and the sell wizard — the hand should
+never flicker back to an arrow or system hand. Press and hold anywhere:
+the fist should appear without the pointer jumping position.

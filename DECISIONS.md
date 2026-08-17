@@ -324,9 +324,16 @@ Running log of product/engineering decisions made while building, newest last.
   the nav stays clickable over it. Both the photo viewer and the existing
   report dialog now render through `createPortal` into `document.body`.
   (The report dialog had shipped with this defect.)
+- **Empty space closes the viewer.** The first cut only closed on
+  `e.target === e.currentTarget`, but the space around the photo belongs
+  to the grid children (stage, bar, hint), so most "outside" clicks did
+  nothing. The handler now closes unless the click landed on the photo or
+  a control, and the backdrop carries `cursor: zoom-out` to say so.
 - **A pan must not toggle the zoom.** Releasing a drag fires a click on
   the image, which would zoom straight back out; a 4px movement threshold
-  marks the gesture as a drag and swallows that click.
+  marks the gesture as a drag and swallows that click — including when
+  the pan ends off the photo, where it would otherwise read as a
+  click on the backdrop and close the viewer.
 - No new dependency: the viewer is ~150 lines over pointer events
   (mouse, pen and touch in one path) plus a touch-swipe handler for
   moving between photos.

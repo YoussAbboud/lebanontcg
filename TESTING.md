@@ -272,10 +272,12 @@ assertions): the photo is marked zoomable; hovering scales it and the
 zoom origin follows the cursor; leaving resets it; click opens the
 viewer and the viewer covers the header (nothing behind stays
 clickable); clicking the photo zooms, dragging pans, clicking again
-zooms out; Esc closes; Enter opens it from the keyboard; body scroll is
+zooms out; clicking any empty space — beside the photo, the top bar, the
+hint strip — closes, while the photo, the arrows and a pan that ends off
+the photo do not; Esc closes; Enter opens it from the keyboard; body scroll is
 locked while open and released on close. On touch: the hint is visible,
-no hover zoom is applied, tap opens the viewer and the close button
-dismisses it.
+no hover zoom is applied, tap opens the viewer, tapping outside the photo
+closes it and so does the close button.
 
 Manual:
 1. Desktop: hover across the photo — the zoom should track the cursor,

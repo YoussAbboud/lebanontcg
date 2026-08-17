@@ -96,6 +96,23 @@ export function ImageLightbox({ images, index, alt, onIndexChange, onClose }: Pr
     dragRef.current = null;
   };
 
+  /**
+   * Click anywhere that isn't the photo or a control to close — the
+   * backdrop, the margins around the photo, the bar, the hint. Checking
+   * the event target rather than `e.target === e.currentTarget` matters:
+   * the empty space belongs to the grid children, not the root.
+   */
+  const onSurfaceClick = (e: React.MouseEvent) => {
+    if (draggedRef.current) {
+      // A pan that ended off the photo — not a click on the backdrop.
+      draggedRef.current = false;
+      return;
+    }
+    const target = e.target as HTMLElement;
+    if (target.closest('.lbox-img') || target.closest('button')) return;
+    onClose();
+  };
+
   // Swipe between photos when not zoomed.
   const onTouchStart = (e: React.TouchEvent) => {
     if (zoomed || !many) return;
@@ -124,9 +141,7 @@ export function ImageLightbox({ images, index, alt, onIndexChange, onClose }: Pr
       role="dialog"
       aria-modal="true"
       aria-label={alt}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      onClick={onSurfaceClick}
     >
       <div className="lbox-bar">
         {many && (
@@ -192,12 +207,14 @@ export function ImageLightbox({ images, index, alt, onIndexChange, onClose }: Pr
       {/* Wording differs by input device; CSS picks one (see lbox-hint). */}
       <div className="mono-label lbox-hint">
         <span className="lbox-hint-pointer">
-          {zoomed ? 'Drag to pan · click to zoom out' : 'Click the photo to zoom'}
+          {zoomed
+            ? 'Drag to pan · click to zoom out'
+            : 'Click the photo to zoom · click outside to close'}
         </span>
         <span className="lbox-hint-touch">
           {zoomed
             ? 'Drag to pan · tap to zoom out'
-            : `Tap the photo to zoom${many ? ' · swipe to browse' : ''}`}
+            : `Tap the photo to zoom${many ? ' · swipe to browse' : ''} · tap outside to close`}
         </span>
       </div>
     </div>,

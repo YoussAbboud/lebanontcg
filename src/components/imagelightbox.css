@@ -13,7 +13,10 @@
   gap: 8px;
   padding: 16px;
   animation: lbox-in 160ms var(--ease-out);
+  /* Empty space closes the viewer; the photo and controls opt out below. */
+  cursor: zoom-out;
 }
+.lbox button { cursor: pointer; }
 
 @keyframes lbox-in {
   from { opacity: 0; }

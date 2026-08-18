@@ -76,7 +76,11 @@ export function PregradePage() {
   const [busySlot, setBusySlot] = useState<CaptureSlot | null>(null);
   const [phase, setPhase] = useState<'capture' | 'wizard'>('capture');
   /** The picked file awaiting its crop step. */
-  const [cropTarget, setCropTarget] = useState<{ slot: CaptureSlot; file: File } | null>(null);
+  const [cropTarget, setCropTarget] = useState<{
+    slot: CaptureSlot;
+    file: File;
+    mode: 'pin' | 'rect';
+  } | null>(null);
   /** Soft-failed shots held for the user's call: retake or use anyway. */
   const [held, setHeld] = useState<Partial<Record<CaptureSlot, Shot>>>({});
   const inputRefs = useRef<Partial<Record<CaptureSlot, HTMLInputElement | null>>>({});
@@ -106,7 +110,11 @@ export function PregradePage() {
   const pick = (slot: CaptureSlot, file: File | undefined) => {
     if (!file || !file.type.startsWith('image/')) return;
     setFailures((f) => ({ ...f, [slot]: undefined }));
-    setCropTarget({ slot, file });
+    setCropTarget({
+      slot,
+      file,
+      mode: slot === 'front' || slot === 'back' ? 'pin' : 'rect',
+    });
   };
 
   const accept = (slot: CaptureSlot, shot: Shot) => {
@@ -124,10 +132,15 @@ export function PregradePage() {
     });
   };
 
-  const cropped = async (slot: CaptureSlot, blob: Blob, url: string, srcLongEdge?: number) => {
+  const cropped = async (
+    slot: CaptureSlot,
+    blob: Blob,
+    url: string,
+    srcLongEdge: number | undefined,
+    flattened: boolean,
+  ) => {
     setCropTarget(null);
     setBusySlot(slot);
-    const flattened = slot === 'front' || slot === 'back';
     try {
       const { raster, originalLongEdge } = await blobToRaster(blob, 900);
       const quality = checkCapture(
@@ -296,13 +309,14 @@ export function PregradePage() {
       <MyReports />
 
       {cropTarget &&
-        (cropTarget.slot === 'front' || cropTarget.slot === 'back' ? (
+        (cropTarget.mode === 'pin' ? (
           <CornerPinCropper
             file={cropTarget.file}
             title={`Pin the card's corners — ${SLOT_META[cropTarget.slot].label}`}
             onCancel={() => setCropTarget(null)}
+            onUseRectCrop={() => setCropTarget({ ...cropTarget, mode: 'rect' })}
             onDone={(out) => {
-              void cropped(cropTarget.slot, out.blob, out.url, out.srcLongEdge);
+              void cropped(cropTarget.slot, out.blob, out.url, out.srcLongEdge, true);
             }}
           />
         ) : (
@@ -312,7 +326,7 @@ export function PregradePage() {
             title={`Crop to the card — ${SLOT_META[cropTarget.slot].label}`}
             onCancel={() => setCropTarget(null)}
             onDone={(out) => {
-              void cropped(cropTarget.slot, out.blob, out.url);
+              void cropped(cropTarget.slot, out.blob, out.url, undefined, false);
             }}
           />
         ))}

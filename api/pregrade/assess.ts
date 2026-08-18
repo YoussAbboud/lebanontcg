@@ -6,8 +6,135 @@
 // Env (Vercel project settings — never in the repo):
 //   ANTHROPIC_API_KEY   required for live assessments
 //   PREGRADE_DAILY_LIMIT  optional, default 10
+//
+// SELF-CONTAINED on purpose: this repo is "type": "module" and Vercel's
+// zero-config builder compiles only the entrypoint — a cross-tree import
+// of src/lib TS dies at runtime with ERR_MODULE_NOT_FOUND. The contract
+// validator below mirrors src/lib/pregrade/assessment.ts (which the
+// client and tests use); keep the two in sync when the contract moves.
 
-import { abstention, parseAssessment } from '../../src/lib/pregrade/assessment';
+// ---------------------------------------------------------------------------
+// Contract validation (mirror of src/lib/pregrade/assessment.ts)
+// ---------------------------------------------------------------------------
+
+type Confidence = 'high' | 'moderate' | 'low' | 'not_assessed';
+type Severity = 'trace' | 'minor' | 'moderate' | 'severe';
+
+interface Attr<F> {
+  score: number | null;
+  confidence: Confidence;
+  borderline: boolean;
+  findings: F[];
+}
+
+interface Assessment {
+  corners: Attr<{ location: string; type: string; severity: Severity; note: string }>;
+  edges: Attr<{ location: string; type: string; severity: Severity; note: string }>;
+  surface: Attr<{ face: string; type: string; severity: Severity; note: string }>;
+  authenticityFlags: string[];
+  imageQualityNotes: string[];
+  abstain: boolean;
+  abstainReason: string | null;
+}
+
+const CONFIDENCES: Confidence[] = ['high', 'moderate', 'low', 'not_assessed'];
+const SEVERITIES: Severity[] = ['trace', 'minor', 'moderate', 'severe'];
+const CORNER_LOCS = ['top_left', 'top_right', 'bottom_right', 'bottom_left'];
+const CORNER_TYPES = ['soft', 'ding', 'whitening', 'fray', 'round'];
+const EDGE_LOCS = ['top', 'right', 'bottom', 'left'];
+const EDGE_TYPES = ['factory_cut', 'fuzz', 'whitening', 'chip', 'bleed_into_surface'];
+const SURFACE_FACES = ['front', 'back'];
+const SURFACE_TYPES = ['print_line', 'scratch', 'dimple', 'indent', 'stain', 'gloss_break'];
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+function parseScore(v: unknown): number | null {
+  if (v === null || v === undefined) return null;
+  const n = Number(v);
+  if (!Number.isFinite(n)) throw new Error('score not a number');
+  return Math.min(10, Math.max(1, Math.round(n)));
+}
+
+function parseEnum(v: unknown, allowed: string[], what: string): string {
+  if (typeof v === 'string' && allowed.includes(v)) return v;
+  throw new Error(`bad ${what}: ${String(v)}`);
+}
+
+function parseAttr<F>(v: unknown, parseFinding: (f: Record<string, unknown>) => F): Attr<F> {
+  if (!isRecord(v)) throw new Error('attribute not an object');
+  const confidence = parseEnum(v.confidence, CONFIDENCES, 'confidence') as Confidence;
+  const score = confidence === 'not_assessed' ? null : parseScore(v.score);
+  if (confidence !== 'not_assessed' && score === null) {
+    throw new Error('assessed attribute missing a score');
+  }
+  const rawFindings = Array.isArray(v.findings) ? v.findings : [];
+  const findings = rawFindings.map((f) => {
+    if (!isRecord(f)) throw new Error('finding not an object');
+    return parseFinding(f);
+  });
+  return { score, confidence, borderline: v.borderline === true, findings };
+}
+
+function parseAssessment(raw: unknown): Assessment {
+  if (!isRecord(raw)) throw new Error('assessment not an object');
+  const corners = parseAttr(raw.corners, (f) => ({
+    location: parseEnum(f.location, CORNER_LOCS, 'corner location'),
+    type: parseEnum(f.type, CORNER_TYPES, 'corner type'),
+    severity: parseEnum(f.severity, SEVERITIES, 'severity') as Severity,
+    note: typeof f.note === 'string' ? f.note : '',
+  }));
+  const edges = parseAttr(raw.edges, (f) => ({
+    location: parseEnum(f.location, EDGE_LOCS, 'edge location'),
+    type: parseEnum(f.type, EDGE_TYPES, 'edge type'),
+    severity: parseEnum(f.severity, SEVERITIES, 'severity') as Severity,
+    note: typeof f.note === 'string' ? f.note : '',
+  }));
+  const surface = parseAttr(raw.surface, (f) => ({
+    face: parseEnum(f.face, SURFACE_FACES, 'surface face'),
+    type: parseEnum(f.type, SURFACE_TYPES, 'surface type'),
+    severity: parseEnum(f.severity, SEVERITIES, 'severity') as Severity,
+    note: typeof f.note === 'string' ? f.note : '',
+  }));
+  const abstain = raw.abstain === true;
+  return {
+    corners,
+    edges,
+    surface,
+    authenticityFlags: Array.isArray(raw.authenticity_flags)
+      ? raw.authenticity_flags.filter((x): x is string => typeof x === 'string')
+      : [],
+    imageQualityNotes: Array.isArray(raw.image_quality_notes)
+      ? raw.image_quality_notes.filter((x): x is string => typeof x === 'string')
+      : [],
+    abstain,
+    abstainReason:
+      abstain && typeof raw.abstain_reason === 'string'
+        ? raw.abstain_reason
+        : abstain
+          ? 'Not enough to go on.'
+          : null,
+  };
+}
+
+function abstention(reason: string): Assessment {
+  const empty = <F,>(): Attr<F> => ({
+    score: null,
+    confidence: 'not_assessed',
+    borderline: false,
+    findings: [],
+  });
+  return {
+    corners: empty(),
+    edges: empty(),
+    surface: empty(),
+    authenticityFlags: [],
+    imageQualityNotes: [],
+    abstain: true,
+    abstainReason: reason,
+  };
+}
 
 // Public values (same ones baked into the client) — used to verify the
 // caller's Supabase session token.
@@ -164,6 +291,17 @@ async function callModel(
 }
 
 export default async function handler(req: any, res: any) {
+  try {
+    return await handle(req, res);
+  } catch (err) {
+    // Whatever breaks, the client gets a readable reason, never a bare 500.
+    return json(res, 500, {
+      error: `Assessment crashed: ${err instanceof Error ? err.message : 'unknown error'}`,
+    });
+  }
+}
+
+async function handle(req: any, res: any) {
   if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;

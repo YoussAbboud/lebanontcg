@@ -388,3 +388,16 @@
 }
 
 .pin-frame { position: relative; display: inline-block; line-height: 0; }
+
+.pin-loupe {
+  position: absolute;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  border: 2px solid var(--acid);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6);
+  background: #000;
+  pointer-events: none;
+  z-index: 3;
+}
+.pin-rect-switch { margin-right: auto; font-size: var(--fs-12); }

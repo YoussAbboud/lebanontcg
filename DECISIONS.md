@@ -623,3 +623,19 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   sellers aren't blocked by framing differences.
 - Corner macros and raking shots keep the rectangle crop — there's no
   card geometry to pin there.
+
+## G9 — Live 500 fixed + pin ergonomics
+
+- The live assessment 500'd with ERR_MODULE_NOT_FOUND: this repo is
+  type:module and Vercel's zero-config builder compiles only the
+  function entrypoint — a cross-tree import of src/lib TS survives the
+  build and dies at runtime. The function is now fully self-contained
+  (the contract validator is mirrored inline, with a keep-in-sync
+  note), and a catch-all returns a readable JSON error instead of a
+  bare 500 for anything that still breaks.
+- Pin ergonomics from real use: a 3× magnifier loupe with a crosshair
+  appears while a pin is held (docked to the frame corner opposite the
+  pin, so a finger never covers it), and the pin dialog offers
+  "Rectangle crop instead" for photos where pinning isn't the right
+  tool — that path is un-flattened, so the normal gates plus the
+  Use-anyway escape apply.

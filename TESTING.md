@@ -463,3 +463,10 @@ source-resolution gate softly (Use anyway offered). All pregrade
 smokes updated to flatten front/back and rect-crop the rest; g5's
 publish gate passes with the card-aware comparison (mis-attach still
 blocked, matching listing still publishes).
+
+## G9 — Assessment endpoint + pin ergonomics
+
+g1-smoke: the pin dialog offers the rectangle-crop escape; the loupe
+appears while a pin is held and hides on release. The endpoint fix is
+structural (no imports left to break) — verified by grep and by
+Vercel's runtime logs after deploy.

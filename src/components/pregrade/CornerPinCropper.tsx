@@ -22,19 +22,26 @@ export function CornerPinCropper({
   title,
   onCancel,
   onDone,
+  onUseRectCrop,
 }: {
   file: Blob;
   title: string;
   onCancel(): void;
   onDone(out: { blob: Blob; url: string; srcLongEdge: number }): void;
+  /** Offered when pinning isn't the right tool for this photo. */
+  onUseRectCrop?(): void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const rasterRef = useRef<Raster | null>(null);
   const dragRef = useRef<{ index: number; lastX: number; lastY: number } | null>(null);
+  const loupeRef = useRef<HTMLCanvasElement>(null);
+  const cornersRef = useRef<Point[] | null>(null);
+  const [loupeAt, setLoupeAt] = useState<{ fx: number; fy: number } | null>(null);
   const [size, setSize] = useState<{ w: number; h: number } | null>(null);
   const origLongRef = useRef(0);
   const [corners, setCorners] = useState<Point[] | null>(null);
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,6 +95,41 @@ export function CornerPinCropper({
     return size.w / el.clientWidth;
   };
 
+  cornersRef.current = corners;
+
+  /** Magnifier while a pin is held: 3× view centred on the pin, with a
+      crosshair — precise placement without a finger in the way. */
+  const drawLoupe = (pt: Point) => {
+    const main = canvasRef.current;
+    const loupe = loupeRef.current;
+    if (!main || !loupe || !size) return;
+    const ctx = loupe.getContext('2d');
+    if (!ctx) return;
+    const SRC = 44; // source px shown across the 132px loupe = 3×
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, loupe.width, loupe.height);
+    ctx.drawImage(
+      main,
+      pt.x - SRC / 2,
+      pt.y - SRC / 2,
+      SRC,
+      SRC,
+      0,
+      0,
+      loupe.width,
+      loupe.height,
+    );
+    ctx.strokeStyle = 'rgba(210, 255, 60, 0.9)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(loupe.width / 2, 0);
+    ctx.lineTo(loupe.width / 2, loupe.height);
+    ctx.moveTo(0, loupe.height / 2);
+    ctx.lineTo(loupe.width, loupe.height / 2);
+    ctx.stroke();
+    setLoupeAt({ fx: pt.x / size.w, fy: pt.y / size.h });
+  };
+
   const moveCorner = (index: number, dxImg: number, dyImg: number) => {
     setCorners((prev) => {
       if (!prev || !size) return prev;
@@ -106,6 +148,8 @@ export function CornerPinCropper({
   const onPointerDown = (index: number) => (e: React.PointerEvent) => {
     dragRef.current = { index, lastX: e.clientX, lastY: e.clientY };
     (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    const pt = cornersRef.current?.[index];
+    if (pt) drawLoupe(pt);
     e.preventDefault();
   };
   const onPointerMove = (e: React.PointerEvent) => {
@@ -115,9 +159,12 @@ export function CornerPinCropper({
     moveCorner(d.index, (e.clientX - d.lastX) * s, (e.clientY - d.lastY) * s);
     d.lastX = e.clientX;
     d.lastY = e.clientY;
+    const pt = cornersRef.current?.[d.index];
+    if (pt) drawLoupe(pt);
   };
   const onPointerUp = () => {
     dragRef.current = null;
+    setLoupeAt(null);
   };
 
   const flatten = async () => {
@@ -202,11 +249,36 @@ export function CornerPinCropper({
               ))}
             </>
           )}
+          <canvas
+            ref={loupeRef}
+            className="pin-loupe"
+            width={132}
+            height={132}
+            style={
+              loupeAt
+                ? {
+                    left: loupeAt.fx < 0.5 ? 'auto' : '10px',
+                    right: loupeAt.fx < 0.5 ? '10px' : 'auto',
+                    top: loupeAt.fy < 0.5 ? 'auto' : '10px',
+                    bottom: loupeAt.fy < 0.5 ? '10px' : 'auto',
+                  }
+                : { display: 'none' }
+            }
+          />
           {!size && !error && <div className="mono-label crop-loading">Loading photo…</div>}
           </div>
         </div>
 
         <div className="crop-actions">
+          {onUseRectCrop && (
+            <button
+              type="button"
+              className="btn-ghost-mono pin-rect-switch"
+              onClick={onUseRectCrop}
+            >
+              Rectangle crop instead
+            </button>
+          )}
           <button type="button" className="btn-outline" onClick={onCancel}>
             Cancel
           </button>

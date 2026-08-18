@@ -253,6 +253,15 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             setNewBelow(true);
           }
         }
+        // System pills announce status changes ("marked as sold"). Refetch
+        // the conversation so the pinned listing — and the review prompt
+        // that keys off its status — stays right even if the separate
+        // listing_updated event never arrives.
+        if (incoming.kind === 'system') {
+          void client.getConversation(conversationId).then((c) => {
+            if (c) setConv(c);
+          });
+        }
         requestAnimationFrame(() => {
           if (atBottomRef.current) scrollLog(true);
         });
@@ -271,40 +280,45 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
   }, [client, conversationId, meId, onAnyChange, scrollLog]);
 
   // Review state once sold. Reviews run buyer → seller: the buyer gets the
-  // prompt, the seller gets the buyer's verdict. "You reviewed this trade"
-  // is only ever shown off a review that actually exists — never inferred
-  // from an empty pending list, which is also the seller's normal state.
+  // prompt, the seller gets the buyer's verdict. On a sold listing the
+  // buyer is always eligible, so the only question either side needs
+  // answered is "has the buyer's review been written yet?" — one small,
+  // join-free query on this conversation's review rows. "You reviewed this
+  // trade" is only ever shown off a review that actually exists.
   const listingStatus = conv?.listing.status;
-  const isBuyerHere = Boolean(conv && meId && conv.buyerId === meId);
+  const buyerId = conv?.buyerId;
+  const isBuyerHere = Boolean(conv && meId && buyerId === meId);
+  // The "marked as sold" system pill arriving is a cue to re-check, so the
+  // prompt appears mid-conversation even if the listing_updated event is
+  // dropped (getConversation on mount still catches the status itself).
+  const systemMsgCount = messages.filter((m) => m.kind === 'system').length;
   useEffect(() => {
-    if (listingStatus !== 'sold' || !meId) {
+    if (listingStatus !== 'sold' || !meId || !buyerId) {
       setReviewState('none');
       return;
     }
     let cancelled = false;
     const load = async () => {
-      if (isBuyerHere) {
-        const [pending, written] = await Promise.all([
-          client.getPendingReviews().catch(() => []),
-          client.getReviewsWritten().catch(() => []),
-        ]);
-        if (cancelled) return;
-        if (written.some((r) => r.conversationId === conversationId)) setReviewState('done');
-        else if (pending.some((p) => p.conversationId === conversationId)) setReviewState('pending');
-        else setReviewState('none');
-      } else {
-        const mine = await client.getReviewsForUser(meId).catch(() => []);
-        if (cancelled) return;
-        setReviewState(
-          mine.some((r) => r.conversationId === conversationId) ? 'buyer_rated' : 'awaiting_buyer',
-        );
+      let buyerReviewed: boolean;
+      try {
+        const reviews = await client.getConversationReviews(conversationId);
+        buyerReviewed = reviews.some((r) => r.reviewerId === buyerId);
+      } catch (err) {
+        console.warn('[reviews] could not load reviews for this conversation:', err);
+        // Eligibility is certain (sold + buyer); only "already written?" is
+        // not. Fail open: show the prompt / awaiting pill rather than hide
+        // the review system behind a fetch hiccup.
+        buyerReviewed = false;
       }
+      if (cancelled) return;
+      if (isBuyerHere) setReviewState(buyerReviewed ? 'done' : 'pending');
+      else setReviewState(buyerReviewed ? 'buyer_rated' : 'awaiting_buyer');
     };
     void load();
     return () => {
       cancelled = true;
     };
-  }, [client, conversationId, listingStatus, isBuyerHere, meId]);
+  }, [client, conversationId, listingStatus, isBuyerHere, buyerId, meId, systemMsgCount]);
 
   // Block state
   const otherPartyId = conv?.otherParty.id;

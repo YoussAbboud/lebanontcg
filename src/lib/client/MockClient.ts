@@ -980,6 +980,13 @@ export class MockClient implements MarketplaceClient {
       .map((r) => structuredClone(r));
   }
 
+  async getConversationReviews(conversationId: string): Promise<Review[]> {
+    await sleep(netDelay());
+    return this.reviews
+      .filter((r) => r.conversationId === conversationId)
+      .map((r) => structuredClone(r));
+  }
+
   async getReviewsWritten(): Promise<Review[]> {
     const me = this.me();
     await sleep(netDelay());

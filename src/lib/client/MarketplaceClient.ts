@@ -129,6 +129,9 @@ export interface MarketplaceClient {
 
   // ---- Trust -------------------------------------------------------------
   getReviewsForUser(userId: string): Promise<Review[]>;
+  /** All reviews on one conversation (0 or 1 today: the buyer's). Drives
+      the in-chat prompt with a single, join-free query. */
+  getConversationReviews(conversationId: string): Promise<Review[]>;
   /** Reviews the signed-in user has written (the /reviews hub). */
   getReviewsWritten(): Promise<Review[]>;
   getPendingReviews(): Promise<PendingReview[]>;

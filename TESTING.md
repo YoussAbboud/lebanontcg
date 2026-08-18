@@ -366,3 +366,17 @@ strip's start.
 
 Manual: the pinned card's halo must fade out on all four sides with no
 visible line, including when it's the first card in the strip.
+
+## R12 — In-chat review prompt (single-query state)
+
+Automated (`review-roles.mjs`, 12 checks): seller confirms the deal and
+must see the awaiting-buyer pill, no prompt, no badge, an empty hub;
+the buyer must get the badge and the in-chat 5-star prompt, and after
+submitting the seller sees "rated this trade" while still never being
+told *they* reviewed. `r4-smoke.mjs` section 5 was updated to the
+buyer-only design (its seller-gets-a-prompt expectations predated R5).
+
+Manual on production: as the buyer, open the sold conversation — the
+5-star prompt with the optional note must sit under the "Seller marked
+this listing as sold" pill. If it doesn't, the browser console now says
+why (`[reviews] …` warning) instead of failing silently.

@@ -1028,6 +1028,15 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     return ((data ?? []) as ReviewRow[]).map((r) => this.mapReview(r));
   }
 
+  async getConversationReviews(conversationId: string): Promise<Review[]> {
+    const { data, error } = await this.sb
+      .from('reviews')
+      .select('*, reviewer:profiles!reviews_reviewer_id_fkey(*)')
+      .eq('conversation_id', conversationId);
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as ReviewRow[]).map((r) => this.mapReview(r));
+  }
+
   async getReviewsWritten(): Promise<Review[]> {
     const { data, error } = await this.sb
       .from('reviews')
@@ -1040,10 +1049,14 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
 
   async getPendingReviews(): Promise<PendingReview[]> {
     const me = this.uid();
-    const [{ data: convs }, { data: myReviews }] = await Promise.all([
+    const [convRes, reviewRes] = await Promise.all([
       this.sb.from('conversations').select('*, listing:listings!inner(*, listing_images(*))'),
       this.sb.from('reviews').select('conversation_id').eq('reviewer_id', me),
     ]);
+    if (convRes.error) throw new Error(convRes.error.message);
+    if (reviewRes.error) throw new Error(reviewRes.error.message);
+    const convs = convRes.data;
+    const myReviews = reviewRes.data;
     const reviewed = new Set(
       ((myReviews ?? []) as { conversation_id: string }[]).map((r) => r.conversation_id),
     );

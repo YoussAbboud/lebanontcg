@@ -468,3 +468,26 @@ Running log of product/engineering decisions made while building, newest last.
   seller, bare price (the "Asking" label dropped — the number speaks for
   itself), and a bottom row with "More →" on the left and the listing
   age on the right.
+
+## R12 — In-chat review prompt driven by one query
+
+- The buyer's 5-star prompt under "Seller marked this listing as sold"
+  never appeared in production. The chat derived its review state from
+  `getPendingReviews()` + `getReviewsWritten()` — two broad, multi-embed
+  queries — and swallowed their failures into an empty array, which reads
+  as "nothing to review". Any live-only failure in those embeds silently
+  hid the whole review system.
+- The chat now asks one join-free question: `getConversationReviews(id)`
+  (reviews are publicly readable under RLS, so the failure surface is
+  minimal). On a sold listing the buyer is *always* eligible — the only
+  unknown is whether their review already exists — so buyer state is
+  `done`/`pending` and seller state `buyer_rated`/`awaiting_buyer`
+  straight off that one row. On a fetch error the chat fails open
+  (prompt shown, warning logged as `[reviews]`) instead of hiding it.
+- A `system` message arriving now also refetches the conversation, so the
+  pinned listing's `sold` status — and the prompt keyed off it — appears
+  mid-conversation even if the separate `listing_updated` realtime event
+  is dropped.
+- `SupabaseClient.getPendingReviews` now throws on query errors instead
+  of ignoring them: the /reviews hub shows its error state and the badge
+  catches, rather than everything quietly rendering as "nothing pending".

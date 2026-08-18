@@ -78,6 +78,60 @@ export function zoomAt(
   return { x: cx - (cx - ox) * k, y: cy - (cy - oy) * k };
 }
 
+// ---- free-form selection (listing photos) --------------------------------
+
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export type CropHandle = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
+/** Slide the whole selection, kept inside the image. */
+export function moveRect(r: Rect, dx: number, dy: number, natW: number, natH: number): Rect {
+  return {
+    x: Math.min(Math.max(0, r.x + dx), natW - r.w),
+    y: Math.min(Math.max(0, r.y + dy), natH - r.h),
+    w: r.w,
+    h: r.h,
+  };
+}
+
+/**
+ * Drag one edge or corner of the selection by (dx, dy) image pixels,
+ * clamped to the image bounds and a minimum size.
+ */
+export function resizeRect(
+  r: Rect,
+  handle: CropHandle,
+  dx: number,
+  dy: number,
+  natW: number,
+  natH: number,
+  min: number,
+): Rect {
+  let { x, y, w, h } = r;
+  if (handle.includes('w')) {
+    const nx = Math.min(Math.max(0, x + dx), x + w - min);
+    w = x + w - nx;
+    x = nx;
+  }
+  if (handle.includes('e')) {
+    w = Math.min(Math.max(min, w + dx), natW - x);
+  }
+  if (handle.includes('n')) {
+    const ny = Math.min(Math.max(0, y + dy), y + h - min);
+    h = y + h - ny;
+    y = ny;
+  }
+  if (handle.includes('s')) {
+    h = Math.min(Math.max(min, h + dy), natH - y);
+  }
+  return { x, y, w, h };
+}
+
 /**
  * Frame css size for an output aspect (w/h), fitted into the available
  * stage box while keeping the exact aspect.

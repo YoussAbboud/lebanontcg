@@ -72,6 +72,41 @@
   pointer-events: none;
 }
 
+/* Free crop: the image sits fitted in the stage… */
+.crop-img-fit {
+  position: absolute;
+  transform: none;
+  left: 0;
+  top: 0;
+}
+
+/* …and the selection marks what gets saved, resizable by its handles. */
+.crop-sel {
+  position: absolute;
+  border: 2px solid #fff;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 0 0 9999px rgba(0, 0, 0, 0.62);
+  pointer-events: none;
+}
+.crop-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+}
+.crop-handle-nw { left: -7px; top: -7px; }
+.crop-handle-n { left: calc(50% - 6px); top: -7px; }
+.crop-handle-ne { right: -7px; top: -7px; }
+.crop-handle-e { right: -7px; top: calc(50% - 6px); }
+.crop-handle-se { right: -7px; bottom: -7px; }
+.crop-handle-s { left: calc(50% - 6px); bottom: -7px; }
+.crop-handle-sw { left: -7px; bottom: -7px; }
+.crop-handle-w { left: -7px; top: calc(50% - 6px); }
+
 /* Avatars render round — show how the square will be masked. */
 .crop-frame-round::after {
   content: '';

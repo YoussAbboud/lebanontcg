@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { clampOffset, coverScale, frameSize, sourceRect, zoomAt } from './crop';
+import {
+  clampOffset,
+  coverScale,
+  frameSize,
+  moveRect,
+  resizeRect,
+  sourceRect,
+  zoomAt,
+} from './crop';
 
 describe('coverScale', () => {
   it('covers a square frame with a landscape image by height', () => {
@@ -71,6 +79,35 @@ describe('zoomAt', () => {
     const back = zoomAt(2, 1, once.x, once.y, 100, 50);
     expect(back.x).toBeCloseTo(20);
     expect(back.y).toBeCloseTo(-30);
+  });
+});
+
+describe('moveRect', () => {
+  const sel = { x: 100, y: 100, w: 200, h: 200 };
+  it('slides freely inside the image', () => {
+    expect(moveRect(sel, 50, -30, 800, 800)).toEqual({ x: 150, y: 70, w: 200, h: 200 });
+  });
+  it('stops at every image edge', () => {
+    expect(moveRect(sel, -999, -999, 800, 800)).toEqual({ x: 0, y: 0, w: 200, h: 200 });
+    expect(moveRect(sel, 999, 999, 800, 800)).toEqual({ x: 600, y: 600, w: 200, h: 200 });
+  });
+});
+
+describe('resizeRect', () => {
+  const sel = { x: 100, y: 100, w: 200, h: 200 };
+  it('drags the east edge without touching the rest', () => {
+    expect(resizeRect(sel, 'e', 80, 999, 800, 800, 40)).toEqual({ x: 100, y: 100, w: 280, h: 200 });
+  });
+  it('drags the north-west corner moving the origin', () => {
+    expect(resizeRect(sel, 'nw', -50, -60, 800, 800, 40)).toEqual({ x: 50, y: 40, w: 250, h: 260 });
+  });
+  it('never shrinks below the minimum size', () => {
+    expect(resizeRect(sel, 'se', -999, -999, 800, 800, 40)).toEqual({ x: 100, y: 100, w: 40, h: 40 });
+    expect(resizeRect(sel, 'nw', 999, 999, 800, 800, 40)).toEqual({ x: 260, y: 260, w: 40, h: 40 });
+  });
+  it('never grows past the image bounds', () => {
+    expect(resizeRect(sel, 'se', 999, 999, 800, 800, 40)).toEqual({ x: 100, y: 100, w: 700, h: 700 });
+    expect(resizeRect(sel, 'nw', -999, -999, 800, 800, 40)).toEqual({ x: 0, y: 0, w: 300, h: 300 });
   });
 });
 

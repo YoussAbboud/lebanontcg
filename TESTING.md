@@ -405,3 +405,13 @@ test image is a generated 800² PNG with distinct quadrant colours.
 Manual: pick a photo anywhere — the dialog must open zoomed out with
 the frame fully covered at all times; the saved image must match the
 framed region exactly.
+
+## R15 — Free-form listing crop
+
+Automated (`crop-smoke.mjs`, 19 checks): the listing cropper now opens
+with the whole image selected, no fixed frame and no zoom slider, and
+8 handles; dragging the east handle halves the selection, dragging
+inside slides it (clamped at the image edge); the saved file's pixels
+are the selected right half (green/yellow) at the selection's own ~1:2
+shape. The avatar path still runs the fixed square frame with the
+round guide and 512² output.

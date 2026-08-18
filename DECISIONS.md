@@ -528,3 +528,16 @@ Running log of product/engineering decisions made while building, newest last.
   would double-apply it) via live refs.
 - Settings finally honours the onboarding toast's "add it later in
   Settings": the profile section gained Add/Change photo.
+
+## R15 — Listing crops go free-form
+
+- The 5:7 card frame felt too constraining for listing photos. Free
+  mode shows the whole image fitted in the stage with a resizable
+  selection on top — eight corner/edge handles, drag inside to move,
+  clamped to the image with a minimum size — so the seller crops
+  exactly the area they want in any shape. Avatars keep the fixed
+  square frame (that aspect is structural: they render round at 1:1).
+- The selection lives in image coordinates (stable across viewport
+  resizes); handle/move geometry is pure and unit-tested (moveRect /
+  resizeRect in crop.ts). Output keeps the selection's own shape,
+  long edge capped at 1600px.

@@ -10,16 +10,14 @@ interface Props {
   error?: string;
 }
 
-/** Listing photos are framed to the card shape the site displays (5:7). */
-export const LISTING_ASPECT = 5 / 7;
-/** Output width; height = width / aspect = 1596 (inside the 1600 cap). */
-const LISTING_OUT_WIDTH = 1140;
+/** Listing crops keep their chosen shape; only the long edge is capped. */
+const LISTING_OUT_LONG_EDGE = 1600;
 
 let draftCounter = 0;
 
 /**
  * Photo picker for the listing form: every added photo goes through the
- * crop dialog (position + zoom inside the card frame), drag-to-reorder
+ * free crop dialog (resizable selection — any shape), drag-to-reorder
  * with keyboard fallback (← → buttons), first image is the cover.
  */
 export function ImageManager({ images, onChange, error }: Props) {
@@ -155,9 +153,8 @@ export function ImageManager({ images, onChange, error }: Props) {
       {cropQueue.length > 0 && (
         <ImageCropper
           file={cropQueue[0]}
-          aspect={LISTING_ASPECT}
-          outWidth={LISTING_OUT_WIDTH}
-          title="Frame your photo"
+          outLongEdge={LISTING_OUT_LONG_EDGE}
+          title="Crop your photo"
           onCancel={() => setCropQueue((q) => q.slice(1))}
           onDone={(out) => {
             onChange([

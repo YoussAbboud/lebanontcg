@@ -34,6 +34,10 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
   const hoveredRef = useRef(hovered);
   const pausedRef = useRef(paused);
   const dragRef = useRef<{ startX: number; moved: boolean } | null>(null);
+  // True right after a drag ends, so the click that closes the gesture
+  // doesn't navigate. Survives pointerup (dragRef is cleared there,
+  // before the browser dispatches the click).
+  const swallowClickRef = useRef(false);
   const [reduced] = useState(
     () =>
       typeof window !== 'undefined' &&
@@ -62,13 +66,19 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     dragRef.current = { startX: e.clientX, moved: false };
     setPaused(true);
-    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    swallowClickRef.current = false;
+    // No pointer capture here: capturing retargets the compatibility
+    // click to the stage, which silently killed plain card clicks.
+    // Capture starts in onPointerMove once it's actually a drag.
   };
   const onPointerMove = (e: React.PointerEvent) => {
     const d = dragRef.current;
     if (!d) return;
     const dx = e.clientX - d.startX;
-    if (!d.moved && Math.abs(dx) > 8) d.moved = true;
+    if (!d.moved && Math.abs(dx) > 8) {
+      d.moved = true;
+      (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    }
     if (d.moved) setDragDx(Math.max(-220, Math.min(220, dx)));
   };
   const onPointerUp = (e: React.PointerEvent) => {
@@ -76,6 +86,7 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
     dragRef.current = null;
     setDragDx(0);
     if (e.pointerType !== 'mouse') setPaused(false);
+    swallowClickRef.current = d?.moved ?? false;
     if (!d?.moved) return;
     const dx = e.clientX - d.startX;
     if (Math.abs(dx) < DRAG_MIN) return;
@@ -139,7 +150,10 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
                     : undefined,
               }}
               onClick={() => {
-                if (dragRef.current?.moved) return; // a drag, not a click
+                if (swallowClickRef.current) {
+                  swallowClickRef.current = false; // a drag, not a click
+                  return;
+                }
                 navigate(`/listing/${item.id}`);
               }}
               onKeyDown={(e) => {

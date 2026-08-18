@@ -491,3 +491,17 @@ Running log of product/engineering decisions made while building, newest last.
 - `SupabaseClient.getPendingReviews` now throws on query errors instead
   of ignoring them: the /reviews hub shows its error state and the badge
   catches, rather than everything quietly rendering as "nothing pending".
+
+## R13 — Fan cards clickable again
+
+- R8's drag support called `setPointerCapture` on the stage on every
+  pointerdown. Capture retargets not just pointer events but the
+  compatibility `click` too, so the click landed on the stage instead of
+  the card — plain clicks stopped opening listings entirely.
+- Capture now starts only in pointermove, once movement crosses the 8px
+  drag threshold. An untouched click never gets captured; a real drag
+  still tracks the pointer outside the stage.
+- Drag-ending clicks are swallowed by a ref set at pointerup (the old
+  check read `dragRef` from the click handler, but pointerup had already
+  nulled it — dead code that leaked navigations in browsers that don't
+  retarget clicks after capture).

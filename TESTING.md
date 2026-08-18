@@ -380,3 +380,13 @@ Manual on production: as the buyer, open the sold conversation — the
 5-star prompt with the optional note must sit under the "Seller marked
 this listing as sold" pill. If it doesn't, the browser console now says
 why (`[reviews] …` warning) instead of failing silently.
+
+## R13 — Fan click vs drag
+
+Automated (`fan-click.mjs`, 6 checks): a plain click on the centre fan
+card must navigate to that card's listing; a real 160px drag must slide
+the fan and not navigate; a 4px jittery click must still navigate; a
+touch tap must navigate on a phone viewport.
+
+Manual: hover-tilt a card then click it — the listing page must open.
+Drag the fan and release over a card — nothing must open.

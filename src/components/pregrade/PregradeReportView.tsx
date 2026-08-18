@@ -1,21 +1,19 @@
 import {
   AUTHENTICITY_NOTE,
   bandLabel,
-  cornerSentence,
-  edgeSentence,
   INDENT_WARNING,
   PRIOR_NOTE,
   RECOMMENDATION_LABELS,
   SURFACE_NOT_CHECKED,
-  surfaceSentence,
   trackRecordSentence,
 } from '../../lib/pregrade/copy';
+import { AssessmentDetail } from './AssessmentDetail';
 import { CALIBRATION, calibrationKey } from '../../lib/pregrade/estimate';
 import type { Era } from '../../lib/pregrade/types';
 import { PREGRADE_DISCLAIMER, type DefectAssessment, type Estimate } from '../../lib/pregrade/types';
 import { CenteringDiagram, type DiagramBorders } from './CenteringDiagram';
 import { CenteringPhoto } from './CenteringPhoto';
-import type { AxisRatio, DiagramGuides } from '../../lib/pregrade/types';
+import type { AxisRatio, CaptureSlot, DiagramGuides } from '../../lib/pregrade/types';
 
 interface FaceViewData {
   ratios: { leftRight: AxisRatio; topBottom: AxisRatio };
@@ -34,6 +32,8 @@ export interface ReportViewData {
   assessment: DefectAssessment;
   estimate: Estimate;
   era?: Era;
+  /** Capture URLs by slot — drives the corner/edge/surface previews. */
+  captures?: Partial<Record<CaptureSlot, string>>;
 }
 
 function pct(v: number): string {
@@ -84,6 +84,9 @@ export function PregradeReportView({ data }: { data: ReportViewData }) {
   const hasIndent = a.surface.findings.some((f) => f.type === 'indent');
   const surfaceAssessed = a.surface.confidence !== 'not_assessed';
   const abstained = a.abstain;
+  // The estimate's ceiling note repeats the surface-not-checked
+  // paragraph shown above the findings — say it once.
+  const notes = e.notes.filter((n) => surfaceAssessed || !n.includes('ceiling'));
 
   const subscores: Array<[string, number | null, boolean]> = [
     ['Centering', abstained ? null : front.score, false],
@@ -147,35 +150,16 @@ export function PregradeReportView({ data }: { data: ReportViewData }) {
 
           {!surfaceAssessed && <p className="pgreport-notchecked">{SURFACE_NOT_CHECKED}</p>}
 
-          <ul className="pgreport-findings">
-            {a.corners.findings.map((f, i) => (
-              <li key={`c${i}`}>
-                <span>{cornerSentence(f)}</span>
-                {f.note && <em>{f.note}</em>}
-                <span className="mono-label pgreport-from">from the corner macros</span>
-              </li>
-            ))}
-            {a.edges.findings.map((f, i) => (
-              <li key={`e${i}`}>
-                <span>{edgeSentence(f)}</span>
-                {f.note && <em>{f.note}</em>}
-                <span className="mono-label pgreport-from">from the edge strips</span>
-              </li>
-            ))}
-            {a.surface.findings.map((f, i) => (
-              <li key={`s${i}`} className={f.type === 'indent' ? 'is-indent' : ''}>
-                <span>{surfaceSentence(f)}</span>
-                {f.note && <em>{f.note}</em>}
-                <span className="mono-label pgreport-from">from the raking-light shots</span>
-              </li>
-            ))}
-            {a.corners.findings.length + a.edges.findings.length + a.surface.findings.length ===
-              0 && <li>Nothing worth flagging in the photos provided.</li>}
-          </ul>
+          <AssessmentDetail
+            assessment={a}
+            captures={data.captures}
+            frontFlattened={front.flattened}
+            backFlattened={back?.flattened}
+          />
 
-          {e.notes.length > 0 && (
+          {notes.length > 0 && (
             <ul className="pgreport-notes">
-              {e.notes.map((n) => (
+              {notes.map((n) => (
                 <li key={n} className="mono-label">
                   {n}
                 </li>
@@ -187,7 +171,7 @@ export function PregradeReportView({ data }: { data: ReportViewData }) {
             <p className="pgreport-auth mono-label">{AUTHENTICITY_NOTE}</p>
           )}
           {a.imageQualityNotes.length > 0 && (
-            <p className="pgreport-imgnotes mono-label">{a.imageQualityNotes.join(' · ')}</p>
+            <p className="pgreport-imgnotes">Photo notes: {a.imageQualityNotes.join(' ')}</p>
           )}
         </>
       )}

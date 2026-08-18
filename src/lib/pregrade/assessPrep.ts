@@ -34,18 +34,32 @@ async function resizeJpeg(blob: Blob, longEdge: number, quality = 0.82): Promise
 }
 
 /** Edge-strip thickness on the canonical (500×700) card. */
-const STRIP = 56;
+export const EDGE_STRIP = 56;
 
-async function edgeStrips(
-  blob: Blob,
-  face: 'front' | 'back',
-  flattened: boolean,
-): Promise<AssessImage[]> {
+/** The four strip rectangles on the canonical card, in reading order. */
+export const EDGE_STRIP_RECTS: Array<{
+  loc: 'top' | 'bottom' | 'left' | 'right';
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}> = [
+  { loc: 'top', x: 0, y: 0, w: CANONICAL_W, h: EDGE_STRIP },
+  { loc: 'bottom', x: 0, y: CANONICAL_H - EDGE_STRIP, w: CANONICAL_W, h: EDGE_STRIP },
+  { loc: 'left', x: 0, y: 0, w: EDGE_STRIP, h: CANONICAL_H },
+  { loc: 'right', x: CANONICAL_W - EDGE_STRIP, y: 0, w: EDGE_STRIP, h: CANONICAL_H },
+];
+
+/**
+ * Warp a face shot to the canonical card. Flattened shots ARE the card;
+ * otherwise the outline is detected (null when it can't be found).
+ * Shared by the assessment payload and the report's edge previews so
+ * both show exactly the same pixels.
+ */
+export async function faceCanonicalCard(blob: Blob, flattened: boolean) {
   const { raster } = await blobToRaster(blob, 1600);
-  let card;
   if (flattened) {
-    // Corner-pinned shot: the frame IS the card — no detection needed.
-    card = warpQuad(
+    return warpQuad(
       raster,
       [
         { x: 0, y: 0 },
@@ -56,21 +70,27 @@ async function edgeStrips(
       CANONICAL_W,
       CANONICAL_H,
     );
-  } else {
-    const quad = detectCardQuad(raster);
-    if (!quad) {
-      // No quad: send the whole flat shot instead so edges are still seen.
-      return [{ slot: `${face}_flat`, blob: await resizeJpeg(blob, 1200) }];
-    }
-    card = warpQuad(raster, quad.quad, CANONICAL_W, CANONICAL_H);
+  }
+  const quad = detectCardQuad(raster);
+  return quad ? warpQuad(raster, quad.quad, CANONICAL_W, CANONICAL_H) : null;
+}
+
+async function edgeStrips(
+  blob: Blob,
+  face: 'front' | 'back',
+  flattened: boolean,
+): Promise<AssessImage[]> {
+  const card = await faceCanonicalCard(blob, flattened);
+  if (!card) {
+    // No quad: send the whole flat shot instead so edges are still seen.
+    return [{ slot: `${face}_flat`, blob: await resizeJpeg(blob, 1200) }];
   }
   const prefix = face === 'front' ? 'edge_front' : 'edge_back';
-  return [
-    { slot: `${prefix}_top`, blob: await rasterCropToJpeg(card, 0, 0, CANONICAL_W, STRIP) },
-    { slot: `${prefix}_bottom`, blob: await rasterCropToJpeg(card, 0, CANONICAL_H - STRIP, CANONICAL_W, STRIP) },
-    { slot: `${prefix}_left`, blob: await rasterCropToJpeg(card, 0, 0, STRIP, CANONICAL_H) },
-    { slot: `${prefix}_right`, blob: await rasterCropToJpeg(card, CANONICAL_W - STRIP, 0, STRIP, CANONICAL_H) },
-  ];
+  const out: AssessImage[] = [];
+  for (const r of EDGE_STRIP_RECTS) {
+    out.push({ slot: `${prefix}_${r.loc}`, blob: await rasterCropToJpeg(card, r.x, r.y, r.w, r.h) });
+  }
+  return out;
 }
 
 export async function prepareAssessmentImages(
@@ -81,16 +101,18 @@ export async function prepareAssessmentImages(
     const s = shots[slot];
     if (s) images.push({ slot, blob: await resizeJpeg(s.blob, 800) });
   }
+  // Raking shots BEFORE the edge strips: if a cap ever trims the tail
+  // again, it loses redundant strips — never the only surface evidence.
+  const hasRake = Boolean(shots.rake_front || shots.rake_back);
+  for (const slot of ['rake_front', 'rake_back'] as const) {
+    const s = shots[slot];
+    if (s) images.push({ slot, blob: await resizeJpeg(s.blob, 1200) });
+  }
   if (shots.front) {
     images.push(...(await edgeStrips(shots.front.blob, 'front', shots.front.flattened ?? false)));
   }
   if (shots.back) {
     images.push(...(await edgeStrips(shots.back.blob, 'back', shots.back.flattened ?? false)));
-  }
-  const hasRake = Boolean(shots.rake_front || shots.rake_back);
-  for (const slot of ['rake_front', 'rake_back'] as const) {
-    const s = shots[slot];
-    if (s) images.push({ slot, blob: await resizeJpeg(s.blob, 1200) });
   }
   return { images, hasRake };
 }

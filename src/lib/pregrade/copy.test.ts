@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { bandLabel, breakEvenSentence, cornerSentence, edgeSentence, surfaceSentence } from './copy';
-import type { Estimate } from './types';
+import {
+  bandLabel,
+  breakEvenSentence,
+  condenseEdgeFindings,
+  cornerSentence,
+  displayCornerFinding,
+  edgeSentence,
+  surfaceSentence,
+} from './copy';
+import type { EdgeFinding, Estimate } from './types';
 
 const est = (over: Partial<Estimate>): Estimate => ({
   base: 10,
@@ -48,6 +56,67 @@ describe('finding sentences use collector language', () => {
   it('surface', () => {
     expect(surfaceSentence({ face: 'back', type: 'indent', severity: 'moderate', note: '' })).toBe(
       'Noticeable indent on the back',
+    );
+  });
+});
+
+describe('condenseEdgeFindings', () => {
+  const edge = (location: EdgeFinding['location'], over: Partial<EdgeFinding> = {}): EdgeFinding => ({
+    location,
+    type: 'factory_cut',
+    severity: 'trace',
+    note: 'Clean edge, no visible chipping',
+    ...over,
+  });
+
+  it('collapses the same benign observation on all four edges into one line', () => {
+    const out = condenseEdgeFindings([edge('top'), edge('right'), edge('bottom'), edge('left')]);
+    expect(out).toHaveLength(1);
+    expect(out[0].sentence).toBe('Trace rough factory cut along all four edges');
+    expect(out[0].note).toBe(''); // trace notes are boilerplate — dropped
+  });
+
+  it('names the edges when three share a finding', () => {
+    const out = condenseEdgeFindings([edge('top'), edge('right'), edge('bottom')]);
+    expect(out).toHaveLength(1);
+    expect(out[0].sentence).toBe('Trace rough factory cut along the top, right and bottom edges');
+  });
+
+  it('keeps distinct findings itemised, with notes above trace severity', () => {
+    const out = condenseEdgeFindings([
+      edge('top'),
+      edge('right', { type: 'chip', severity: 'minor', note: 'Small chip near the corner.' }),
+    ]);
+    expect(out).toHaveLength(2);
+    expect(out.map((f) => f.sentence)).toEqual([
+      'Trace rough factory cut along the top edge',
+      'Light chipping along the right edge',
+    ]);
+    expect(out[1].note).toBe('Small chip near the corner.');
+  });
+
+  it('a merged group above trace keeps its first note', () => {
+    const out = condenseEdgeFindings([
+      edge('top', { severity: 'minor', note: 'Whitening visible without magnification.' }),
+      edge('right', { severity: 'minor', note: '' }),
+      edge('bottom', { severity: 'minor', note: 'Second note.' }),
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0].note).toBe('Whitening visible without magnification.');
+  });
+});
+
+describe('displayCornerFinding', () => {
+  it('drops boilerplate notes on trace findings, keeps them above', () => {
+    const f = {
+      location: 'top_left' as const,
+      type: 'soft' as const,
+      severity: 'trace' as const,
+      note: 'Slight softness under magnification.',
+    };
+    expect(displayCornerFinding(f).note).toBe('');
+    expect(displayCornerFinding({ ...f, severity: 'minor' }).note).toBe(
+      'Slight softness under magnification.',
     );
   });
 });

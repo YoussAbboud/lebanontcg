@@ -35,6 +35,7 @@ export function reportToViewData(r: PregradeReport): ReportViewData {
         }
       : null,
     assessment: r.assessment,
+    captures: r.captures,
     estimate: {
       base: r.base,
       isCeiling: r.isCeiling,

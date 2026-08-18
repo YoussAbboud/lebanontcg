@@ -152,6 +152,11 @@ export function PregradeWizard({
           },
           assessment: result.assessment,
           estimate: result.estimate,
+          captures: Object.fromEntries(
+            (Object.entries(shots) as [CaptureSlot, Shot | undefined][])
+              .filter(([, s]) => s)
+              .map(([slot, s]) => [slot, s!.url]),
+          ),
         }}
       />
       <EvPanel estimate={result.estimate} />

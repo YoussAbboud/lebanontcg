@@ -256,13 +256,53 @@
   font-size: var(--fs-13);
 }
 
-.pgreport-findings { display: flex; flex-direction: column; gap: 10px; list-style: none; padding: 0; }
-.pgreport-findings li { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-14); }
-.pgreport-findings li.is-indent { color: var(--danger, #e5484d); }
-.pgreport-findings em { color: var(--muted); font-style: normal; font-size: var(--fs-13); }
-.pgreport-from { color: var(--muted); opacity: 0.7; }
+/* Assessment groups: the photos the model analysed, findings under. */
+.pgassess { display: flex; flex-direction: column; gap: 18px; }
+.pgassess-group {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pgassess-group > h3 { margin: 0; color: var(--muted); }
+.pgassess-thumbs { display: flex; gap: 10px; flex-wrap: wrap; }
+.pgassess-thumb { margin: 0; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.pgassess-thumb img {
+  width: 74px;
+  height: 74px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--input-bg);
+}
+.pgassess-thumbs.is-rake .pgassess-thumb img { width: 104px; height: 74px; }
+.pgassess-thumb figcaption { color: var(--muted); }
+.pgassess-strips {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: center;
+  gap: 4px 10px;
+}
+.pgassess-strips-label { grid-row: span 4; color: var(--muted); }
+.pgassess-strip { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.pgassess-strip canvas {
+  flex: 1;
+  min-width: 0;
+  height: 16px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-bg);
+}
+.pgassess-strip > span { width: 52px; color: var(--muted); opacity: 0.8; }
+.pgassess-clean { color: var(--muted); opacity: 0.8; }
+.pgassess-findings { display: flex; flex-direction: column; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.pgassess-findings li { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-14); }
+.pgassess-findings em { color: var(--muted); font-style: normal; font-size: var(--fs-13); }
+
 .pgreport-notes { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; color: var(--muted); }
-.pgreport-auth, .pgreport-imgnotes { color: var(--muted); }
+.pgreport-auth { color: var(--muted); }
+.pgreport-imgnotes { color: var(--muted); font-size: var(--fs-13); }
 .pgreport-abstain { font-size: var(--fs-15); }
 
 /* ---- EV panel ------------------------------------------------------------- */

@@ -658,3 +658,25 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   Only front/back count as "flattened" downstream — a pinned corner
   macro doesn't claim frame-is-card semantics. Raking shots keep the
   rectangle crop: glare and texture are the point there, not geometry.
+
+## G11 — Raking shots reaching the model + report shows its work
+
+- Field bug: the serverless assessment capped the payload at 12 images
+  while the client sends 14 (4 corner macros + 8 edge strips + 2 raking
+  shots) with the raking shots ordered LAST — both were silently sliced
+  off, so the model truthfully reported "no raking-light shots supplied"
+  while the UI claimed they were. Cap raised to the full set, and the
+  client now orders raking shots before the edge strips so any future
+  cap pressure drops redundant strips, never the only surface evidence.
+- The report now shows the evidence instead of describing it: each
+  attribute group leads with the exact photos the model analysed —
+  corner macros, edge strips cut from the same canonical warp the
+  assessment used (shared helper, so report and model see identical
+  pixels), raking shots — with findings condensed underneath.
+- Less text, same honesty: identical benign edge findings across 3+
+  edges collapse into one line ("Trace rough factory cut along all four
+  edges"); trace-severity notes are dropped as boilerplate; per-finding
+  "from the …" attribution lines are gone (the group headers say it);
+  the estimate's ceiling note is deduped against the surface-not-checked
+  paragraph; model image-quality notes render as small prose, not
+  shouting mono caps.

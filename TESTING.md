@@ -478,3 +478,13 @@ images) with 16 guide lines and no abstract fallback. g1-smoke: a
 corner macro upload opens the pin dialog titled "Pin the corner area"
 with 4 free pins. Migrations 0001–0012 apply on local Postgres 16;
 the RLS suite still returns 22 true / 0 false.
+
+## G11 — Rake delivery + assessment previews
+
+condenseEdgeFindings unit-tested (4× benign → one line, 3-edge naming,
+mixed severities stay itemised, note retention rules). g4-smoke: three
+assessment groups with 4 corner thumbs, 8 drawn edge-strip canvases and
+2 rake previews; clean case renders "Clean" ×3; no attribution lines;
+ceiling case has no surface group and no duplicated ceiling note. The
+14-image cap fix is asserted by code review only — the model call
+itself can't run in mock.

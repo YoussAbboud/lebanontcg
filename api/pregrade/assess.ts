@@ -143,7 +143,11 @@ const SUPABASE_KEY =
   process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable__aJyC2b3m0z2dpcuAVutJg_JvM9h-fh';
 
 const MODEL = process.env.PREGRADE_MODEL || 'claude-sonnet-5';
-const MAX_IMAGES = 12;
+// Full set: 4 corner macros + 2 raking shots + 8 edge strips. The cap
+// once sat at 12 with the raking shots ordered last — they were
+// silently sliced off and the model rightly reported "no raking-light
+// shots supplied". Keep this >= the client's full set.
+const MAX_IMAGES = 14;
 const MAX_BODY_IMAGE_CHARS = 700_000; // ~500KB decoded per image
 
 const RUBRIC = `You are a trading-card condition assessor for a pre-grade ESTIMATE tool.

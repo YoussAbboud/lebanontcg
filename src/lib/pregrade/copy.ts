@@ -112,6 +112,60 @@ export function surfaceSentence(f: SurfaceFinding): string {
   return `${SEVERITY_ADJ[f.severity]} ${SURFACE_NOUN[f.type]} on the ${f.face}`;
 }
 
+/** One display row of the condensed findings list. */
+export interface DisplayFinding {
+  sentence: string;
+  /** Empty when the note adds nothing (trace-severity noise). */
+  note: string;
+}
+
+/** A note earns its line only when the finding is worth explaining —
+    trace findings' notes are boilerplate ("clean edge, no chipping"). */
+const keepNote = (severity: FindingSeverity, note: string): string =>
+  severity === 'trace' ? '' : note;
+
+export function displayCornerFinding(f: CornerFinding): DisplayFinding {
+  return { sentence: cornerSentence(f), note: keepNote(f.severity, f.note) };
+}
+
+export function displaySurfaceFinding(f: SurfaceFinding): DisplayFinding {
+  return { sentence: surfaceSentence(f), note: keepNote(f.severity, f.note) };
+}
+
+/**
+ * The model tends to file the same benign observation four times, once
+ * per edge ("trace rough factory cut" ×4). Findings sharing a type and
+ * severity across 3+ edges collapse into one line; anything less common
+ * stays itemised.
+ */
+export function condenseEdgeFindings(findings: EdgeFinding[]): DisplayFinding[] {
+  const groups = new Map<string, EdgeFinding[]>();
+  for (const f of findings) {
+    const key = `${f.type}|${f.severity}`;
+    groups.get(key)?.push(f) ?? groups.set(key, [f]);
+  }
+  const out: DisplayFinding[] = [];
+  for (const group of groups.values()) {
+    if (group.length >= 3) {
+      const f = group[0];
+      const where =
+        group.length === 4
+          ? 'all four edges'
+          : `the ${group
+              .map((g) => g.location)
+              .slice(0, -1)
+              .join(', ')} and ${group[group.length - 1].location} edges`;
+      out.push({
+        sentence: `${SEVERITY_ADJ[f.severity]} ${EDGE_NOUN[f.type]} along ${where}`,
+        note: keepNote(f.severity, group.map((g) => g.note).find((n) => n) ?? ''),
+      });
+    } else {
+      for (const f of group) out.push({ sentence: edgeSentence(f), note: keepNote(f.severity, f.note) });
+    }
+  }
+  return out;
+}
+
 export const SURFACE_NOT_CHECKED =
   "Surface wasn't checked — no raking-light photos. Anything under the gloss is invisible in the shots you gave.";
 

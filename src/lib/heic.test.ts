@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isHeic, looksLikePickedImage } from './heic';
 
 /** A minimal ftyp box header with the given major brand. */
-const ftyp = (brand: string): Uint8Array => {
+const ftyp = (brand: string) => {
   const bytes = new Uint8Array(24);
   bytes[3] = 24; // box size
   const put = (s: string, at: number) => {

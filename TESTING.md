@@ -390,3 +390,18 @@ touch tap must navigate on a phone viewport.
 
 Manual: hover-tilt a card then click it — the listing page must open.
 Drag the fan and release over a card — nothing must open.
+
+## R14 — Image cropper
+
+Automated (`crop-smoke.mjs`, 17 checks): picking a listing photo opens
+the cropper with a 2px-bordered 5:7 frame at minimum (covering) zoom;
+wheel zooms in; after dragging the test image fully right, the saved
+1140×1596 thumb's pixels are the image's left side (red over blue) —
+frame-is-what-you-get verified on real pixels, not styles. Cancel adds
+nothing. The Settings avatar path gets a square frame with the round
+guide and saves a 512² image keeping all four quadrant colours. The
+test image is a generated 800² PNG with distinct quadrant colours.
+
+Manual: pick a photo anywhere — the dialog must open zoomed out with
+the frame fully covered at all times; the saved image must match the
+framed region exactly.

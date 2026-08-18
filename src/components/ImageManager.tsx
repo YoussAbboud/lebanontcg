@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ImageDraft } from '../lib/types';
 import { MAX_LISTING_IMAGES } from '../lib/types';
-import { compressImage } from '../lib/image';
+import { ImageCropper } from './ImageCropper';
 import './imagemanager.css';
 
 interface Props {
@@ -10,40 +10,36 @@ interface Props {
   error?: string;
 }
 
+/** Listing photos are framed to the card shape the site displays (5:7). */
+export const LISTING_ASPECT = 5 / 7;
+/** Output width; height = width / aspect = 1596 (inside the 1600 cap). */
+const LISTING_OUT_WIDTH = 1140;
+
 let draftCounter = 0;
 
 /**
- * Photo picker for the listing form: compresses on add, drag-to-reorder
+ * Photo picker for the listing form: every added photo goes through the
+ * crop dialog (position + zoom inside the card frame), drag-to-reorder
  * with keyboard fallback (← → buttons), first image is the cover.
  */
 export function ImageManager({ images, onChange, error }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
+  // Files waiting for their crop step, front of the array first.
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
 
-  const addFiles = async (files: FileList | File[]) => {
-    const room = MAX_LISTING_IMAGES - images.length;
+  const addFiles = (files: FileList | File[]) => {
+    const room = MAX_LISTING_IMAGES - images.length - cropQueue.length;
     const list = [...files].filter((f) => f.type.startsWith('image/'));
-    if (list.length === 0) return;
-    setBusy(true);
-    setAddError(null);
-    try {
-      const compressed: ImageDraft[] = [];
-      for (const file of list.slice(0, room)) {
-        const out = await compressImage(file);
-        compressed.push({ id: `draft-${++draftCounter}`, kind: 'new', url: out.url, file: out.blob });
-      }
-      onChange([...images, ...compressed]);
-      if (list.length > room) {
-        setAddError(`Only ${MAX_LISTING_IMAGES} photos per listing — dropped ${list.length - room}.`);
-      }
-    } catch {
-      setAddError("Couldn't process that image — try a JPEG or PNG.");
-    } finally {
-      setBusy(false);
-    }
+    if (list.length === 0 || room <= 0) return;
+    setAddError(
+      list.length > room
+        ? `Only ${MAX_LISTING_IMAGES} photos per listing — dropped ${list.length - room}.`
+        : null,
+    );
+    setCropQueue((q) => [...q, ...list.slice(0, room)]);
   };
 
   const move = (from: number, to: number) => {
@@ -69,7 +65,7 @@ export function ImageManager({ images, onChange, error }: Props) {
         }}
         onDrop={(e) => {
           e.preventDefault();
-          if (e.dataTransfer.files?.length) void addFiles(e.dataTransfer.files);
+          if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
         }}
       >
         {images.map((img, i) => (
@@ -125,26 +121,15 @@ export function ImageManager({ images, onChange, error }: Props) {
           </figure>
         ))}
 
-        {images.length < MAX_LISTING_IMAGES && (
-          <button
-            type="button"
-            className="imgr-add"
-            onClick={() => inputRef.current?.click()}
-            disabled={busy}
-          >
-            {busy ? (
-              <span className="imgr-busy">Compressing…</span>
-            ) : (
-              <>
-                <span className="imgr-add-plus" aria-hidden="true">+</span>
-                <span>
-                  Add photos
-                  <small>
-                    {images.length}/{MAX_LISTING_IMAGES} · drag to reorder
-                  </small>
-                </span>
-              </>
-            )}
+        {images.length + cropQueue.length < MAX_LISTING_IMAGES && (
+          <button type="button" className="imgr-add" onClick={() => inputRef.current?.click()}>
+            <span className="imgr-add-plus" aria-hidden="true">+</span>
+            <span>
+              Add photos
+              <small>
+                {images.length}/{MAX_LISTING_IMAGES} · drag to reorder
+              </small>
+            </span>
           </button>
         )}
       </div>
@@ -156,7 +141,7 @@ export function ImageManager({ images, onChange, error }: Props) {
         multiple
         hidden
         onChange={(e) => {
-          if (e.target.files?.length) void addFiles(e.target.files);
+          if (e.target.files?.length) addFiles(e.target.files);
           e.target.value = '';
         }}
       />
@@ -165,6 +150,23 @@ export function ImageManager({ images, onChange, error }: Props) {
         <p className="field-error" role="alert">
           {error ?? addError}
         </p>
+      )}
+
+      {cropQueue.length > 0 && (
+        <ImageCropper
+          file={cropQueue[0]}
+          aspect={LISTING_ASPECT}
+          outWidth={LISTING_OUT_WIDTH}
+          title="Frame your photo"
+          onCancel={() => setCropQueue((q) => q.slice(1))}
+          onDone={(out) => {
+            onChange([
+              ...images,
+              { id: `draft-${++draftCounter}`, kind: 'new', url: out.url, file: out.blob },
+            ]);
+            setCropQueue((q) => q.slice(1));
+          }}
+        />
       )}
     </div>
   );

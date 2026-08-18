@@ -1,17 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Profile } from '../lib/types';
 import { useApp } from '../state/AppContext';
 import { Avatar } from '../components/Avatar';
+import { ImageCropper } from '../components/ImageCropper';
 import { PasswordField } from '../components/PasswordField';
 import { checkPassword, confirmationError } from '../lib/password';
 import './settings.css';
 
+const AVATAR_SIZE = 512;
+
 export function SettingsPage() {
   const { client, user } = useApp();
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [saveState, setSaveState] = useState<'idle' | 'busy' | 'saved' | 'error'>('idle');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoState, setPhotoState] = useState<'idle' | 'busy' | 'saved' | 'error'>('idle');
   const [blockedProfiles, setBlockedProfiles] = useState<Profile[]>([]);
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -84,6 +90,18 @@ export function SettingsPage() {
     }
   };
 
+  const saveCroppedPhoto = async (blob: Blob) => {
+    setPhotoState('busy');
+    try {
+      const avatarUrl = await client.uploadAvatar(blob);
+      await client.updateProfile({ avatarUrl });
+      setPhotoState('saved');
+      window.setTimeout(() => setPhotoState('idle'), 2500);
+    } catch {
+      setPhotoState('error');
+    }
+  };
+
   const unblock = async (id: string) => {
     await client.setBlocked(id, false);
     setBlockedProfiles((prev) => prev.filter((p) => p.id !== id));
@@ -102,7 +120,38 @@ export function SettingsPage() {
               @{user.username ?? '—'}
               <span className="settings-username-note">usernames are permanent</span>
             </p>
+            <div className="settings-photo-row">
+              <button
+                type="button"
+                className="btn-outline settings-sm"
+                disabled={photoState === 'busy'}
+                onClick={() => photoInputRef.current?.click()}
+              >
+                {photoState === 'busy'
+                  ? 'Uploading…'
+                  : user.avatarUrl
+                    ? 'Change photo'
+                    : 'Add photo'}
+              </button>
+              {photoState === 'saved' && (
+                <span className="settings-saved" role="status">Photo updated ✓</span>
+              )}
+              {photoState === 'error' && (
+                <span className="field-error" role="alert">Upload failed — try again.</span>
+              )}
+            </div>
           </div>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f?.type.startsWith('image/')) setPhotoFile(f);
+              e.target.value = '';
+            }}
+          />
         </div>
         <label className="settings-field">
           <span className="mono-label settings-label">Display name</span>
@@ -205,6 +254,22 @@ export function SettingsPage() {
           Sign out
         </button>
       </section>
+
+      {photoFile && (
+        <ImageCropper
+          file={photoFile}
+          aspect={1}
+          outWidth={AVATAR_SIZE}
+          round
+          title="Frame your profile photo"
+          onCancel={() => setPhotoFile(null)}
+          onDone={(out) => {
+            setPhotoFile(null);
+            URL.revokeObjectURL(out.url);
+            void saveCroppedPhoto(out.blob);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,143 @@
+/* Crop dialog: the frame marks exactly what gets saved; everything
+   outside it is dimmed. Sits above the report dialog layer. */
+
+.crop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: var(--overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.crop-panel {
+  width: min(520px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-card);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-card);
+  max-height: calc(100dvh - 32px);
+}
+
+.crop-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.crop-title { font-size: var(--fs-22); }
+.crop-hint { color: var(--muted); }
+
+.crop-stage {
+  position: relative;
+  height: min(52vh, 400px);
+  min-height: 240px;
+  border-radius: var(--r-panel);
+  background: var(--bg-0, #08090b);
+  overflow: hidden;
+  touch-action: none;
+  cursor: var(--cursor-default);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.crop-stage.is-dragging { cursor: var(--cursor-press); }
+
+.crop-img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: none;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* The save frame: everything outside it is dimmed by a huge shadow. */
+.crop-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 0 0 9999px rgba(0, 0, 0, 0.62);
+  pointer-events: none;
+}
+
+/* Avatars render round — show how the square will be masked. */
+.crop-frame-round::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px dashed rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+}
+
+.crop-loading,
+.crop-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  padding: 20px;
+  text-align: center;
+}
+
+.crop-zoom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.crop-zoom-glyph {
+  color: var(--muted);
+  font-size: var(--fs-15);
+  line-height: 1;
+  flex: none;
+}
+.crop-slider {
+  flex: 1;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--raised-2);
+  outline-offset: 4px;
+}
+.crop-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--acid);
+  border: none;
+  cursor: var(--cursor-default);
+}
+.crop-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--acid);
+  border: none;
+  cursor: var(--cursor-default);
+}
+.crop-slider:disabled::-webkit-slider-thumb { background: var(--raised-2); }
+
+.crop-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .crop-panel { padding: 14px; }
+  .crop-stage { height: min(48vh, 340px); }
+}

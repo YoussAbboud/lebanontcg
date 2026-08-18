@@ -83,3 +83,10 @@
 
 .settings-sm { padding: 8px 14px; min-height: 36px; }
 .settings-signout { align-self: flex-start; }
+
+.settings-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}

@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
-import { compressImage, type CompressedImage } from '../lib/image';
+import { ImageCropper, type CroppedImage } from '../components/ImageCropper';
 import './onboarding.css';
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
-const AVATAR_LONG_EDGE = 512;
+const AVATAR_SIZE = 512;
 
 /**
  * First-run account setup (/welcome). A signed-in user without a username
@@ -21,7 +21,8 @@ export function OnboardingPage() {
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
-  const [avatar, setAvatar] = useState<CompressedImage | null>(null);
+  const [avatar, setAvatar] = useState<CroppedImage | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   // Once a submit begins we own navigation — the auth profile updates
   // mid-flight (claim sets username) and must not auto-redirect us.
@@ -50,13 +51,14 @@ export function OnboardingPage() {
   if (!user) return <Navigate to="/signin" replace />;
   if (locked && !started) return <Navigate to="/" replace />;
 
-  const pickAvatar = async (file: File | undefined) => {
+  // The crop dialog (square frame, round guide) produces the final avatar.
+  const pickAvatar = (file: File | undefined) => {
     if (!file) return;
-    try {
-      setAvatar(await compressImage(file, AVATAR_LONG_EDGE));
-    } catch {
+    if (!file.type.startsWith('image/')) {
       toast('Could not read that image — try another photo.');
+      return;
     }
+    setCropFile(file);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -145,11 +147,26 @@ export function OnboardingPage() {
             accept="image/*"
             className="onboard-file"
             onChange={(e) => {
-              void pickAvatar(e.target.files?.[0]);
+              pickAvatar(e.target.files?.[0]);
               e.target.value = '';
             }}
           />
         </div>
+
+        {cropFile && (
+          <ImageCropper
+            file={cropFile}
+            aspect={1}
+            outWidth={AVATAR_SIZE}
+            round
+            title="Frame your profile photo"
+            onCancel={() => setCropFile(null)}
+            onDone={(out) => {
+              setAvatar(out);
+              setCropFile(null);
+            }}
+          />
+        )}
 
         <label className="onboard-field">
           <span className="mono-label onboard-label">Username · permanent</span>

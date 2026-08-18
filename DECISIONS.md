@@ -505,3 +505,26 @@ Running log of product/engineering decisions made while building, newest last.
   check read `dragRef` from the click handler, but pointerup had already
   nulled it — dead code that leaked navigations in browsers that don't
   retarget clicks after capture).
+
+## R14 — Crop step for every picked photo
+
+- Every image the user picks — profile photo (onboarding and the new
+  Settings "Change photo") and each listing photo — now goes through a
+  crop dialog before upload: drag to position, zoom by wheel / pinch /
+  slider, with a bordered frame marking exactly what gets saved and
+  everything outside it dimmed.
+- Frame shapes: avatars crop square (with a dashed circular guide,
+  since the site renders them round); listing photos crop to the 5:7
+  trading-card shape the site displays everywhere (fan hero, card
+  faces) — a literal square would chop the top and bottom off card
+  photos. Outputs: 512² avatars, 1140×1596 listing photos (inside the
+  1600px cap), JPEG q0.85 — the cropper replaces the old blind
+  compress-on-add path.
+- Geometry lives in a pure module (`src/lib/crop.ts`: cover scale,
+  offset clamping, source-rect, cursor-anchored zoom) with unit tests;
+  the component decodes once into a master canvas (EXIF-corrected) that
+  both the preview and the final crop read from, so what you frame is
+  what you get. Zoom math runs outside React state updaters (StrictMode
+  would double-apply it) via live refs.
+- Settings finally honours the onboarding toast's "add it later in
+  Settings": the profile section gained Add/Change photo.

@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { useApp } from '../../state/AppContext';
 import type { Shots } from '../../pages/PregradePage';
 import { CenteringEditor, type CenteringOutcome } from './CenteringEditor';
+import { PregradeReportView } from './PregradeReportView';
+import { EvPanel } from './EvPanel';
 import { prepareAssessmentImages } from '../../lib/pregrade/assessPrep';
 import { estimateGrade } from '../../lib/pregrade/estimate';
 import type { DefectAssessment, Estimate } from '../../lib/pregrade/types';
@@ -117,24 +119,24 @@ export function PregradeWizard({ shots, onBack }: { shots: Shots; onBack(): void
     );
   }
 
-  const { estimate, assessment } = result;
   return (
     <main className="pregrade pregrade-wizard">
-      <div className="empty-dashed">
-        <h3>
-          {estimate.recommendation === 'inconclusive' && estimate.isCeiling
-            ? `Up to PSA ${estimate.base} — surface not checked`
-            : `Est. PSA base ${estimate.base}`}
-        </h3>
-        <p className="mono-value">
-          centering {result.front.score} · corners {assessment.corners.score ?? '—'} · edges{' '}
-          {assessment.edges.score ?? '—'} · surface {assessment.surface.score ?? 'not assessed'}
-        </p>
-        {estimate.notes.map((n) => (
-          <p key={n}>{n}</p>
-        ))}
-        <p>The full report and EV calculator land in the next milestone.</p>
-      </div>
+      <PregradeReportView
+        data={{
+          front: result.front,
+          back: result.back,
+          assessment: result.assessment,
+          estimate: result.estimate,
+        }}
+      />
+      <EvPanel estimate={result.estimate} />
+      {result.estimate.isCeiling && (
+        <div className="pregrade-ceiling-cta">
+          <button type="button" className="btn-acid" onClick={onBack}>
+            ← Shoot the raking-light photos
+          </button>
+        </div>
+      )}
     </main>
   );
 }

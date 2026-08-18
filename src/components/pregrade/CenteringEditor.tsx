@@ -29,6 +29,8 @@ export interface CenteringOutcome {
   ratios: { leftRight: AxisRatio; topBottom: AxisRatio };
   method: CenteringMethod;
   score: number;
+  /** Measured border thicknesses (editor px) — drives the diagram. */
+  borders: { left: number; right: number; top: number; bottom: number };
 }
 
 interface Guides {
@@ -338,7 +340,7 @@ export function CenteringEditor({
           type="button"
           className="btn-acid"
           disabled={state !== 'ready'}
-          onClick={() => onDone({ ratios, method, score })}
+          onClick={() => onDone({ ratios, method, score, borders })}
         >
           {face === 'front' ? 'Use these numbers → back of card' : 'Use these numbers →'}
         </button>

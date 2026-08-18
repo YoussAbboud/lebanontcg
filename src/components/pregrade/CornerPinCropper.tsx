@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { blobToRaster, drawRasterTo } from '../../lib/pregrade/decode';
 import { detectCardQuad } from '../../lib/pregrade/centering';
 import { warpQuad, type Point, type Raster } from '../../lib/pregrade/raster';
+import { toDecodableBlob } from '../../lib/heic';
 
 const HANDLE_LABELS = ['Top-left corner', 'Top-right corner', 'Bottom-right corner', 'Bottom-left corner'];
 
@@ -60,7 +61,7 @@ export function CornerPinCropper({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { raster, originalLongEdge } = await blobToRaster(file, 2400);
+      const { raster, originalLongEdge } = await blobToRaster(await toDecodableBlob(file), 2400);
       if (cancelled) return;
       origLongRef.current = originalLongEdge;
       rasterRef.current = raster;
@@ -81,7 +82,7 @@ export function CornerPinCropper({
             ],
       );
     })().catch(() => {
-      if (!cancelled) setError("Couldn't read that image — try a JPEG or PNG.");
+      if (!cancelled) setError("Couldn't read that image — try a JPEG, PNG or HEIC.");
     });
     return () => {
       cancelled = true;

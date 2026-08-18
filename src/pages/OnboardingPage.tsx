@@ -4,6 +4,7 @@ import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { ImageCropper, type CroppedImage } from '../components/ImageCropper';
 import './onboarding.css';
+import { looksLikePickedImage } from '../lib/heic';
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 const AVATAR_SIZE = 512;
@@ -54,7 +55,7 @@ export function OnboardingPage() {
   // The crop dialog (square frame, round guide) produces the final avatar.
   const pickAvatar = (file: File | undefined) => {
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
+    if (!looksLikePickedImage(file)) {
       toast('Could not read that image — try another photo.');
       return;
     }
@@ -144,7 +145,7 @@ export function OnboardingPage() {
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             className="onboard-file"
             onChange={(e) => {
               pickAvatar(e.target.files?.[0]);

@@ -14,6 +14,7 @@ import {
   type Rect,
 } from '../lib/crop';
 import './imagecropper.css';
+import { toDecodableBlob } from '../lib/heic';
 
 export interface CroppedImage {
   blob: Blob;
@@ -99,7 +100,9 @@ export function ImageCropper({
     let cancelled = false;
     let url: string | null = null;
     (async () => {
-      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      const bitmap = await createImageBitmap(await toDecodableBlob(file), {
+        imageOrientation: 'from-image',
+      });
       try {
         const { width, height } = fitWithin(bitmap.width, bitmap.height, MASTER_LONG_EDGE);
         const canvas = document.createElement('canvas');
@@ -120,7 +123,7 @@ export function ImageCropper({
         bitmap.close();
       }
     })().catch(() => {
-      if (!cancelled) setError("Couldn't read that image — try a JPEG or PNG.");
+      if (!cancelled) setError("Couldn't read that image — try a JPEG, PNG or HEIC.");
     });
     return () => {
       cancelled = true;

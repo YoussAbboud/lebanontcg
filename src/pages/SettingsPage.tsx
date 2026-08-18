@@ -7,6 +7,7 @@ import { ImageCropper } from '../components/ImageCropper';
 import { PasswordField } from '../components/PasswordField';
 import { checkPassword, confirmationError } from '../lib/password';
 import './settings.css';
+import { looksLikePickedImage } from '../lib/heic';
 
 const AVATAR_SIZE = 512;
 
@@ -144,11 +145,11 @@ export function SettingsPage() {
           <input
             ref={photoInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             hidden
             onChange={(e) => {
               const f = e.target.files?.[0];
-              if (f?.type.startsWith('image/')) setPhotoFile(f);
+              if (f && looksLikePickedImage(f)) setPhotoFile(f);
               e.target.value = '';
             }}
           />

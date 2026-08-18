@@ -3,6 +3,7 @@ import type { ImageDraft } from '../lib/types';
 import { MAX_LISTING_IMAGES } from '../lib/types';
 import { ImageCropper } from './ImageCropper';
 import './imagemanager.css';
+import { looksLikePickedImage } from '../lib/heic';
 
 interface Props {
   images: ImageDraft[];
@@ -30,7 +31,7 @@ export function ImageManager({ images, onChange, error }: Props) {
 
   const addFiles = (files: FileList | File[]) => {
     const room = MAX_LISTING_IMAGES - images.length - cropQueue.length;
-    const list = [...files].filter((f) => f.type.startsWith('image/'));
+    const list = [...files].filter(looksLikePickedImage);
     if (list.length === 0 || room <= 0) return;
     setAddError(
       list.length > room
@@ -135,7 +136,7 @@ export function ImageManager({ images, onChange, error }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,.heic,.heif"
         multiple
         hidden
         onChange={(e) => {

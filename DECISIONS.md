@@ -680,3 +680,19 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   the estimate's ceiling note is deduped against the surface-not-checked
   paragraph; model image-quality notes render as small prose, not
   shouting mono caps.
+
+## G12 — HEIC uploads
+
+- iPhones shoot HEIC by default and browser decoders won't read it, so
+  every picked photo now passes through toDecodableBlob() (src/lib/
+  heic.ts) at the two crop-dialog chokepoints every upload already
+  flows through. HEIC is detected by declared type, filename, or the
+  ftyp brand bytes (pickers are inconsistent about which they set) and
+  converted to JPEG in the browser by a bundled libheif build
+  (heic2any) — lazy-loaded as its own chunk, so nobody who uploads
+  JPEGs pays the ~1.3MB. No external service touched; the photo never
+  leaves the device unconverted.
+- Picker guards loosened in step: file inputs accept .heic/.heif, and
+  the "is this an image" checks (looksLikePickedImage) no longer
+  silently drop untyped or octet-stream HEIC picks — a readable
+  cropper error beats a button that does nothing.

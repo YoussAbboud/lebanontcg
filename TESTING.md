@@ -488,3 +488,12 @@ assessment groups with 4 corner thumbs, 8 drawn edge-strip canvases and
 ceiling case has no surface group and no duplicated ceiling note. The
 14-image cap fix is asserted by code review only — the model call
 itself can't run in mock.
+
+## G12 — HEIC uploads
+
+isHeic unit-tested (mime, filename, ftyp brand sniffing incl. mif1;
+mp4 and jpeg magic rejected). heic-smoke.mjs uploads a real HEIF
+sample (nokiatech, ftyp mif1): it decodes in the pregrade pin dialog
+(pins placed, flatten proceeds to accept/soft-fail — never a decode
+error) and, delivered as application/octet-stream with only the
+filename to go on, in the avatar crop dialog.

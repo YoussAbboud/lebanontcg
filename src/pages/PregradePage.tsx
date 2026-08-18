@@ -16,6 +16,7 @@ import { ImageCropper } from '../components/ImageCropper';
 import { CornerPinCropper } from '../components/pregrade/CornerPinCropper';
 import { SOFT_FAILURES, SOFT_FAILURE_NOTE } from '../lib/pregrade/quality';
 import './pregrade.css';
+import { looksLikePickedImage } from '../lib/heic';
 
 interface SlotMeta {
   label: string;
@@ -108,7 +109,7 @@ export function PregradePage() {
   // card strips the background clutter that confuses both the outline
   // detector and the vision model.
   const pick = (slot: CaptureSlot, file: File | undefined) => {
-    if (!file || !file.type.startsWith('image/')) return;
+    if (!file || !looksLikePickedImage(file)) return;
     setFailures((f) => ({ ...f, [slot]: undefined }));
     // Rake shots keep the plain rectangle crop (glare and texture are
     // the point there, not geometry); everything else pins corners.
@@ -278,7 +279,7 @@ export function PregradePage() {
                   inputRefs.current[slot] = el;
                 }}
                 type="file"
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 capture="environment"
                 hidden
                 onChange={(e) => {

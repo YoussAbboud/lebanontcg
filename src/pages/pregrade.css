@@ -82,3 +82,96 @@
   .pregrade { padding-top: 12px; }
   .pregrade-slots { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 }
+
+/* ---- Centering editor ---------------------------------------------------- */
+
+.centering {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.centering-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.centering-borderless {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  cursor: var(--cursor-default);
+}
+.centering-hint { color: var(--muted); font-size: var(--fs-13); max-width: 560px; }
+
+.centering-stage {
+  position: relative;
+  width: min(472px, 100%);
+  margin: 0 auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.centering-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--r-panel);
+  border: 1px solid var(--raised-2);
+  background: #000;
+}
+.centering-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+
+.centering-guide {
+  position: absolute;
+  z-index: 2;
+}
+.centering-guide.is-v { top: 0; bottom: 0; width: 18px; margin-left: -9px; cursor: ew-resize; }
+.centering-guide.is-h { left: 0; right: 0; height: 18px; margin-top: -9px; cursor: ns-resize; }
+.centering-guide::before {
+  content: '';
+  position: absolute;
+  background: var(--acid);
+  opacity: 0.9;
+}
+.centering-guide.is-outer::before { background: #fff; opacity: 0.75; }
+.centering-guide.is-v::before { left: 8px; top: 0; bottom: 0; width: 2px; }
+.centering-guide.is-h::before { top: 8px; left: 0; right: 0; height: 2px; }
+.centering-guide:focus-visible { outline: none; }
+.centering-guide:focus-visible::before {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--acid) 45%, transparent);
+}
+
+.centering-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+.centering-ratio {
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.centering-ratio strong { font-size: var(--fs-18); }
+.centering-score-num { font-size: 34px; line-height: 1; }
+.centering-mm { color: var(--muted); }
+
+.centering-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}

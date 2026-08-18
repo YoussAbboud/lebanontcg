@@ -10,7 +10,7 @@ import {
   scoreFrontCentering,
   worseAxis,
 } from '../../lib/pregrade/centering';
-import { warpQuad, type Point, type Raster } from '../../lib/pregrade/raster';
+import { makeRaster, warpQuad, type Point, type Raster } from '../../lib/pregrade/raster';
 import { axisRatio } from '../../lib/pregrade/centering';
 import type { AxisRatio, CenteringMethod } from '../../lib/pregrade/types';
 
@@ -67,11 +67,14 @@ const GUIDE_LABELS: Record<GuideKey, string> = {
 export function CenteringEditor({
   face,
   blob,
+  flattened = false,
   onDone,
   onBack,
 }: {
   face: 'front' | 'back';
   blob: Blob;
+  /** The shot was corner-pinned and flattened — the frame IS the card. */
+  flattened?: boolean;
   onDone(result: CenteringOutcome): void;
   onBack(): void;
 }) {
@@ -119,6 +122,46 @@ export function CenteringEditor({
       // biases thin borders in a way the raw pixels don't.
       const { raster } = await blobToRaster(blob, 2400);
       if (cancelled) return;
+      const fullQuad: Point[] = [
+        { x: 0, y: 0 },
+        { x: raster.width, y: 0 },
+        { x: raster.width, y: raster.height },
+        { x: 0, y: raster.height },
+      ];
+      if (flattened) {
+        // The user already pinned the outline; the frame is the card.
+        // Compose the display buffer: card scaled into the centre, dark
+        // margin around it so the outer guides stay adjustable.
+        const cardScaled = warpQuad(raster, fullQuad, CARD_W, CARD_H);
+        const buf = makeRaster(BUF_W, BUF_H, 14);
+        for (let y = 0; y < CARD_H; y++) {
+          for (let x = 0; x < CARD_W; x++) {
+            const src = (y * CARD_W + x) * 4;
+            const dst = ((y + MARGIN) * BUF_W + (x + MARGIN)) * 4;
+            buf.data[dst] = cardScaled.data[src];
+            buf.data[dst + 1] = cardScaled.data[src + 1];
+            buf.data[dst + 2] = cardScaled.data[src + 2];
+          }
+        }
+        if (canvasRef.current) drawRasterTo(canvasRef.current, buf);
+        setAutoDetected(true);
+        const cardOnly = warpQuad(raster, fullQuad, CANONICAL_W, CANONICAL_H);
+        const b = detectInnerBorders(cardOnly);
+        if (b) {
+          const sx = CARD_W / CANONICAL_W;
+          const sy = CARD_H / CANONICAL_H;
+          setGuides((g) => ({
+            ...g,
+            inL: MARGIN + b.left * sx,
+            inR: MARGIN + CARD_W - b.right * sx,
+            inT: MARGIN + b.top * sy,
+            inB: MARGIN + CARD_H - b.bottom * sy,
+          }));
+          setBordersDetected(true);
+        }
+        setState('ready');
+        return;
+      }
       const found = detectCardQuad(raster);
       let buffer: Raster;
       if (found) {

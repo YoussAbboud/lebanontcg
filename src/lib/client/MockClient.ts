@@ -39,8 +39,8 @@ import type { DefectAssessment, PregradeReport, PregradeReportInput } from '../p
 import { MOCK_ASSESSMENTS, mockCaseFrom } from '../pregrade/mockAssessments';
 import { pregradePillLabel } from '../pregrade/copy';
 import { CURRENT_STANDARD } from '../pregrade/standards';
-import { aHash, hammingDistance, PHASH_MATCH_THRESHOLD, PHASH_MISMATCH_COPY } from '../pregrade/phash';
-import { urlToRaster } from '../pregrade/decode';
+import { PHASH_MISMATCH_COPY } from '../pregrade/phash';
+import { capturesMatchCover } from '../pregrade/phashGate';
 
 const AUTH_KEY = 'lebanontcg.mock.currentUser';
 
@@ -1191,11 +1191,8 @@ export class MockClient implements MarketplaceClient {
     // listing's cover image.
     const front = r.captures.front;
     const cover = listing.images[0] ? this.resolveImageUrl(listing.images[0].storagePath) : null;
-    if (front && cover) {
-      const [a, b] = await Promise.all([urlToRaster(front), urlToRaster(cover)]);
-      if (hammingDistance(aHash(a), aHash(b)) > PHASH_MATCH_THRESHOLD) {
-        throw new Error(PHASH_MISMATCH_COPY);
-      }
+    if (front && cover && !(await capturesMatchCover(front, cover))) {
+      throw new Error(PHASH_MISMATCH_COPY);
     }
     r.listingId = listingId;
     r.published = true;

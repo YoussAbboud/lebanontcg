@@ -13,6 +13,7 @@ import {
 import { PregradeWizard } from '../components/pregrade/PregradeWizard';
 import { MyReports } from '../components/pregrade/MyReports';
 import { ImageCropper } from '../components/ImageCropper';
+import { CornerPinCropper } from '../components/pregrade/CornerPinCropper';
 import { SOFT_FAILURES, SOFT_FAILURE_NOTE } from '../lib/pregrade/quality';
 import './pregrade.css';
 
@@ -56,6 +57,8 @@ export interface Shot {
   raster: Raster;
   originalLongEdge: number;
   quality: QualityResult;
+  /** Corner-pinned and perspective-flattened — the frame IS the card. */
+  flattened?: boolean;
 }
 
 export type Shots = Partial<Record<CaptureSlot, Shot>>;
@@ -121,13 +124,20 @@ export function PregradePage() {
     });
   };
 
-  const cropped = async (slot: CaptureSlot, blob: Blob, url: string) => {
+  const cropped = async (slot: CaptureSlot, blob: Blob, url: string, srcLongEdge?: number) => {
     setCropTarget(null);
     setBusySlot(slot);
+    const flattened = slot === 'front' || slot === 'back';
     try {
       const { raster, originalLongEdge } = await blobToRaster(blob, 900);
-      const quality = checkCapture(slot, raster, originalLongEdge);
-      const shot: Shot = { blob, url, raster, originalLongEdge, quality };
+      const quality = checkCapture(
+        slot,
+        raster,
+        srcLongEdge ?? originalLongEdge,
+        undefined,
+        flattened,
+      );
+      const shot: Shot = { blob, url, raster, originalLongEdge, quality, flattened };
       if (!quality.ok) {
         setFailures((f) => ({ ...f, [slot]: quality.failure! }));
         // Detector-driven failures can be wrong — hold the shot so the
@@ -285,17 +295,27 @@ export function PregradePage() {
 
       <MyReports />
 
-      {cropTarget && (
-        <ImageCropper
-          file={cropTarget.file}
-          outLongEdge={2400}
-          title={`Crop to the card — ${SLOT_META[cropTarget.slot].label}`}
-          onCancel={() => setCropTarget(null)}
-          onDone={(out) => {
-            void cropped(cropTarget.slot, out.blob, out.url);
-          }}
-        />
-      )}
+      {cropTarget &&
+        (cropTarget.slot === 'front' || cropTarget.slot === 'back' ? (
+          <CornerPinCropper
+            file={cropTarget.file}
+            title={`Pin the card's corners — ${SLOT_META[cropTarget.slot].label}`}
+            onCancel={() => setCropTarget(null)}
+            onDone={(out) => {
+              void cropped(cropTarget.slot, out.blob, out.url, out.srcLongEdge);
+            }}
+          />
+        ) : (
+          <ImageCropper
+            file={cropTarget.file}
+            outLongEdge={2400}
+            title={`Crop to the card — ${SLOT_META[cropTarget.slot].label}`}
+            onCancel={() => setCropTarget(null)}
+            onDone={(out) => {
+              void cropped(cropTarget.slot, out.blob, out.url);
+            }}
+          />
+        ))}
     </main>
   );
 }

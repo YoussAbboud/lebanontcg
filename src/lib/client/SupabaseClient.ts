@@ -28,8 +28,8 @@ import type {
 } from '../pregrade/types';
 import { pregradePillLabel } from '../pregrade/copy';
 import { CURRENT_STANDARD } from '../pregrade/standards';
-import { aHash, hammingDistance, PHASH_MATCH_THRESHOLD, PHASH_MISMATCH_COPY } from '../pregrade/phash';
-import { urlToRaster } from '../pregrade/decode';
+import { PHASH_MISMATCH_COPY } from '../pregrade/phash';
+import { capturesMatchCover } from '../pregrade/phashGate';
 import { toStorageImage } from '../pregrade/decode';
 import type {
   AuthState,
@@ -1451,11 +1451,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     // listing's cover image.
     const front = report.captures.front;
     const cover = listing.images[0]?.url ?? null;
-    if (front && cover) {
-      const [a, b] = await Promise.all([urlToRaster(front), urlToRaster(cover)]);
-      if (hammingDistance(aHash(a), aHash(b)) > PHASH_MATCH_THRESHOLD) {
-        throw new Error(PHASH_MISMATCH_COPY);
-      }
+    if (front && cover && !(await capturesMatchCover(front, cover))) {
+      throw new Error(PHASH_MISMATCH_COPY);
     }
     const { data, error } = await this.sb
       .from('pregrade_reports')

@@ -153,6 +153,9 @@ export function checkCapture(
   analysis: Raster,
   originalLongEdge: number,
   th: QualityThresholds = DEFAULT_THRESHOLDS,
+  /** True when the shot was corner-pinned and flattened: the frame IS
+      the card, so outline/perspective detection has nothing to do. */
+  flattened = false,
 ): QualityResult {
   const isRake = slot === 'rake_front' || slot === 'rake_back';
   const isFlatWhole = slot === 'front' || slot === 'back';
@@ -171,6 +174,16 @@ export function checkCapture(
     // blur, because a flat frame also reads as blurry and "the light
     // isn't raking" is the actionable message.
     if (metrics.lumaStddev < th.minRakeStddev) return fail('too_flat');
+    if (metrics.blurVariance < th.minBlurVariance) return fail('blurry');
+    return { ok: true, failure: null, metrics };
+  }
+
+  if (isFlatWhole && flattened) {
+    // Source resolution first: an upscaled low-res card also reads as
+    // blurry, but "too far away" is the actionable (and soft) message.
+    metrics.cardLongEdge = originalLongEdge;
+    if (originalLongEdge < th.minCardLongEdge) return fail('resolution');
+    if (metrics.glareBlobFrac > th.maxGlareBlobFrac) return fail('glare');
     if (metrics.blurVariance < th.minBlurVariance) return fail('blurry');
     return { ok: true, failure: null, metrics };
   }

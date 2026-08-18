@@ -82,6 +82,7 @@ export function PregradeWizard({
         <CenteringEditor
           face="front"
           blob={shots.front!.blob}
+          flattened={shots.front!.flattened}
           onBack={onBack}
           onDone={(r) => {
             setFront(r);
@@ -98,6 +99,7 @@ export function PregradeWizard({
         <CenteringEditor
           face="back"
           blob={shots.back!.blob}
+          flattened={shots.back!.flattened}
           onBack={() => setStep('center_front')}
           onDone={(r) => {
             setBack(r);

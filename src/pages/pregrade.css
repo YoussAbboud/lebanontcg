@@ -328,3 +328,63 @@
 .pregrade-soft-note { color: var(--muted); font-size: var(--fs-12); }
 .pregrade-fail-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .pregrade-useanyway { font-size: var(--fs-12); }
+
+/* ---- Corner-pin cropper ---------------------------------------------------- */
+
+.pin-stage {
+  position: relative;
+  max-height: min(58vh, 520px);
+  overflow: hidden;
+  border-radius: var(--r-panel);
+  background: #000;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  justify-content: center;
+}
+.pin-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: min(58vh, 520px);
+  width: auto;
+  height: auto;
+}
+.pin-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.pin-lines polygon {
+  fill: rgba(210, 255, 60, 0.08);
+  stroke: var(--acid);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+.pin-handle {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  border: 2px solid var(--acid);
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+  cursor: grab;
+  z-index: 2;
+}
+.pin-handle::after {
+  content: '';
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background: var(--acid);
+}
+.pin-handle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acid) 45%, transparent);
+}
+
+.pin-frame { position: relative; display: inline-block; line-height: 0; }

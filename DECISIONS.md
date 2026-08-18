@@ -599,3 +599,27 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   downstream can fix those. Raking slots now report "light isn't
   raking" before "blurry" (the actionable message), and the blur floor
   gained headroom for the crop re-encode.
+
+## G8 — Corner pinning for the flat-on shots
+
+- User insight: a rectangular crop still leaves background in the
+  frame, and card corners aren't 90° in a photo anyway. The front/back
+  shots now open a corner-pin dialog — four free pins dragged onto the
+  card's actual corners (pre-placed by detection when it locks on),
+  then the quadrilateral is flattened by homography into a perfect
+  2.5:3.5 card. Background never reaches the analysis; camera angle is
+  corrected by the user's own pin placement.
+- Downstream simplifications: the perspective and outline gates have
+  nothing to check on a flattened shot; centering skips card detection
+  (the frame IS the card) and goes straight to border detection; edge
+  strips cut directly off the frame.
+- Two honesty consequences handled: the resolution gate measures the
+  SOURCE pixels the pins covered (flattened output is always 1400px,
+  even from a tiny photo — checked before blur, since an upscaled
+  low-res card also reads as blurry and "too far away" is the
+  actionable, soft message); and the publish gate now compares
+  card-to-card (phashGate.ts) — the listing cover is hashed both as-is
+  and card-flattened, any variant within threshold passes, so honest
+  sellers aren't blocked by framing differences.
+- Corner macros and raking shots keep the rectangle crop — there's no
+  card geometry to pin there.

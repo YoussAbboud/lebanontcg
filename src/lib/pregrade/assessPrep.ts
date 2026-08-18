@@ -36,14 +36,34 @@ async function resizeJpeg(blob: Blob, longEdge: number, quality = 0.82): Promise
 /** Edge-strip thickness on the canonical (500×700) card. */
 const STRIP = 56;
 
-async function edgeStrips(blob: Blob, face: 'front' | 'back'): Promise<AssessImage[]> {
+async function edgeStrips(
+  blob: Blob,
+  face: 'front' | 'back',
+  flattened: boolean,
+): Promise<AssessImage[]> {
   const { raster } = await blobToRaster(blob, 1600);
-  const quad = detectCardQuad(raster);
-  if (!quad) {
-    // No quad: send the whole flat shot instead so edges are still seen.
-    return [{ slot: `${face}_flat`, blob: await resizeJpeg(blob, 1200) }];
+  let card;
+  if (flattened) {
+    // Corner-pinned shot: the frame IS the card — no detection needed.
+    card = warpQuad(
+      raster,
+      [
+        { x: 0, y: 0 },
+        { x: raster.width, y: 0 },
+        { x: raster.width, y: raster.height },
+        { x: 0, y: raster.height },
+      ],
+      CANONICAL_W,
+      CANONICAL_H,
+    );
+  } else {
+    const quad = detectCardQuad(raster);
+    if (!quad) {
+      // No quad: send the whole flat shot instead so edges are still seen.
+      return [{ slot: `${face}_flat`, blob: await resizeJpeg(blob, 1200) }];
+    }
+    card = warpQuad(raster, quad.quad, CANONICAL_W, CANONICAL_H);
   }
-  const card = warpQuad(raster, quad.quad, CANONICAL_W, CANONICAL_H);
   const prefix = face === 'front' ? 'edge_front' : 'edge_back';
   return [
     { slot: `${prefix}_top`, blob: await rasterCropToJpeg(card, 0, 0, CANONICAL_W, STRIP) },
@@ -61,8 +81,12 @@ export async function prepareAssessmentImages(
     const s = shots[slot];
     if (s) images.push({ slot, blob: await resizeJpeg(s.blob, 800) });
   }
-  if (shots.front) images.push(...(await edgeStrips(shots.front.blob, 'front')));
-  if (shots.back) images.push(...(await edgeStrips(shots.back.blob, 'back')));
+  if (shots.front) {
+    images.push(...(await edgeStrips(shots.front.blob, 'front', shots.front.flattened ?? false)));
+  }
+  if (shots.back) {
+    images.push(...(await edgeStrips(shots.back.blob, 'back', shots.back.flattened ?? false)));
+  }
   const hasRake = Boolean(shots.rake_front || shots.rake_back);
   for (const slot of ['rake_front', 'rake_back'] as const) {
     const s = shots[slot];

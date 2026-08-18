@@ -453,3 +453,13 @@ smokes (g2–g6) run through the crop step.
 Manual: reshoot the failing card back — crop tight to the card in the
 dialog; if it still flags, "Use anyway" proceeds and the centering
 guides are set by hand.
+
+## G8 — Corner pinning
+
+g1-smoke reworked: flat-on uploads open the pin dialog (4 handles);
+a keystoned shot is CORRECTED by flattening and accepted — no
+perspective rejection; a low-res source flattens but fails the honest
+source-resolution gate softly (Use anyway offered). All pregrade
+smokes updated to flatten front/back and rect-crop the rest; g5's
+publish gate passes with the card-aware comparison (mis-attach still
+blocked, matching listing still publishes).

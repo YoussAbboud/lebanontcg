@@ -574,3 +574,28 @@ Running log of product/engineering decisions made while building, newest last.
   replaces them with measured hit rates (≥10 outcomes per bucket,
   human-reviewed diff, never auto-applied); reports show the measured
   track record once a bucket has ≥30 outcomes.
+
+## G7 — Real-photo hardening of the capture flow
+
+First real-world use (a card back) hit both "couldn't find the card's
+outline" and a false "camera's at an angle". Three causes, three fixes:
+- The outline fit's outlier window scaled with the coordinate value, so
+  on a phone photo's far edges it was ±100px — shadow hits survived,
+  skewed the fit, and the skew read as keystone. Rejection now scales
+  with the spread of the hits (median absolute deviation) plus a
+  residual re-fit pass; the outline scan runs denser (32 lines over a
+  wider band) with a looser contrast floor, because dark card backs on
+  dark tables sit under the old threshold.
+- Every capture now goes through the free-form crop dialog first
+  (opens with the full photo selected — two taps to skip). Cropping to
+  the card strips the background clutter that confuses the detector AND
+  gives the vision model cleaner inputs. Crops keep 2400px detail.
+- Detector-driven rejections (perspective, no-card, resolution) hold
+  the shot and offer "Use anyway" — the centering step corrects
+  perspective by hand regardless, so the detector being wrong must
+  never dead-end the user. Overrides drop the report's confidence out
+  of 'high' (wired through to the estimate; it was hardcoded before).
+  Blur, glare, and non-raking light stay hard failures — nothing
+  downstream can fix those. Raking slots now report "light isn't
+  raking" before "blurry" (the actionable message), and the blur floor
+  gained headroom for the crop re-encode.

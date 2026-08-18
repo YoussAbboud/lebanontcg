@@ -28,7 +28,16 @@ export interface WizardResult {
  * defect assessment and derive the estimate. The report view (next
  * milestone) renders the result.
  */
-export function PregradeWizard({ shots, onBack }: { shots: Shots; onBack(): void }) {
+export function PregradeWizard({
+  shots,
+  allPassedQuality,
+  onBack,
+}: {
+  shots: Shots;
+  /** False when any accepted shot was a quality-gate override. */
+  allPassedQuality: boolean;
+  onBack(): void;
+}) {
   const { client } = useApp();
   const location = useLocation();
   const [step, setStep] = useState<'center_front' | 'center_back' | 'assess'>('center_front');
@@ -56,7 +65,7 @@ export function PregradeWizard({ shots, onBack }: { shots: Shots; onBack(): void
         assessment,
         era: 'ultra_modern',
         centeringMethod: front.method,
-        allImagesPassedQuality: true,
+        allImagesPassedQuality: allPassedQuality,
       });
       setResult({ front, back, assessment, estimate, hasRake });
     })().catch((err) => {
@@ -65,7 +74,7 @@ export function PregradeWizard({ shots, onBack }: { shots: Shots; onBack(): void
     return () => {
       cancelled = true;
     };
-  }, [step, front, back, result, shots, client, caseHint]);
+  }, [step, front, back, result, shots, client, caseHint, allPassedQuality]);
 
   if (step === 'center_front') {
     return (

@@ -20,7 +20,9 @@ export interface QualityThresholds {
 }
 
 export const DEFAULT_THRESHOLDS: QualityThresholds = {
-  minBlurVariance: 60,
+  // Every shot is re-encoded by the crop step, which smooths fine
+  // texture — the floor carries headroom for that.
+  minBlurVariance: 45,
   maxGlareBlobFrac: 0.04,
   maxPerspectiveDeviation: 0.04,
   minCardLongEdge: 1200,
@@ -34,6 +36,22 @@ export type QualityFailure =
   | 'resolution'
   | 'no_card'
   | 'too_flat';
+
+/**
+ * Detector-driven failures: the CHECK can be wrong even when the shot is
+ * fine (dark card backs, busy tables). These get a "Use anyway" escape —
+ * the centering step corrects perspective by hand regardless. Blur,
+ * glare and a non-raking light stay hard: no downstream step can undo
+ * them, and a bad surface read is worse than none.
+ */
+export const SOFT_FAILURES: ReadonlySet<QualityFailure> = new Set([
+  'perspective',
+  'no_card',
+  'resolution',
+]);
+
+export const SOFT_FAILURE_NOTE =
+  'If the shot really is flat and framed right, the detector may be misreading it — you can use it anyway and set the guides by hand in the centering step.';
 
 export const FAILURE_COPY: Record<QualityFailure, string> = {
   blurry: 'Too blurry — hold steady and refocus, then try again.',
@@ -147,14 +165,17 @@ export function checkCapture(
   };
   const fail = (failure: QualityFailure): QualityResult => ({ ok: false, failure, metrics });
 
-  if (metrics.blurVariance < th.minBlurVariance) return fail('blurry');
-
   if (isRake) {
     // Glare is EXPECTED here — the failure mode is the opposite: an
-    // evenly-lit frame means the light isn't raking.
+    // evenly-lit frame means the light isn't raking. Checked before
+    // blur, because a flat frame also reads as blurry and "the light
+    // isn't raking" is the actionable message.
     if (metrics.lumaStddev < th.minRakeStddev) return fail('too_flat');
+    if (metrics.blurVariance < th.minBlurVariance) return fail('blurry');
     return { ok: true, failure: null, metrics };
   }
+
+  if (metrics.blurVariance < th.minBlurVariance) return fail('blurry');
 
   if (isFlatWhole) {
     if (metrics.glareBlobFrac > th.maxGlareBlobFrac) return fail('glare');

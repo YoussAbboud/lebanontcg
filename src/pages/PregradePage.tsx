@@ -12,6 +12,8 @@ import {
 } from '../lib/pregrade/types';
 import { PregradeWizard } from '../components/pregrade/PregradeWizard';
 import { MyReports } from '../components/pregrade/MyReports';
+import { ImageCropper } from '../components/ImageCropper';
+import { SOFT_FAILURES, SOFT_FAILURE_NOTE } from '../lib/pregrade/quality';
 import './pregrade.css';
 
 interface SlotMeta {
@@ -70,6 +72,10 @@ export function PregradePage() {
   const [failures, setFailures] = useState<Partial<Record<CaptureSlot, QualityFailure>>>({});
   const [busySlot, setBusySlot] = useState<CaptureSlot | null>(null);
   const [phase, setPhase] = useState<'capture' | 'wizard'>('capture');
+  /** The picked file awaiting its crop step. */
+  const [cropTarget, setCropTarget] = useState<{ slot: CaptureSlot; file: File } | null>(null);
+  /** Soft-failed shots held for the user's call: retake or use anyway. */
+  const [held, setHeld] = useState<Partial<Record<CaptureSlot, Shot>>>({});
   const inputRefs = useRef<Partial<Record<CaptureSlot, HTMLInputElement | null>>>({});
 
   useEffect(() => {
@@ -91,30 +97,52 @@ export function PregradePage() {
     );
   }
 
-  const pick = async (slot: CaptureSlot, file: File | undefined) => {
+  // Every shot goes through the crop step first: cropping tight to the
+  // card strips the background clutter that confuses both the outline
+  // detector and the vision model.
+  const pick = (slot: CaptureSlot, file: File | undefined) => {
     if (!file || !file.type.startsWith('image/')) return;
-    setBusySlot(slot);
     setFailures((f) => ({ ...f, [slot]: undefined }));
+    setCropTarget({ slot, file });
+  };
+
+  const accept = (slot: CaptureSlot, shot: Shot) => {
+    setShots((prev) => {
+      const old = prev[slot];
+      if (old) URL.revokeObjectURL(old.url);
+      return { ...prev, [slot]: shot };
+    });
+    setHeld((prev) => ({ ...prev, [slot]: undefined }));
+    setFailures((f) => ({ ...f, [slot]: undefined }));
+    setSkipped((prev) => {
+      const next = new Set(prev);
+      next.delete(slot);
+      return next;
+    });
+  };
+
+  const cropped = async (slot: CaptureSlot, blob: Blob, url: string) => {
+    setCropTarget(null);
+    setBusySlot(slot);
     try {
-      const { raster, originalLongEdge } = await blobToRaster(file, 900);
+      const { raster, originalLongEdge } = await blobToRaster(blob, 900);
       const quality = checkCapture(slot, raster, originalLongEdge);
+      const shot: Shot = { blob, url, raster, originalLongEdge, quality };
       if (!quality.ok) {
         setFailures((f) => ({ ...f, [slot]: quality.failure! }));
+        // Detector-driven failures can be wrong — hold the shot so the
+        // user can overrule. Hard failures are discarded.
+        if (SOFT_FAILURES.has(quality.failure!)) {
+          setHeld((prev) => ({ ...prev, [slot]: shot }));
+        } else {
+          URL.revokeObjectURL(url);
+        }
         return;
       }
-      const url = URL.createObjectURL(file);
-      setShots((prev) => {
-        const old = prev[slot];
-        if (old) URL.revokeObjectURL(old.url);
-        return { ...prev, [slot]: { blob: file, url, raster, originalLongEdge, quality } };
-      });
-      setSkipped((prev) => {
-        const next = new Set(prev);
-        next.delete(slot);
-        return next;
-      });
+      accept(slot, shot);
     } catch {
       setFailures((f) => ({ ...f, [slot]: 'no_card' }));
+      URL.revokeObjectURL(url);
     } finally {
       setBusySlot(null);
     }
@@ -122,9 +150,16 @@ export function PregradePage() {
 
   const requiredDone = REQUIRED_SLOTS.every((s) => shots[s]);
   const doneCount = CAPTURE_SLOTS.filter((s) => shots[s]).length;
+  const allPassedQuality = CAPTURE_SLOTS.every((s) => !shots[s] || shots[s]!.quality.ok);
 
   if (phase === 'wizard') {
-    return <PregradeWizard shots={shots} onBack={() => setPhase('capture')} />;
+    return (
+      <PregradeWizard
+        shots={shots}
+        allPassedQuality={allPassedQuality}
+        onBack={() => setPhase('capture')}
+      />
+    );
   }
 
   return (
@@ -174,13 +209,25 @@ export function PregradePage() {
               {failure && (
                 <div className="pregrade-fail" role="alert">
                   <p className="field-error">{FAILURE_COPY[failure]}</p>
-                  <button
-                    type="button"
-                    className="btn-outline pregrade-retake"
-                    onClick={() => inputRefs.current[slot]?.click()}
-                  >
-                    Retake
-                  </button>
+                  {held[slot] && <p className="pregrade-soft-note">{SOFT_FAILURE_NOTE}</p>}
+                  <div className="pregrade-fail-actions">
+                    <button
+                      type="button"
+                      className="btn-outline pregrade-retake"
+                      onClick={() => inputRefs.current[slot]?.click()}
+                    >
+                      Retake
+                    </button>
+                    {held[slot] && (
+                      <button
+                        type="button"
+                        className="btn-ghost-mono pregrade-useanyway"
+                        onClick={() => accept(slot, held[slot]!)}
+                      >
+                        Use anyway
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
               {shot && (
@@ -210,7 +257,7 @@ export function PregradePage() {
                 capture="environment"
                 hidden
                 onChange={(e) => {
-                  void pick(slot, e.target.files?.[0]);
+                  pick(slot, e.target.files?.[0]);
                   e.target.value = '';
                 }}
               />
@@ -237,6 +284,18 @@ export function PregradePage() {
       </footer>
 
       <MyReports />
+
+      {cropTarget && (
+        <ImageCropper
+          file={cropTarget.file}
+          outLongEdge={2400}
+          title={`Crop to the card — ${SLOT_META[cropTarget.slot].label}`}
+          onCancel={() => setCropTarget(null)}
+          onDone={(out) => {
+            void cropped(cropTarget.slot, out.blob, out.url);
+          }}
+        />
+      )}
     </main>
   );
 }

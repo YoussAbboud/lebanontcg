@@ -26,6 +26,9 @@ const ASPECT_TOLERANCE = 0.1;
 
 /** Sustained-contrast threshold (0–255 luma) marking a real boundary. */
 const EDGE_CONTRAST = 20;
+/** The card-outline scan runs looser: real card backs against a dark
+    table can sit under 20 luma of contrast and still be findable. */
+const QUAD_EDGE_CONTRAST = 13;
 /** Window length used to decide a discontinuity is sustained, not noise. */
 const RUN = 6;
 
@@ -39,19 +42,12 @@ interface Fit {
   b: number;
 }
 
-function fitLine(points: Point[], vertical: boolean): Fit | null {
-  if (points.length < 3) return null;
-  // Median-based outlier rejection first: logos/hands crossing an edge
-  // produce wild hits; drop anything far from the pack.
-  const primary = points.map((p) => (vertical ? p.x : p.y));
-  const med = median(primary);
-  const kept = points.filter((p) => Math.abs((vertical ? p.x : p.y) - med) < med * 0.08 + 8);
-  if (kept.length < 3) return null;
+function leastSquares(points: Point[], vertical: boolean): Fit | null {
   let sx = 0;
   let sy = 0;
   let sxy = 0;
   let sxx = 0;
-  for (const p of kept) {
+  for (const p of points) {
     const t = vertical ? p.y : p.x; // independent variable
     const v = vertical ? p.x : p.y; // dependent
     sx += t;
@@ -59,12 +55,38 @@ function fitLine(points: Point[], vertical: boolean): Fit | null {
     sxy += t * v;
     sxx += t * t;
   }
-  const n = kept.length;
+  const n = points.length;
   const denom = n * sxx - sx * sx;
   if (Math.abs(denom) < 1e-9) return null;
   const a = (n * sxy - sx * sy) / denom;
   const b = (sy - a * sx) / n;
   return { a, b };
+}
+
+function fitLine(points: Point[], vertical: boolean): Fit | null {
+  if (points.length < 3) return null;
+  // Outlier rejection scaled to the SPREAD of the hits (median absolute
+  // deviation), never to the coordinate value — shadows, hands and
+  // logos produce wild hits, and on real photos the far edges sit at
+  // large coordinates where a value-relative window lets skew through.
+  const primary = points.map((p) => (vertical ? p.x : p.y));
+  const med = median(primary);
+  const mad = median(primary.map((v) => Math.abs(v - med)));
+  const tol = Math.max(10, 4 * mad);
+  const kept = points.filter((p) => Math.abs((vertical ? p.x : p.y) - med) < tol);
+  if (kept.length < 3) return null;
+  const first = leastSquares(kept, vertical);
+  if (!first) return null;
+  // Second pass: drop residual outliers against the fitted line and
+  // refit — one bad cluster at an end can still tilt a plain fit.
+  const residual = (p: Point) =>
+    Math.abs((vertical ? p.x : p.y) - (first.a * (vertical ? p.y : p.x) + first.b));
+  const res = kept.map(residual);
+  const resMed = median(res);
+  const resTol = Math.max(3, 3 * resMed);
+  const inliers = kept.filter((p) => residual(p) <= resTol);
+  if (inliers.length < 3) return first;
+  return leastSquares(inliers, vertical) ?? first;
 }
 
 /**
@@ -92,7 +114,7 @@ function firstBoundary(
     return Math.abs(after - before) / RUN;
   };
   for (let t = from; step > 0 ? t < to - RUN : t > to + RUN; t += step) {
-    if (contrastAt(t) > EDGE_CONTRAST) {
+    if (contrastAt(t) > QUAD_EDGE_CONTRAST) {
       // The windowed test trips as soon as the look-ahead window touches
       // the card — up to RUN px early. Walk on to the contrast PEAK (the
       // true edge), then interpolate the halfway-luma crossing for
@@ -142,20 +164,20 @@ export interface QuadResult {
 export function detectCardQuad(img: Raster): QuadResult | null {
   const { width: w, height: h } = img;
   const luma = toLuma(img);
-  const samples = 24;
+  const samples = 32;
 
   const leftPts: Point[] = [];
   const rightPts: Point[] = [];
   const topPts: Point[] = [];
   const botPts: Point[] = [];
   for (let i = 0; i < samples; i++) {
-    const y = Math.round(h * (0.2 + (0.6 * i) / (samples - 1)));
+    const y = Math.round(h * (0.15 + (0.7 * i) / (samples - 1)));
     const lx = firstBoundary(luma, w, y, RUN, Math.floor(w / 2), true);
     if (lx !== null) leftPts.push({ x: lx, y });
     const rx = firstBoundary(luma, w, y, w - 1 - RUN, Math.floor(w / 2), true);
     if (rx !== null) rightPts.push({ x: rx, y });
 
-    const x = Math.round(w * (0.2 + (0.6 * i) / (samples - 1)));
+    const x = Math.round(w * (0.15 + (0.7 * i) / (samples - 1)));
     const ty = firstBoundary(luma, w, x, RUN, Math.floor(h / 2), false);
     if (ty !== null) topPts.push({ x, y: ty });
     const by = firstBoundary(luma, w, x, h - 1 - RUN, Math.floor(h / 2), false);

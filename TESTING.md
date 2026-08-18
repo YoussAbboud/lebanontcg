@@ -441,3 +441,15 @@ published_needs_listing both reject bad rows.
 Live checklist: run migration 0011 (or apply-all.sql on a fresh
 project), set ANTHROPIC_API_KEY in Vercel, then walk a real card
 through /pregrade on a phone.
+
+## G7 — Capture hardening
+
+g1-smoke updated: every upload passes the crop dialog; the angled shot
+is rejected AND offers Use anyway (which accepts the held shot and
+drops confidence); the flat raking frame reports "light isn't raking"
+with NO escape; retake replaces an override cleanly. All pregrade
+smokes (g2–g6) run through the crop step.
+
+Manual: reshoot the failing card back — crop tight to the card in the
+dialog; if it still flags, "Use anyway" proceeds and the centering
+guides are set by hand.

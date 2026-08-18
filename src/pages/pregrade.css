@@ -265,3 +265,44 @@
 .evpanel-breakeven { font-size: var(--fs-14); }
 
 .pregrade-ceiling-cta { display: flex; justify-content: center; }
+
+/* ---- Listing-page panel --------------------------------------------------- */
+
+.pgpanel { display: flex; flex-direction: column; gap: 14px; }
+.pgpanel-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 16px;
+  font: inherit;
+  color: inherit;
+  cursor: var(--cursor-default);
+  transition: border-color var(--t-fast);
+}
+.pgpanel-toggle:hover { border-color: var(--acid); }
+.pgpanel-sub { color: var(--muted); font-size: var(--fs-13); }
+.pgpanel-open { color: var(--acid); }
+
+.pgpanel-extras { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.pgpanel-captures { display: flex; flex-direction: column; gap: 8px; }
+.pgpanel-capture-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.pgpanel-capture-link {
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 4px 10px;
+  color: var(--text-2, var(--muted));
+  text-decoration: none;
+}
+.pgpanel-capture-link:hover { border-color: var(--acid); color: var(--acid); }
+.pgpanel-dispute { align-self: flex-start; }
+.pgpanel-disclaimer { color: var(--muted); opacity: 0.8; }
+
+/* ---- Publish panel in the wizard ------------------------------------------ */
+
+.pgpublish { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+.pgpublish-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.pgpublish-row .input { max-width: 320px; }
+.pgpublish-done { color: var(--acid); }
+.pgpublish-note { color: var(--muted); font-size: var(--fs-13); }

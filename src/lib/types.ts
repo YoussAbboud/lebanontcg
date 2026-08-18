@@ -107,6 +107,9 @@ export interface ListingWithSeller extends Listing {
   sellerActiveListingCount: number;
   /** How many collectors watch (favorite) this listing. */
   likes: number;
+  /** Published pre-grade pill, e.g. "EST. 9–10" — null when none.
+      Deliberately subordinate to a real slab badge. */
+  pregradePill?: string | null;
 }
 
 export interface ListingFilter {
@@ -119,6 +122,10 @@ export interface ListingFilter {
   gradedOnly: boolean;
   /** Only listings whose seller has at least one review. */
   sellerHasReviews: boolean;
+  /** Only listings carrying a published pre-grade report. Filtering or
+      sorting by ESTIMATED GRADE is deliberately impossible — that would
+      turn an estimate into a de-facto grade. */
+  hasPregrade?: boolean;
   language: string | null;
   sort: 'newest' | 'price_asc' | 'price_desc' | 'most_watched';
 }

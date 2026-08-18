@@ -1,13 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '../../state/AppContext';
-import type { Shots } from '../../pages/PregradePage';
+import type { Shot, Shots } from '../../pages/PregradePage';
+import type { Listing } from '../../lib/types';
 import { CenteringEditor, type CenteringOutcome } from './CenteringEditor';
 import { PregradeReportView } from './PregradeReportView';
 import { EvPanel } from './EvPanel';
 import { prepareAssessmentImages } from '../../lib/pregrade/assessPrep';
 import { estimateGrade } from '../../lib/pregrade/estimate';
-import type { DefectAssessment, Estimate } from '../../lib/pregrade/types';
+import type {
+  CaptureSlot,
+  DefectAssessment,
+  Estimate,
+  PregradeReport,
+} from '../../lib/pregrade/types';
 
 export interface WizardResult {
   front: CenteringOutcome;
@@ -130,6 +136,7 @@ export function PregradeWizard({ shots, onBack }: { shots: Shots; onBack(): void
         }}
       />
       <EvPanel estimate={result.estimate} />
+      <PublishPanel result={result} shots={shots} />
       {result.estimate.isCeiling && (
         <div className="pregrade-ceiling-cta">
           <button type="button" className="btn-acid" onClick={onBack}>
@@ -138,5 +145,133 @@ export function PregradeWizard({ shots, onBack }: { shots: Shots; onBack(): void
         </div>
       )}
     </main>
+  );
+}
+
+/**
+ * Save the report, then (opt-in, per listing) attach and publish it to
+ * one of the seller's own listings. Publishing attaches the full photo
+ * set and the measured numbers so a buyer can check the work; the
+ * perceptual-hash gate blocks attaching to a different card's listing.
+ */
+function PublishPanel({ result, shots }: { result: WizardResult; shots: Shots }) {
+  const { client, user } = useApp();
+  const [report, setReport] = useState<PregradeReport | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [target, setTarget] = useState('');
+  const [publishState, setPublishState] = useState<'idle' | 'busy' | 'done'>('idle');
+  const [publishError, setPublishError] = useState<string | null>(null);
+
+  // Save once (the estimate is the seller's private result by default).
+  useEffect(() => {
+    if (report) return;
+    let cancelled = false;
+    const captures = (Object.entries(shots) as [CaptureSlot, Shot][])
+      .filter(([, s]) => s)
+      .map(([slot, s]) => ({ slot, blob: s.blob }));
+    client
+      .savePregradeReport({
+        era: 'ultra_modern',
+        centeringMethod: result.front.method,
+        front: result.front.ratios,
+        back: result.back.ratios,
+        scores: {
+          centering: result.front.score,
+          corners: result.assessment.corners.score,
+          edges: result.assessment.edges.score,
+          surface:
+            result.assessment.surface.confidence === 'not_assessed'
+              ? null
+              : result.assessment.surface.score,
+        },
+        estimate: result.estimate,
+        assessment: result.assessment,
+        captures,
+      })
+      .then((r) => {
+        if (!cancelled) setReport(r);
+      })
+      .catch((err) => {
+        if (!cancelled) setSaveError(err instanceof Error ? err.message : 'Could not save.');
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- save exactly once
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    void client
+      .getListingsBySeller(user.id, ['active', 'reserved'])
+      .then(setListings)
+      .catch(() => setListings([]));
+  }, [client, user]);
+
+  const publish = async () => {
+    if (!report || !target) return;
+    setPublishState('busy');
+    setPublishError(null);
+    try {
+      await client.publishPregradeReport(report.id, target);
+      setPublishState('done');
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : 'Publishing failed.');
+      setPublishState('idle');
+    }
+  };
+
+  return (
+    <section className="pgpublish panel" aria-label="Save and publish">
+      {saveError ? (
+        <p className="field-error" role="alert">{saveError}</p>
+      ) : !report ? (
+        <p className="mono-label">Saving your report…</p>
+      ) : (
+        <>
+          <p className="pgpublish-done mono-label">Report saved to your account ✓</p>
+          {publishState === 'done' ? (
+            <p className="pgpublish-done">
+              Published to the listing — buyers now see the measured numbers and the full photo
+              set.
+            </p>
+          ) : (
+            <>
+              <p className="pgpublish-note">
+                Estimates stay private to you. Publishing onto one of your listings is opt-in —
+                it attaches the photos and the measured numbers so a buyer can check the work.
+              </p>
+              <div className="pgpublish-row">
+                <select
+                  className="input"
+                  aria-label="Attach to listing"
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                >
+                  <option value="">Attach to a listing…</option>
+                  {listings.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.title}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="btn-outline"
+                  disabled={!target || publishState === 'busy'}
+                  onClick={() => void publish()}
+                >
+                  {publishState === 'busy' ? 'Checking…' : 'Publish to listing'}
+                </button>
+              </div>
+              {publishError && (
+                <p className="field-error" role="alert">{publishError}</p>
+              )}
+            </>
+          )}
+        </>
+      )}
+    </section>
   );
 }

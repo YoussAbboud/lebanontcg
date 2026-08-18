@@ -227,6 +227,14 @@ export function BrowsePage() {
           />
           Seller has reviews
         </label>
+        <label className="checkline">
+          <input
+            type="checkbox"
+            checked={filter.hasPregrade ?? false}
+            onChange={(e) => apply({ ...filter, hasPregrade: e.target.checked })}
+          />
+          Has pre-grade report
+        </label>
       </aside>
 
       <section className="browse-main">

@@ -198,3 +198,14 @@
   color: var(--acid);
 }
 .lcard:is(:hover, :focus-visible, :active, .is-acid) .cardface-glyph { color: var(--glyph-on-acid); }
+
+/* Pre-grade estimate pill: deliberately subordinate to a real slab
+   badge — fog ink, never acid. */
+.lcard-pregrade {
+  margin-left: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-pill);
+  padding: 1px 8px;
+  color: var(--text-2, var(--muted));
+  white-space: nowrap;
+}

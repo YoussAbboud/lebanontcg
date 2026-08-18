@@ -107,7 +107,14 @@ export const ListingCard = memo(function ListingCard({
       </div>
 
       <div className="lcard-body">
-        <div className="lcard-eyebrow mono-label">{listingEyebrow(listing)}</div>
+        <div className="lcard-eyebrow mono-label">
+          {listingEyebrow(listing)}
+          {listing.pregradePill && !listing.gradeValue && (
+            <span className="lcard-pregrade mono-label" title="Pre-grade estimate — not a grade">
+              {listing.pregradePill}
+            </span>
+          )}
+        </div>
         <h3 className="lcard-title">{listing.title}</h3>
         <div className="lcard-oneliner">{oneLinerOf(listing)}</div>
         <div className="lcard-stats">

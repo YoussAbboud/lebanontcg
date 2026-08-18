@@ -10,6 +10,7 @@ export const DEFAULT_FILTER: ListingFilter = {
   priceMax: null,
   gradedOnly: false,
   sellerHasReviews: false,
+  hasPregrade: false,
   language: null,
   sort: 'newest',
 };
@@ -24,6 +25,7 @@ export function isDefaultFilter(f: ListingFilter): boolean {
     f.priceMax === null &&
     !f.gradedOnly &&
     !f.sellerHasReviews &&
+    !f.hasPregrade &&
     !f.language &&
     f.sort === 'newest'
   );
@@ -38,6 +40,7 @@ export function activeFacetCount(f: ListingFilter): number {
   if (f.priceMin !== null || f.priceMax !== null) n++;
   if (f.gradedOnly) n++;
   if (f.sellerHasReviews) n++;
+  if (f.hasPregrade) n++;
   if (f.language) n++;
   return n;
 }
@@ -94,6 +97,7 @@ export function filterToSearchParams(f: ListingFilter): URLSearchParams {
   if (f.priceMax !== null) p.set('max', String(f.priceMax));
   if (f.gradedOnly) p.set('graded', '1');
   if (f.sellerHasReviews) p.set('rated', '1');
+  if (f.hasPregrade) p.set('pregrade', '1');
   if (f.language) p.set('lang', f.language);
   if (f.sort !== 'newest') p.set('sort', f.sort);
   return p;
@@ -120,6 +124,7 @@ export function filterFromSearchParams(p: URLSearchParams): ListingFilter {
     priceMax: num('max'),
     gradedOnly: p.get('graded') === '1',
     sellerHasReviews: p.get('rated') === '1',
+    hasPregrade: p.get('pregrade') === '1',
     language: p.get('lang') || null,
     sort:
       sortRaw === 'price_asc' || sortRaw === 'price_desc' || sortRaw === 'most_watched'

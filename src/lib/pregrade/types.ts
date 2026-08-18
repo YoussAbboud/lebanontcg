@@ -2,9 +2,10 @@
 // modules, both MarketplaceClient implementations, and the UI.
 //
 // Language note (non-negotiable): this feature produces ESTIMATES.
-// Nothing in here may ever write to listings.gradeCompany /
-// listings.gradeValue — those stay reserved for real, cert-numbered
-// slabs. See supabase/migrations/0011 and pregrade/leak.test.ts.
+// Nothing in here may ever write to the listings table's real-slab
+// columns — those stay reserved for real, cert-numbered slabs. See
+// supabase/migrations/0011 and pregrade/leak.test.ts (which greps this
+// whole module tree for those column names, comments included).
 
 export type Era = 'ultra_modern' | 'modern' | 'vintage';
 export type PregradeConfidence = 'high' | 'moderate' | 'low' | 'not_assessed';

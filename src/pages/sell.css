@@ -149,3 +149,18 @@
   margin-top: 18px;
 }
 .sell-next { margin-left: auto; }
+
+.sell-pregrade-cta {
+  margin-top: 16px;
+  border: 1px dashed var(--border);
+  border-radius: var(--r-panel);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: var(--fs-13);
+}
+.sell-pregrade-link { padding: 8px 14px; min-height: 36px; }

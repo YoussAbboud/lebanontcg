@@ -17,10 +17,7 @@ export function confidenceLabel(c: Estimate['confidence']): string {
   return c === 'high' ? 'High confidence' : c === 'moderate' ? 'Moderate confidence' : 'Low confidence';
 }
 
-/** e.g. "Est. PSA 9–10 · Moderate confidence" — never a bare number. */
-export function bandLabel(e: Estimate): string {
-  if (e.recommendation === 'inconclusive' && !e.isCeiling) return 'Not enough to go on';
-  if (e.isCeiling) return `Up to PSA ${e.base} · surface not checked`;
+function likelyRange(e: Pick<Estimate, 'band' | 'base'>): string {
   const probs: Array<[string, number]> = [
     ['10', e.band.p10],
     ['9', e.band.p9],
@@ -28,13 +25,30 @@ export function bandLabel(e: Estimate): string {
     ['≤7', e.band.pLow],
   ];
   const likely = probs.filter(([, p]) => p >= 0.15).map(([g]) => g);
-  const label =
-    likely.length === 0
-      ? String(e.base)
-      : likely.length === 1
-        ? likely[0]
-        : `${likely[likely.length - 1]}–${likely[0]}`;
-  return `Est. PSA ${label} · ${confidenceLabel(e.confidence)}`;
+  return likely.length === 0
+    ? String(e.base)
+    : likely.length === 1
+      ? likely[0]
+      : `${likely[likely.length - 1]}–${likely[0]}`;
+}
+
+/** e.g. "Est. PSA 9–10 · Moderate confidence" — never a bare number. */
+export function bandLabel(e: Estimate): string {
+  if (e.recommendation === 'inconclusive' && !e.isCeiling) return 'Not enough to go on';
+  if (e.isCeiling) return `Up to PSA ${e.base} · surface not checked`;
+  return `Est. PSA ${likelyRange(e)} · ${confidenceLabel(e.confidence)}`;
+}
+
+/**
+ * The small listing-card pill, e.g. "EST. 9–10". Null for abstained
+ * reports. Rendered subordinate to a real slab badge, never in acid.
+ */
+export function pregradePillLabel(
+  e: Pick<Estimate, 'band' | 'base' | 'isCeiling' | 'recommendation'>,
+): string | null {
+  if (e.recommendation === 'inconclusive' && !e.isCeiling) return null;
+  if (e.isCeiling) return `UP TO ${e.base}`;
+  return `EST. ${likelyRange(e)}`;
 }
 
 export const RECOMMENDATION_LABELS: Record<Recommendation, string> = {

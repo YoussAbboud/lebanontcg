@@ -283,6 +283,12 @@ export function SellPage() {
             <div className="display sell-panel-title">Photos</div>
             <p className="sell-panel-sub">1–8 photos. The first is the cover. Drag to reorder.</p>
             <ImageManager images={images} onChange={setImages} error={errors.images} />
+            <div className="sell-pregrade-cta">
+              <span>Raw card? Check its grade potential before you list it.</span>
+              <Link to="/pregrade" className="btn-outline sell-pregrade-link">
+                Run a Pre-Grade →
+              </Link>
+            </div>
           </div>
         )}
 

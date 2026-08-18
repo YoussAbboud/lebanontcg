@@ -63,6 +63,29 @@ export async function toStorageImage(blob: Blob, longEdge = 2400): Promise<Blob>
   }
 }
 
+/** Load any image URL (incl. cross-origin storage) into a Raster. */
+export async function urlToRaster(url: string, maxLongEdge = 512): Promise<Raster> {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error('Could not load image.'));
+    img.src = url;
+  });
+  const long = Math.max(img.naturalWidth, img.naturalHeight) || 1;
+  const scale = Math.min(1, maxLongEdge / long);
+  const w = Math.max(1, Math.round(img.naturalWidth * scale));
+  const h = Math.max(1, Math.round(img.naturalHeight * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  if (!ctx) throw new Error('Canvas 2D unavailable');
+  ctx.drawImage(img, 0, 0, w, h);
+  const data = ctx.getImageData(0, 0, w, h);
+  return { width: w, height: h, data: data.data };
+}
+
 /** Draw a Raster onto a canvas element (previews of warped cards). */
 export function drawRasterTo(canvas: HTMLCanvasElement, raster: Raster): void {
   canvas.width = raster.width;

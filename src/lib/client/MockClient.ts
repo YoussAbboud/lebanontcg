@@ -35,8 +35,12 @@ import {
 } from '../../mock/seed';
 import { avatarDataUrl, cardImageUrl } from '../../mock/cardImage';
 import type { Condition, Finish, Game } from '../types';
-import type { DefectAssessment } from '../pregrade/types';
+import type { DefectAssessment, PregradeReport, PregradeReportInput } from '../pregrade/types';
 import { MOCK_ASSESSMENTS, mockCaseFrom } from '../pregrade/mockAssessments';
+import { pregradePillLabel } from '../pregrade/copy';
+import { CURRENT_STANDARD } from '../pregrade/standards';
+import { aHash, hammingDistance, PHASH_MATCH_THRESHOLD, PHASH_MISMATCH_COPY } from '../pregrade/phash';
+import { urlToRaster } from '../pregrade/decode';
 
 const AUTH_KEY = 'lebanontcg.mock.currentUser';
 
@@ -74,6 +78,8 @@ export class MockClient implements MarketplaceClient {
   private reviews: Review[];
   private blocks = new Map<string, Set<string>>();
   private reports: ReportInput[] = [];
+  /** Pre-grade reports live per-tab in mock mode (captures = object URLs). */
+  private pregradeReports: PregradeReport[] = [];
 
   /**
    * Mock credential store, keyed by lowercased email. `password: null`
@@ -541,10 +547,15 @@ export class MockClient implements MarketplaceClient {
     return n;
   }
 
+  private publishedReportFor(listingId: string): PregradeReport | undefined {
+    return this.pregradeReports.find((r) => r.published && r.listingId === listingId);
+  }
+
   private hydrate(l: Listing): ListingWithSeller {
     const seller = this.withRating(this.profiles.find((p) => p.id === l.sellerId)!);
     const clone = structuredClone(l);
     for (const img of clone.images) img.url = this.resolveImageUrl(img.storagePath);
+    const report = this.publishedReportFor(l.id);
     return {
       ...clone,
       seller,
@@ -552,6 +563,14 @@ export class MockClient implements MarketplaceClient {
         (x) => x.sellerId === l.sellerId && x.status === 'active',
       ).length,
       likes: this.likesOf(l.id),
+      pregradePill: report
+        ? pregradePillLabel({
+            band: report.band,
+            base: report.base,
+            isCeiling: report.isCeiling,
+            recommendation: report.recommendation,
+          })
+        : null,
     };
   }
 
@@ -562,6 +581,9 @@ export class MockClient implements MarketplaceClient {
       candidates = candidates.filter(
         (l) => this.withRating(this.profiles.find((p) => p.id === l.sellerId)!).ratingCount > 0,
       );
+    }
+    if (filter.hasPregrade) {
+      candidates = candidates.filter((l) => this.publishedReportFor(l.id));
     }
     const matched =
       filter.sort === 'most_watched'
@@ -1097,6 +1119,112 @@ export class MockClient implements MarketplaceClient {
       };
     }
     return assessment;
+  }
+
+  async savePregradeReport(input: PregradeReportInput): Promise<PregradeReport> {
+    const me = this.me();
+    await sleep(netDelay());
+    const captures: PregradeReport['captures'] = {};
+    for (const c of input.captures) captures[c.slot] = URL.createObjectURL(c.blob);
+    const report: PregradeReport = {
+      id: `pg-${Math.random().toString(36).slice(2, 10)}`,
+      userId: me.id,
+      listingId: null,
+      published: false,
+      standardsVersion: CURRENT_STANDARD.version,
+      era: input.era,
+      centeringMethod: input.centeringMethod,
+      front: structuredClone(input.front),
+      back: input.back ? structuredClone(input.back) : null,
+      scoreCentering: input.scores.centering,
+      scoreCorners: input.scores.corners,
+      scoreEdges: input.scores.edges,
+      scoreSurface: input.scores.surface,
+      base: input.estimate.base,
+      isCeiling: input.estimate.isCeiling,
+      band: { ...input.estimate.band },
+      confidence: input.estimate.confidence,
+      recommendation: input.estimate.recommendation,
+      assessment: structuredClone(input.assessment),
+      notes: [...input.estimate.notes],
+      modelId: 'mock',
+      createdAt: new Date().toISOString(),
+      outcome: null,
+      captures,
+    };
+    this.pregradeReports.push(report);
+    return structuredClone(report);
+  }
+
+  async listMyPregradeReports(): Promise<PregradeReport[]> {
+    const me = this.me();
+    await sleep(netDelay());
+    return structuredClone(
+      this.pregradeReports
+        .filter((r) => r.userId === me.id)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    );
+  }
+
+  async getPregradeReport(id: string): Promise<PregradeReport | null> {
+    await sleep(netDelay());
+    const r = this.pregradeReports.find((x) => x.id === id);
+    if (!r) return null;
+    if (!r.published && r.userId !== this.auth.user?.id) return null;
+    return structuredClone(r);
+  }
+
+  async getPublishedPregradeReport(listingId: string): Promise<PregradeReport | null> {
+    await sleep(netDelay());
+    const r = this.publishedReportFor(listingId);
+    return r ? structuredClone(r) : null;
+  }
+
+  async publishPregradeReport(reportId: string, listingId: string): Promise<PregradeReport> {
+    const me = this.me();
+    await sleep(netDelay());
+    const r = this.pregradeReports.find((x) => x.id === reportId && x.userId === me.id);
+    if (!r) throw new Error('Report not found.');
+    const listing = this.listings.find((l) => l.id === listingId && l.sellerId === me.id);
+    if (!listing) throw new Error('Attach the report to one of your own listings.');
+    // The abuse gate: the report's front capture must look like the
+    // listing's cover image.
+    const front = r.captures.front;
+    const cover = listing.images[0] ? this.resolveImageUrl(listing.images[0].storagePath) : null;
+    if (front && cover) {
+      const [a, b] = await Promise.all([urlToRaster(front), urlToRaster(cover)]);
+      if (hammingDistance(aHash(a), aHash(b)) > PHASH_MATCH_THRESHOLD) {
+        throw new Error(PHASH_MISMATCH_COPY);
+      }
+    }
+    r.listingId = listingId;
+    r.published = true;
+    return structuredClone(r);
+  }
+
+  async unpublishPregradeReport(reportId: string): Promise<PregradeReport> {
+    const me = this.me();
+    await sleep(netDelay());
+    const r = this.pregradeReports.find((x) => x.id === reportId && x.userId === me.id);
+    if (!r) throw new Error('Report not found.');
+    r.published = false;
+    return structuredClone(r);
+  }
+
+  async recordPregradeOutcome(
+    reportId: string,
+    actualGrade: number,
+    certNumber?: string,
+  ): Promise<void> {
+    const me = this.me();
+    await sleep(netDelay());
+    const r = this.pregradeReports.find((x) => x.id === reportId && x.userId === me.id);
+    if (!r) throw new Error('Report not found.');
+    r.outcome = {
+      actualGrade,
+      certNumber: certNumber ?? null,
+      reportedAt: new Date().toISOString(),
+    };
   }
 
   // ---- Storage ------------------------------------------------------------

@@ -19,7 +19,18 @@ import type {
   Review,
   SellerStats,
 } from '../types';
-import type { DefectAssessment } from '../pregrade/types';
+import type {
+  AxisRatio,
+  CaptureSlot,
+  DefectAssessment,
+  PregradeReport,
+  PregradeReportInput,
+} from '../pregrade/types';
+import { pregradePillLabel } from '../pregrade/copy';
+import { CURRENT_STANDARD } from '../pregrade/standards';
+import { aHash, hammingDistance, PHASH_MATCH_THRESHOLD, PHASH_MISMATCH_COPY } from '../pregrade/phash';
+import { urlToRaster } from '../pregrade/decode';
+import { toStorageImage } from '../pregrade/decode';
 import type {
   AuthState,
   ConversationEvent,
@@ -104,6 +115,51 @@ interface ReviewRow {
   body: string;
   created_at: string;
   reviewer?: ProfileRow;
+}
+
+interface PregradeCaptureRow {
+  id: string;
+  report_id: string;
+  slot: CaptureSlot;
+  path: string;
+}
+
+interface PregradeOutcomeRow {
+  actual_grade: number;
+  cert_number: string | null;
+  reported_at: string;
+}
+
+interface PregradeRow {
+  id: string;
+  user_id: string;
+  listing_id: string | null;
+  published: boolean;
+  standards_version: string;
+  era: PregradeReport['era'];
+  centering_method: PregradeReport['centeringMethod'];
+  front_lr: number | string;
+  front_tb: number | string;
+  back_lr: number | string | null;
+  back_tb: number | string | null;
+  score_centering: number | null;
+  score_corners: number | null;
+  score_edges: number | null;
+  score_surface: number | null;
+  base_grade: number;
+  is_ceiling: boolean;
+  p10: number | string;
+  p9: number | string;
+  p8: number | string;
+  p_low: number | string;
+  confidence: PregradeReport['confidence'];
+  recommendation: PregradeReport['recommendation'];
+  findings: unknown;
+  notes: unknown;
+  model_id: string | null;
+  created_at: string;
+  pregrade_captures?: PregradeCaptureRow[];
+  pregrade_outcomes?: PregradeOutcomeRow[];
 }
 
 const LISTING_SELECT = '*, listing_images(*)';
@@ -487,6 +543,11 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     if (filter.priceMin !== null) q = q.gte('price', filter.priceMin);
     if (filter.priceMax !== null) q = q.lte('price', filter.priceMax);
     if (filter.gradedOnly) q = q.not('grade_value', 'is', null);
+    if (filter.hasPregrade) {
+      const ids = await this.pregradeListingIds();
+      if (ids.length === 0) return { items: [], total: 0, hasMore: false };
+      q = q.in('id', ids);
+    }
     if (filter.language) q = q.ilike('language', filter.language);
     for (const term of filter.q.toLowerCase().split(/\s+/).filter(Boolean)) {
       const like = `%${term.replaceAll('%', '\\%')}%`;
@@ -507,15 +568,63 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     const { data, count, error } = await q;
     if (error) throw new Error(error.message);
     const rows = data as (ListingRow & { seller: ProfileRow })[];
-    const likes = await this.likesFor(rows.map((r) => r.id));
+    const [likes, pills] = await Promise.all([
+      this.likesFor(rows.map((r) => r.id)),
+      this.pregradePillsFor(rows.map((r) => r.id)),
+    ]);
     const items = rows.map((row) => ({
       ...this.mapListing(row),
       seller: this.mapProfile(row.seller),
       sellerActiveListingCount: 0, // filled on the detail page only
       likes: likes.get(row.id) ?? 0,
+      pregradePill: pills.get(row.id) ?? null,
     }));
     const total = count ?? items.length;
     return { items, total, hasMore: offset + items.length < total };
+  }
+
+  /** Listing ids carrying a published pre-grade report. */
+  private async pregradeListingIds(): Promise<string[]> {
+    const { data, error } = await this.sb
+      .from('pregrade_reports')
+      .select('listing_id')
+      .eq('published', true)
+      .not('listing_id', 'is', null);
+    if (error) return [];
+    return ((data ?? []) as { listing_id: string }[]).map((r) => r.listing_id);
+  }
+
+  /** Small "EST. 9–10" pills for a page of listings, one query. */
+  private async pregradePillsFor(ids: string[]): Promise<Map<string, string | null>> {
+    const map = new Map<string, string | null>();
+    if (ids.length === 0) return map;
+    const { data, error } = await this.sb
+      .from('pregrade_reports')
+      .select('listing_id, base_grade, is_ceiling, recommendation, p10, p9, p8, p_low')
+      .eq('published', true)
+      .in('listing_id', ids);
+    if (error) return map;
+    for (const r of (data ?? []) as Array<{
+      listing_id: string;
+      base_grade: number;
+      is_ceiling: boolean;
+      recommendation: PregradeReport['recommendation'];
+      p10: number | string;
+      p9: number | string;
+      p8: number | string;
+      p_low: number | string;
+    }>) {
+      map.set(
+        r.listing_id,
+        pregradePillLabel({
+          base: r.base_grade,
+          isCeiling: r.is_ceiling,
+          recommendation: r.recommendation,
+          band: { p10: Number(r.p10), p9: Number(r.p9), p8: Number(r.p8), pLow: Number(r.p_low) },
+        }),
+      );
+    }
+    return map;
   }
 
   /** most_watched sort: page through the likes view, then backfill with
@@ -571,12 +680,16 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .select('id', { count: 'exact', head: true })
       .eq('seller_id', row.seller_id)
       .eq('status', 'active');
-    const likes = await this.likesFor([row.id]);
+    const [likes, pills] = await Promise.all([
+      this.likesFor([row.id]),
+      this.pregradePillsFor([row.id]),
+    ]);
     return {
       ...this.mapListing(row),
       seller: this.mapProfile(row.seller),
       sellerActiveListingCount: count ?? 0,
       likes: likes.get(row.id) ?? 0,
+      pregradePill: pills.get(row.id) ?? null,
     };
   }
 
@@ -1166,6 +1279,216 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       throw new Error(body?.error ?? `Assessment failed (${r.status}).`);
     }
     return body.assessment;
+  }
+
+  private mapPregrade(row: PregradeRow): PregradeReport {
+    const captures: PregradeReport['captures'] = {};
+    for (const c of row.pregrade_captures ?? []) {
+      captures[c.slot] = c.path;
+    }
+    const findings = row.findings as unknown as DefectAssessment;
+    return {
+      id: row.id,
+      userId: row.user_id,
+      listingId: row.listing_id,
+      published: row.published,
+      standardsVersion: row.standards_version,
+      era: row.era,
+      centeringMethod: row.centering_method,
+      front: {
+        leftRight: [Number(row.front_lr), Math.round((100 - Number(row.front_lr)) * 10) / 10] as AxisRatio,
+        topBottom: [Number(row.front_tb), Math.round((100 - Number(row.front_tb)) * 10) / 10] as AxisRatio,
+      },
+      back:
+        row.back_lr !== null && row.back_tb !== null
+          ? {
+              leftRight: [Number(row.back_lr), Math.round((100 - Number(row.back_lr)) * 10) / 10] as AxisRatio,
+              topBottom: [Number(row.back_tb), Math.round((100 - Number(row.back_tb)) * 10) / 10] as AxisRatio,
+            }
+          : null,
+      scoreCentering: row.score_centering,
+      scoreCorners: row.score_corners,
+      scoreEdges: row.score_edges,
+      scoreSurface: row.score_surface,
+      base: row.base_grade,
+      isCeiling: row.is_ceiling,
+      band: {
+        p10: Number(row.p10),
+        p9: Number(row.p9),
+        p8: Number(row.p8),
+        pLow: Number(row.p_low),
+      },
+      confidence: row.confidence,
+      recommendation: row.recommendation,
+      assessment: findings,
+      notes: (row.notes as unknown as string[]) ?? [],
+      modelId: row.model_id,
+      createdAt: row.created_at,
+      outcome: row.pregrade_outcomes?.[0]
+        ? {
+            actualGrade: row.pregrade_outcomes[0].actual_grade,
+            certNumber: row.pregrade_outcomes[0].cert_number,
+            reportedAt: row.pregrade_outcomes[0].reported_at,
+          }
+        : null,
+      captures,
+    };
+  }
+
+  /** Turn stored capture paths into time-limited viewable URLs. */
+  private async signCaptures(report: PregradeReport): Promise<PregradeReport> {
+    const entries = Object.entries(report.captures) as [CaptureSlot, string][];
+    const signed = await Promise.all(
+      entries.map(async ([slot, path]) => {
+        const { data } = await this.sb.storage
+          .from('pregrade-captures')
+          .createSignedUrl(path, 3600);
+        return [slot, data?.signedUrl ?? ''] as const;
+      }),
+    );
+    const captures: PregradeReport['captures'] = {};
+    for (const [slot, url] of signed) if (url) captures[slot] = url;
+    return { ...report, captures };
+  }
+
+  private static readonly PREGRADE_SELECT =
+    '*, pregrade_captures(*), pregrade_outcomes(*)';
+
+  async savePregradeReport(input: PregradeReportInput): Promise<PregradeReport> {
+    const me = this.uid();
+    const { data, error } = await this.sb
+      .from('pregrade_reports')
+      .insert({
+        user_id: me,
+        standards_version: CURRENT_STANDARD.version,
+        era: input.era,
+        centering_method: input.centeringMethod,
+        front_lr: input.front.leftRight[0],
+        front_tb: input.front.topBottom[0],
+        back_lr: input.back?.leftRight[0] ?? null,
+        back_tb: input.back?.topBottom[0] ?? null,
+        score_centering: input.scores.centering,
+        score_corners: input.scores.corners,
+        score_edges: input.scores.edges,
+        score_surface: input.scores.surface,
+        base_grade: input.estimate.base,
+        is_ceiling: input.estimate.isCeiling,
+        p10: input.estimate.band.p10,
+        p9: input.estimate.band.p9,
+        p8: input.estimate.band.p8,
+        p_low: input.estimate.band.pLow,
+        confidence: input.estimate.confidence,
+        recommendation: input.estimate.recommendation,
+        findings: input.assessment,
+        notes: input.estimate.notes,
+        model_id: 'api',
+      })
+      .select(SupabaseMarketplaceClient.PREGRADE_SELECT)
+      .single();
+    if (error) throw new Error(error.message);
+    const report = data as unknown as PregradeRow;
+    // Captures: 2400px WebP into the private bucket at {uid}/{report}/{slot}.
+    for (const c of input.captures) {
+      const stored = await toStorageImage(c.blob);
+      const ext = stored.type === 'image/webp' ? 'webp' : 'jpg';
+      const path = `${me}/${report.id}/${c.slot}.${ext}`;
+      const { error: upErr } = await this.sb.storage
+        .from('pregrade-captures')
+        .upload(path, stored, { contentType: stored.type, upsert: true });
+      if (upErr) throw new Error(upErr.message);
+      const { error: rowErr } = await this.sb.from('pregrade_captures').insert({
+        report_id: report.id,
+        slot: c.slot,
+        path,
+      });
+      if (rowErr) throw new Error(rowErr.message);
+    }
+    const full = await this.getPregradeReport(report.id);
+    if (!full) throw new Error('Report vanished after save.');
+    return full;
+  }
+
+  async listMyPregradeReports(): Promise<PregradeReport[]> {
+    const me = this.uid();
+    const { data, error } = await this.sb
+      .from('pregrade_reports')
+      .select(SupabaseMarketplaceClient.PREGRADE_SELECT)
+      .eq('user_id', me)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return Promise.all(
+      ((data ?? []) as unknown as PregradeRow[]).map((r) => this.signCaptures(this.mapPregrade(r))),
+    );
+  }
+
+  async getPregradeReport(id: string): Promise<PregradeReport | null> {
+    const { data, error } = await this.sb
+      .from('pregrade_reports')
+      .select(SupabaseMarketplaceClient.PREGRADE_SELECT)
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data ? this.signCaptures(this.mapPregrade(data as unknown as PregradeRow)) : null;
+  }
+
+  async getPublishedPregradeReport(listingId: string): Promise<PregradeReport | null> {
+    const { data, error } = await this.sb
+      .from('pregrade_reports')
+      .select(SupabaseMarketplaceClient.PREGRADE_SELECT)
+      .eq('listing_id', listingId)
+      .eq('published', true)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data ? this.signCaptures(this.mapPregrade(data as unknown as PregradeRow)) : null;
+  }
+
+  async publishPregradeReport(reportId: string, listingId: string): Promise<PregradeReport> {
+    const report = await this.getPregradeReport(reportId);
+    if (!report) throw new Error('Report not found.');
+    const listing = await this.getListing(listingId);
+    if (!listing) throw new Error('Listing not found.');
+    // The abuse gate: the report's front capture must look like the
+    // listing's cover image.
+    const front = report.captures.front;
+    const cover = listing.images[0]?.url ?? null;
+    if (front && cover) {
+      const [a, b] = await Promise.all([urlToRaster(front), urlToRaster(cover)]);
+      if (hammingDistance(aHash(a), aHash(b)) > PHASH_MATCH_THRESHOLD) {
+        throw new Error(PHASH_MISMATCH_COPY);
+      }
+    }
+    const { data, error } = await this.sb
+      .from('pregrade_reports')
+      .update({ listing_id: listingId, published: true })
+      .eq('id', reportId)
+      .select(SupabaseMarketplaceClient.PREGRADE_SELECT)
+      .single();
+    if (error) throw new Error(error.message);
+    return this.signCaptures(this.mapPregrade(data as unknown as PregradeRow));
+  }
+
+  async unpublishPregradeReport(reportId: string): Promise<PregradeReport> {
+    const { data, error } = await this.sb
+      .from('pregrade_reports')
+      .update({ published: false })
+      .eq('id', reportId)
+      .select(SupabaseMarketplaceClient.PREGRADE_SELECT)
+      .single();
+    if (error) throw new Error(error.message);
+    return this.signCaptures(this.mapPregrade(data as unknown as PregradeRow));
+  }
+
+  async recordPregradeOutcome(
+    reportId: string,
+    actualGrade: number,
+    certNumber?: string,
+  ): Promise<void> {
+    const { error } = await this.sb.from('pregrade_outcomes').insert({
+      report_id: reportId,
+      actual_grade: actualGrade,
+      cert_number: certNumber ?? null,
+    });
+    if (error) throw new Error(error.message);
   }
 
   // ---- Storage ------------------------------------------------------------

@@ -15,7 +15,11 @@ import type {
   Review,
   SellerStats,
 } from '../types';
-import type { DefectAssessment } from '../pregrade/types';
+import type {
+  DefectAssessment,
+  PregradeReport,
+  PregradeReportInput,
+} from '../pregrade/types';
 
 export type Unsubscribe = () => void;
 
@@ -153,6 +157,21 @@ export interface MarketplaceClient {
     hasRake: boolean;
     caseHint?: string;
   }): Promise<DefectAssessment>;
+  /** Persist a finished report (captures go to the private store). */
+  savePregradeReport(input: PregradeReportInput): Promise<PregradeReport>;
+  listMyPregradeReports(): Promise<PregradeReport[]>;
+  /** Own report, or anyone's when published. */
+  getPregradeReport(id: string): Promise<PregradeReport | null>;
+  getPublishedPregradeReport(listingId: string): Promise<PregradeReport | null>;
+  /**
+   * Attach + publish to one of the OWNER'S listings. Runs the
+   * perceptual-hash gate: the report's front capture must look like the
+   * listing's cover, or this throws with the mismatch copy.
+   */
+  publishPregradeReport(reportId: string, listingId: string): Promise<PregradeReport>;
+  unpublishPregradeReport(reportId: string): Promise<PregradeReport>;
+  /** "It came back as a…" — the calibration loop's raw material. */
+  recordPregradeOutcome(reportId: string, actualGrade: number, certNumber?: string): Promise<void>;
 
   // ---- Storage -----------------------------------------------------------
   /** Resolve a storage path to a displayable URL. */

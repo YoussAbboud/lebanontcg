@@ -9,6 +9,7 @@ import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { Avatar } from '../components/Avatar';
 import { ReportDialog } from '../components/ReportDialog';
+import { PregradeListingPanel } from '../components/pregrade/PregradeListingPanel';
 import { ImageLightbox } from '../components/ImageLightbox';
 import './listing.css';
 
@@ -355,6 +356,7 @@ export function ListingPage() {
               with the seller in chat. <Link to="/safety">How to trade safely</Link>
             </div>
           </div>
+          <PregradeListingPanel listingId={listing.id} sellerId={listing.sellerId} />
         </div>
       </div>
 

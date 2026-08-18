@@ -283,13 +283,18 @@
   grid-template-columns: 52px 1fr;
   align-items: center;
   gap: 4px 10px;
+  /* Wide enough to read, narrow enough that the strips' true aspect
+     (500×56 crops) doesn't make each bar huge. */
+  max-width: 620px;
 }
 .pgassess-strips-label { grid-row: span 4; color: var(--muted); }
 .pgassess-strip { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .pgassess-strip canvas {
   flex: 1;
   min-width: 0;
-  height: 16px;
+  /* height follows the canvas buffer's aspect — the crop is shown at
+     its real proportions, never stretched to fill the row. */
+  height: auto;
   border: 1px solid var(--border);
   border-radius: 3px;
   background: var(--input-bg);

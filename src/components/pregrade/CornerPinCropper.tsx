@@ -4,28 +4,40 @@ import { blobToRaster, drawRasterTo } from '../../lib/pregrade/decode';
 import { detectCardQuad } from '../../lib/pregrade/centering';
 import { warpQuad, type Point, type Raster } from '../../lib/pregrade/raster';
 
-/** Flattened output: the card's true 2.5:3.5 aspect at analysis size. */
-const OUT_W = 1000;
-const OUT_H = 1400;
-
 const HANDLE_LABELS = ['Top-left corner', 'Top-right corner', 'Bottom-right corner', 'Bottom-left corner'];
 
+const DEFAULT_HINT =
+  "Drag each pin onto the card's corner — the shot gets flattened to a perfect card";
+
 /**
- * Corner pinning for the flat-on card shots: drag the four pins onto
- * the card's actual corners — each corner is free, nothing has to be
- * 90° — and the selection is flattened (perspective-warped) into a
- * perfect card rectangle. The background never reaches the analysis,
- * and camera angle is corrected by the user's own corner placement.
+ * Corner pinning: drag the four pins onto the area's actual corners —
+ * each corner is free, nothing has to be 90° — and the selection is
+ * flattened (perspective-warped) into a clean rectangle. The background
+ * never reaches the analysis, and camera angle is corrected by the
+ * user's own pin placement. Defaults to the card's true 2.5:3.5 aspect
+ * at analysis size; corner macros use a square output instead.
  */
 export function CornerPinCropper({
   file,
   title,
+  hint = DEFAULT_HINT,
+  outW = 1000,
+  outH = 1400,
+  detect = true,
   onCancel,
   onDone,
   onUseRectCrop,
 }: {
   file: Blob;
   title: string;
+  /** The one-line instruction under the title. */
+  hint?: string;
+  /** Flattened output size (defaults to the card aspect). */
+  outW?: number;
+  outH?: number;
+  /** Pre-place pins on the detected card outline (off for macro shots,
+      where whole-card detection has nothing to find). */
+  detect?: boolean;
   onCancel(): void;
   onDone(out: { blob: Blob; url: string; srcLongEdge: number }): void;
   /** Offered when pinning isn't the right tool for this photo. */
@@ -56,7 +68,7 @@ export function CornerPinCropper({
       if (canvasRef.current) drawRasterTo(canvasRef.current, raster);
       // Pre-place the pins on the detected outline when there is one —
       // otherwise a comfortable inset the user drags out to the corners.
-      const found = detectCardQuad(raster);
+      const found = detect ? detectCardQuad(raster) : null;
       const inset = 0.12;
       setCorners(
         found
@@ -172,13 +184,13 @@ export function CornerPinCropper({
     if (!raster || !corners || busy) return;
     setBusy(true);
     try {
-      const card = warpQuad(raster, corners, OUT_W, OUT_H);
+      const card = warpQuad(raster, corners, outW, outH);
       const canvas = document.createElement('canvas');
       drawRasterTo(canvas, card);
       const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.9));
       if (!blob) throw new Error('encode failed');
-      // How many SOURCE pixels the pinned card actually spans — the
-      // honest resolution (the flattened output is always 1000×1400,
+      // How many SOURCE pixels the pinned area actually spans — the
+      // honest resolution (the flattened output is always outW×outH,
       // even from a tiny photo).
       const side = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
       const maxSide = Math.max(
@@ -200,9 +212,7 @@ export function CornerPinCropper({
       <div className="crop-panel">
         <div className="crop-head">
           <h2 className="crop-title">{title}</h2>
-          <div className="mono-label crop-hint">
-            Drag each pin onto the card&apos;s corner — the shot gets flattened to a perfect card
-          </div>
+          <div className="mono-label crop-hint">{hint}</div>
         </div>
 
         <div

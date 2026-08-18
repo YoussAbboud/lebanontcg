@@ -1151,6 +1151,7 @@ export class MockClient implements MarketplaceClient {
       createdAt: new Date().toISOString(),
       outcome: null,
       captures,
+      diagram: input.diagram ? structuredClone(input.diagram) : null,
     };
     this.pregradeReports.push(report);
     return structuredClone(report);

@@ -223,6 +223,32 @@
 .cdiag-card { fill: var(--input-bg); stroke: var(--border); }
 .cdiag-art { fill: var(--raised-2); stroke: var(--acid); stroke-width: 1.5; }
 
+/* Photo-backed diagram: the flattened capture with the measured guide
+   lines — the same visual language as the centering editor (outer
+   white, inner acid). */
+.cphoto {
+  position: relative;
+  width: 150px;
+  aspect-ratio: 2.5 / 3.5;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--input-bg);
+}
+.cphoto-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+.cphoto-line { position: absolute; pointer-events: none; }
+.cphoto-line.is-v { top: 0; bottom: 0; width: 1.5px; margin-left: -0.75px; }
+.cphoto-line.is-h { left: 0; right: 0; height: 1.5px; margin-top: -0.75px; }
+.cphoto-line.is-outer { background: #fff; opacity: 0.75; }
+.cphoto-line.is-inner { background: var(--acid); }
+
 .pgreport-notchecked {
   color: var(--muted);
   border-left: 2px solid var(--border);

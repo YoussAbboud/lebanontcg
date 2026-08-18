@@ -20,9 +20,19 @@ export function reportToViewData(r: PregradeReport): ReportViewData {
       ratios: r.front,
       score: r.scoreCentering ?? 0,
       borders: bordersFrom(r.front),
+      imageUrl: r.captures.front ?? null,
+      guides: r.diagram?.front ?? null,
+      flattened: r.diagram?.frontFlattened ?? false,
     },
     back: r.back
-      ? { ratios: r.back, score: 0, borders: bordersFrom(r.back) }
+      ? {
+          ratios: r.back,
+          score: 0,
+          borders: bordersFrom(r.back),
+          imageUrl: r.captures.back ?? null,
+          guides: r.diagram?.back ?? null,
+          flattened: r.diagram?.backFlattened ?? false,
+        }
       : null,
     assessment: r.assessment,
     estimate: {

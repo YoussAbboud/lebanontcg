@@ -14,19 +14,23 @@ import { CALIBRATION, calibrationKey } from '../../lib/pregrade/estimate';
 import type { Era } from '../../lib/pregrade/types';
 import { PREGRADE_DISCLAIMER, type DefectAssessment, type Estimate } from '../../lib/pregrade/types';
 import { CenteringDiagram, type DiagramBorders } from './CenteringDiagram';
-import type { AxisRatio } from '../../lib/pregrade/types';
+import { CenteringPhoto } from './CenteringPhoto';
+import type { AxisRatio, DiagramGuides } from '../../lib/pregrade/types';
+
+interface FaceViewData {
+  ratios: { leftRight: AxisRatio; topBottom: AxisRatio };
+  score: number;
+  borders: DiagramBorders;
+  /** When all three are present the diagram is the actual photo with
+      the measured lines; otherwise the abstract fallback draws. */
+  imageUrl?: string | null;
+  guides?: DiagramGuides | null;
+  flattened?: boolean;
+}
 
 export interface ReportViewData {
-  front: {
-    ratios: { leftRight: AxisRatio; topBottom: AxisRatio };
-    score: number;
-    borders: DiagramBorders;
-  };
-  back: {
-    ratios: { leftRight: AxisRatio; topBottom: AxisRatio };
-    score: number;
-    borders: DiagramBorders;
-  } | null;
+  front: FaceViewData;
+  back: FaceViewData | null;
   assessment: DefectAssessment;
   estimate: Estimate;
   era?: Era;
@@ -44,6 +48,34 @@ function calibrationLine(e: Estimate, era: Era): string {
     return trackRecordSentence(count, e.band.p10);
   }
   return PRIOR_NOTE;
+}
+
+/** One face's centering diagram: the real photo with the measured
+    lines when the capture was flattened, the abstract SVG otherwise. */
+function FaceDiagram({ face, data }: { face: 'front' | 'back'; data: FaceViewData }) {
+  return (
+    <div className="pgreport-diagram">
+      {data.imageUrl && data.guides && data.flattened ? (
+        <CenteringPhoto
+          src={data.imageUrl}
+          face={face}
+          guides={data.guides}
+          leftRight={data.ratios.leftRight}
+          topBottom={data.ratios.topBottom}
+        />
+      ) : (
+        <CenteringDiagram
+          borders={data.borders}
+          leftRight={data.ratios.leftRight}
+          topBottom={data.ratios.topBottom}
+        />
+      )}
+      <span className="mono-label">
+        {face === 'front' ? 'Front' : 'Back'} {data.ratios.leftRight[0]}/{data.ratios.leftRight[1]}{' '}
+        · {data.ratios.topBottom[0]}/{data.ratios.topBottom[1]}
+      </span>
+    </div>
+  );
 }
 
 /** The full pre-grade report: band, sub-scores, findings, honesty. */
@@ -109,30 +141,8 @@ export function PregradeReportView({ data }: { data: ReportViewData }) {
           </div>
 
           <div className="pgreport-centering">
-            <div className="pgreport-diagram">
-              <CenteringDiagram
-                borders={front.borders}
-                leftRight={front.ratios.leftRight}
-                topBottom={front.ratios.topBottom}
-              />
-              <span className="mono-label">
-                Front {front.ratios.leftRight[0]}/{front.ratios.leftRight[1]} ·{' '}
-                {front.ratios.topBottom[0]}/{front.ratios.topBottom[1]}
-              </span>
-            </div>
-            {back && (
-              <div className="pgreport-diagram">
-                <CenteringDiagram
-                  borders={back.borders}
-                  leftRight={back.ratios.leftRight}
-                  topBottom={back.ratios.topBottom}
-                />
-                <span className="mono-label">
-                  Back {back.ratios.leftRight[0]}/{back.ratios.leftRight[1]} ·{' '}
-                  {back.ratios.topBottom[0]}/{back.ratios.topBottom[1]}
-                </span>
-              </div>
-            )}
+            <FaceDiagram face="front" data={front} />
+            {back && <FaceDiagram face="back" data={back} />}
           </div>
 
           {!surfaceAssessed && <p className="pgreport-notchecked">{SURFACE_NOT_CHECKED}</p>}

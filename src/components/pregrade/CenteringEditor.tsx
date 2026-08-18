@@ -12,7 +12,7 @@ import {
 } from '../../lib/pregrade/centering';
 import { makeRaster, warpQuad, type Point, type Raster } from '../../lib/pregrade/raster';
 import { axisRatio } from '../../lib/pregrade/centering';
-import type { AxisRatio, CenteringMethod } from '../../lib/pregrade/types';
+import type { AxisRatio, CenteringMethod, DiagramGuides } from '../../lib/pregrade/types';
 
 /** Warped working buffer: card + margin so outer guides can be nudged. */
 const CARD_W = 400;
@@ -31,6 +31,9 @@ export interface CenteringOutcome {
   score: number;
   /** Measured border thicknesses (editor px) — drives the diagram. */
   borders: { left: number; right: number; top: number; bottom: number };
+  /** All eight guide positions, normalised to the card box (0–1) — lets
+      the report draw the real lines over the real photo. */
+  guides: DiagramGuides;
 }
 
 interface Guides {
@@ -383,7 +386,24 @@ export function CenteringEditor({
           type="button"
           className="btn-acid"
           disabled={state !== 'ready'}
-          onClick={() => onDone({ ratios, method, score, borders })}
+          onClick={() =>
+            onDone({
+              ratios,
+              method,
+              score,
+              borders,
+              guides: {
+                outL: (guides.outL - MARGIN) / CARD_W,
+                outR: (guides.outR - MARGIN) / CARD_W,
+                outT: (guides.outT - MARGIN) / CARD_H,
+                outB: (guides.outB - MARGIN) / CARD_H,
+                inL: (guides.inL - MARGIN) / CARD_W,
+                inR: (guides.inR - MARGIN) / CARD_W,
+                inT: (guides.inT - MARGIN) / CARD_H,
+                inB: (guides.inB - MARGIN) / CARD_H,
+              },
+            })
+          }
         >
           {face === 'front' ? 'Use these numbers → back of card' : 'Use these numbers →'}
         </button>

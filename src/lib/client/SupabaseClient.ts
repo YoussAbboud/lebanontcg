@@ -156,6 +156,7 @@ interface PregradeRow {
   recommendation: PregradeReport['recommendation'];
   findings: unknown;
   notes: unknown;
+  diagram: unknown;
   model_id: string | null;
   created_at: string;
   pregrade_captures?: PregradeCaptureRow[];
@@ -1324,6 +1325,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       notes: (row.notes as unknown as string[]) ?? [],
       modelId: row.model_id,
       createdAt: row.created_at,
+      diagram: (row.diagram as PregradeReport['diagram']) ?? null,
       outcome: row.pregrade_outcomes?.[0]
         ? {
             actualGrade: row.pregrade_outcomes[0].actual_grade,
@@ -1381,6 +1383,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
         recommendation: input.estimate.recommendation,
         findings: input.assessment,
         notes: input.estimate.notes,
+        diagram: input.diagram,
         model_id: 'api',
       })
       .select(SupabaseMarketplaceClient.PREGRADE_SELECT)

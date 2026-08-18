@@ -88,6 +88,28 @@ export interface DefectAssessment {
 /** One axis measured as [larger, smaller] percentages, e.g. [54.5, 45.5]. */
 export type AxisRatio = [number, number];
 
+/** The eight centering guide positions, normalised to the card box
+    (0–1) — lets the report draw the measured lines over the photo. */
+export interface DiagramGuides {
+  outL: number;
+  outR: number;
+  outT: number;
+  outB: number;
+  inL: number;
+  inR: number;
+  inT: number;
+  inB: number;
+}
+
+export interface ReportDiagram {
+  front: DiagramGuides | null;
+  back: DiagramGuides | null;
+  /** Whether the front/back captures are corner-pinned flat cards —
+      only then do guide lines land truthfully on the stored photo. */
+  frontFlattened: boolean;
+  backFlattened: boolean;
+}
+
 export interface CenteringResult {
   method: CenteringMethod;
   front: { leftRight: AxisRatio; topBottom: AxisRatio };
@@ -156,6 +178,8 @@ export interface PregradeReport {
   /** Reported real-world outcome, when the seller came back with one. */
   outcome: { actualGrade: number; certNumber: string | null; reportedAt: string } | null;
   captures: Partial<Record<CaptureSlot, string>>;
+  /** Guide positions for photo-backed centering diagrams (null on old rows). */
+  diagram: ReportDiagram | null;
 }
 
 export interface PregradeReportInput {
@@ -172,6 +196,7 @@ export interface PregradeReportInput {
   estimate: Estimate;
   assessment: DefectAssessment;
   captures: { slot: CaptureSlot; blob: Blob }[];
+  diagram: ReportDiagram | null;
 }
 
 export interface TrackRecord {

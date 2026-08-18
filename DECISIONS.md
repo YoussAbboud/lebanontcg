@@ -639,3 +639,22 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   "Rectangle crop instead" for photos where pinning isn't the right
   tool — that path is un-flattened, so the normal gates plus the
   Use-anyway escape apply.
+
+## G10 — Photo-backed diagrams + corner-pin macros
+
+- The report's centering diagrams are now the actual flattened captures
+  with the eight measured guide lines drawn over them (outer white,
+  inner acid — the editor's visual language), not abstract boxes. The
+  editor emits its guide positions normalised to the card box, and the
+  report stores them (`diagram` jsonb, migration 0012) so published
+  listings render the same photo-backed diagram. Old rows and
+  un-flattened captures fall back to the abstract SVG — guide lines
+  only land truthfully on a corner-pinned photo, so drawing them on
+  anything else would be a lie.
+- Corner macros now open the corner-pin tool too (square 800×800
+  output, no outline detection — there's no whole card to find in a
+  macro), superseding G8's rectangle crop there: pinning strips the
+  background from the corner shot the same way it does for the faces.
+  Only front/back count as "flattened" downstream — a pinned corner
+  macro doesn't claim frame-is-card semantics. Raking shots keep the
+  rectangle crop: glare and texture are the point there, not geometry.

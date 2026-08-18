@@ -140,8 +140,16 @@ export function PregradeWizard({
     <main className="pregrade pregrade-wizard">
       <PregradeReportView
         data={{
-          front: result.front,
-          back: result.back,
+          front: {
+            ...result.front,
+            imageUrl: shots.front!.url,
+            flattened: shots.front!.flattened,
+          },
+          back: {
+            ...result.back,
+            imageUrl: shots.back!.url,
+            flattened: shots.back!.flattened,
+          },
           assessment: result.assessment,
           estimate: result.estimate,
         }}
@@ -199,6 +207,12 @@ function PublishPanel({ result, shots }: { result: WizardResult; shots: Shots })
         estimate: result.estimate,
         assessment: result.assessment,
         captures,
+        diagram: {
+          front: result.front.guides,
+          back: result.back.guides,
+          frontFlattened: shots.front?.flattened ?? false,
+          backFlattened: shots.back?.flattened ?? false,
+        },
       })
       .then((r) => {
         if (!cancelled) setReport(r);

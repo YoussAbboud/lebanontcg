@@ -110,10 +110,12 @@ export function PregradePage() {
   const pick = (slot: CaptureSlot, file: File | undefined) => {
     if (!file || !file.type.startsWith('image/')) return;
     setFailures((f) => ({ ...f, [slot]: undefined }));
+    // Rake shots keep the plain rectangle crop (glare and texture are
+    // the point there, not geometry); everything else pins corners.
     setCropTarget({
       slot,
       file,
-      mode: slot === 'front' || slot === 'back' ? 'pin' : 'rect',
+      mode: slot === 'rake_front' || slot === 'rake_back' ? 'rect' : 'pin',
     });
   };
 
@@ -310,15 +312,36 @@ export function PregradePage() {
 
       {cropTarget &&
         (cropTarget.mode === 'pin' ? (
-          <CornerPinCropper
-            file={cropTarget.file}
-            title={`Pin the card's corners — ${SLOT_META[cropTarget.slot].label}`}
-            onCancel={() => setCropTarget(null)}
-            onUseRectCrop={() => setCropTarget({ ...cropTarget, mode: 'rect' })}
-            onDone={(out) => {
-              void cropped(cropTarget.slot, out.blob, out.url, out.srcLongEdge, true);
-            }}
-          />
+          (() => {
+            const isWhole = cropTarget.slot === 'front' || cropTarget.slot === 'back';
+            return (
+              <CornerPinCropper
+                file={cropTarget.file}
+                title={
+                  isWhole
+                    ? `Pin the card's corners — ${SLOT_META[cropTarget.slot].label}`
+                    : `Pin the corner area — ${SLOT_META[cropTarget.slot].label}`
+                }
+                hint={
+                  isWhole
+                    ? undefined
+                    : 'Drag the pins around the corner you shot — the area gets flattened square'
+                }
+                outW={isWhole ? undefined : 800}
+                outH={isWhole ? undefined : 800}
+                detect={isWhole}
+                onCancel={() => setCropTarget(null)}
+                onUseRectCrop={() => setCropTarget({ ...cropTarget, mode: 'rect' })}
+                onDone={(out) => {
+                  // Only the whole-card faces count as "flattened" for the
+                  // downstream pipeline (guides landing on the photo, the
+                  // frame-is-card quality branch). Corner macros just get
+                  // the background stripped.
+                  void cropped(cropTarget.slot, out.blob, out.url, out.srcLongEdge, isWhole);
+                }}
+              />
+            );
+          })()
         ) : (
           <ImageCropper
             file={cropTarget.file}

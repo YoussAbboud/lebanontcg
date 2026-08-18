@@ -1,6 +1,6 @@
 -- ==========================================================================
 -- LebanonTCG — one-paste setup
--- Generated from supabase/migrations/0001–0011 (do not edit; edit the
+-- Generated from supabase/migrations/0001–0012 (do not edit; edit the
 -- individual migration files and regenerate instead).
 --
 -- HOW TO USE: Supabase dashboard → SQL Editor → New query → paste this
@@ -1067,3 +1067,22 @@ create policy "pregrade captures delete own"
 -- ──────────────────────────────────────────────────────────────────────────
 -- END supabase/migrations/0011_pregrade.sql
 -- ──────────────────────────────────────────────────────────────────────────
+
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- BEGIN supabase/migrations/0012_pregrade_diagram.sql
+-- ──────────────────────────────────────────────────────────────────────────
+-- 0012: photo-backed centering diagrams.
+-- Stores the eight measured guide positions (normalised 0-1 to the card
+-- box) per face, plus whether each face's capture was corner-pinned and
+-- flattened — only then do the lines land truthfully on the photo.
+-- Null on rows saved before this migration; the UI falls back to the
+-- abstract diagram.
+
+alter table public.pregrade_reports
+  add column if not exists diagram jsonb;
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- END supabase/migrations/0012_pregrade_diagram.sql
+-- ──────────────────────────────────────────────────────────────────────────
+

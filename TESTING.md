@@ -470,3 +470,11 @@ g1-smoke: the pin dialog offers the rectangle-crop escape; the loupe
 appears while a pin is held and hides on release. The endpoint fix is
 structural (no imports left to break) — verified by grep and by
 Vercel's runtime logs after deploy.
+
+## G10 — Photo-backed diagrams + corner-pin macros
+
+g4-smoke: the report renders two `.cphoto` diagrams (blob-backed
+images) with 16 guide lines and no abstract fallback. g1-smoke: a
+corner macro upload opens the pin dialog titled "Pin the corner area"
+with 4 free pins. Migrations 0001–0012 apply on local Postgres 16;
+the RLS suite still returns 22 true / 0 false.

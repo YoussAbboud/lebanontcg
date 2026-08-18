@@ -1,0 +1,84 @@
+/* Pre-Grade estimator. Reuses the Sleeved tokens/primitives — nothing
+   restyled, just laid out. */
+
+.pregrade {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 0 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pregrade-head { display: flex; flex-direction: column; gap: 10px; }
+.pregrade-eyebrow { color: var(--acid); }
+.pregrade-sub { color: var(--muted); max-width: 640px; }
+.pregrade-disclaimer { color: var(--muted); opacity: 0.8; }
+
+.pregrade-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.pregrade-slot {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pregrade-slot.is-done { border-color: var(--acid); }
+.pregrade-slot.is-failed { border-color: var(--danger, #e5484d); }
+
+.pregrade-slot-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.pregrade-slot-label em { font-style: normal; opacity: 0.65; }
+.pregrade-slot-check { color: var(--acid); font-weight: 700; }
+
+.pregrade-drop {
+  border: 1px dashed var(--border);
+  border-radius: var(--r-panel);
+  background: var(--input-bg);
+  color: var(--muted);
+  min-height: 110px;
+  font: inherit;
+  font-size: var(--fs-13);
+  cursor: var(--cursor-default);
+  transition: border-color var(--t-fast), color var(--t-fast);
+}
+.pregrade-drop:hover:not(:disabled) { border-color: var(--acid); color: var(--acid); }
+
+.pregrade-thumb {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: var(--r-panel);
+  border: 1px solid var(--raised-2);
+}
+
+.pregrade-instruction { font-size: var(--fs-12); color: var(--muted); min-height: 2.4em; }
+
+.pregrade-fail { display: flex; flex-direction: column; gap: 8px; }
+.pregrade-retake { align-self: flex-start; padding: 6px 14px; min-height: 32px; }
+.pregrade-redo,
+.pregrade-skip { align-self: flex-start; font-size: var(--fs-12); }
+
+.pregrade-foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.pregrade-foot-note { color: var(--muted); font-size: var(--fs-13); flex: 1; min-width: 200px; }
+.pregrade-foot .btn-acid { margin-left: auto; }
+
+@media (max-width: 640px) {
+  .pregrade { padding-top: 12px; }
+  .pregrade-slots { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}

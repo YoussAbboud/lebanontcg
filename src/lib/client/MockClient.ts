@@ -35,6 +35,8 @@ import {
 } from '../../mock/seed';
 import { avatarDataUrl, cardImageUrl } from '../../mock/cardImage';
 import type { Condition, Finish, Game } from '../types';
+import type { DefectAssessment } from '../pregrade/types';
+import { MOCK_ASSESSMENTS, mockCaseFrom } from '../pregrade/mockAssessments';
 
 const AUTH_KEY = 'lebanontcg.mock.currentUser';
 
@@ -1072,6 +1074,29 @@ export class MockClient implements MarketplaceClient {
     if (blocked) this.blocks.get(me.id)!.add(userId);
     else this.blocks.get(me.id)!.delete(userId);
     this.broadcast({ type: 'block', blockerId: me.id, blockedId: userId, on: blocked });
+  }
+
+  // ---- Pre-grade ----------------------------------------------------------
+
+  async assessPregrade(input: {
+    images: { slot: string; blob: Blob }[];
+    hasRake: boolean;
+    caseHint?: string;
+  }): Promise<DefectAssessment> {
+    this.me();
+    await sleep(600 + netDelay());
+    const assessment = MOCK_ASSESSMENTS[mockCaseFrom(input.caseHint)]();
+    // Honesty guard, same as the live endpoint: no raking shots means
+    // the surface stays unassessed no matter what the canned case says.
+    if (!input.hasRake && !assessment.abstain) {
+      assessment.surface = {
+        score: null,
+        confidence: 'not_assessed',
+        borderline: false,
+        findings: [],
+      };
+    }
+    return assessment;
   }
 
   // ---- Storage ------------------------------------------------------------

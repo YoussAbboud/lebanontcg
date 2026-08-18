@@ -19,6 +19,7 @@ import type {
   Review,
   SellerStats,
 } from '../types';
+import type { DefectAssessment } from '../pregrade/types';
 import type {
   AuthState,
   ConversationEvent,
@@ -1140,6 +1141,33 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     }
   }
 
+  // ---- Pre-grade ----------------------------------------------------------
+
+  async assessPregrade(input: {
+    images: { slot: string; blob: Blob }[];
+    hasRake: boolean;
+    caseHint?: string;
+  }): Promise<DefectAssessment> {
+    const { data: sess } = await this.sb.auth.getSession();
+    const token = sess.session?.access_token;
+    if (!token) throw new Error('Sign in to run an assessment.');
+    const images = await Promise.all(
+      input.images.map(async (img) => ({ slot: img.slot, dataUrl: await blobToDataUrl(img.blob) })),
+    );
+    const r = await fetch('/api/pregrade/assess', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+      body: JSON.stringify({ images, hasRake: input.hasRake }),
+    });
+    const body = (await r.json().catch(() => null)) as
+      | { assessment?: DefectAssessment; error?: string }
+      | null;
+    if (!r.ok || !body?.assessment) {
+      throw new Error(body?.error ?? `Assessment failed (${r.status}).`);
+    }
+    return body.assessment;
+  }
+
   // ---- Storage ------------------------------------------------------------
 
   resolveImageUrl(storagePath: string): string {
@@ -1148,4 +1176,13 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     }
     return this.sb.storage.from('listing-images').getPublicUrl(storagePath).data.publicUrl;
   }
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Could not read image.'));
+    reader.readAsDataURL(blob);
+  });
 }

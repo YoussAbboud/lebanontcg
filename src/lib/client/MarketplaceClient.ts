@@ -15,6 +15,7 @@ import type {
   Review,
   SellerStats,
 } from '../types';
+import type { DefectAssessment } from '../pregrade/types';
 
 export type Unsubscribe = () => void;
 
@@ -139,6 +140,19 @@ export interface MarketplaceClient {
   submitReport(input: ReportInput): Promise<void>;
   getBlockedIds(): Promise<Set<string>>;
   setBlocked(userId: string, blocked: boolean): Promise<void>;
+
+  // ---- Pre-grade ----------------------------------------------------------
+  /**
+   * Run the defect assessment over prepared capture images. Mock mode
+   * returns canned cases (selected by caseHint); live posts to the
+   * serverless rubric endpoint, which validates, retries once, then
+   * abstains — never guesses.
+   */
+  assessPregrade(input: {
+    images: { slot: string; blob: Blob }[];
+    hasRake: boolean;
+    caseHint?: string;
+  }): Promise<DefectAssessment>;
 
   // ---- Storage -----------------------------------------------------------
   /** Resolve a storage path to a displayable URL. */

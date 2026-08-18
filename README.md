@@ -81,3 +81,31 @@ Open http://localhost:5173. You're in mock mode:
 - `TESTING.md` — the manual click-through script run at each milestone
   checkpoint, plus what's covered by unit tests.
 - `supabase/migrations/` — versioned schema + RLS (never mutate ad hoc).
+
+## Pre-Grade estimator
+
+A decision-support tool for sellers: eight guided photos → a measured
+centering report (deterministic geometry, ±1.5% verified against
+generated ground truth), a defect assessment (vision model behind
+`api/pregrade/assess`), an estimated PSA **band with confidence**
+(never a bare number), and an expected-value calculator whose headline
+is *uplift vs selling raw*. It is not a grade, and every surface says so.
+
+Honesty rules baked in: no raking-light photos → the result is a
+**ceiling**, not an estimate; inputs the model can't judge are
+`not_assessed`, never guessed; indents and edge-bleed hard-cap at 8;
+estimates can never touch the listings table's real-slab columns
+(DB constraint + `leak.test.ts`).
+
+- `npm run pregrade:eval` — headless pipeline over the fixture set;
+  prints mean absolute grade error, P(10) Brier score, and the
+  **false-confident rate** (share of high-confidence *submit*
+  recommendations that came back ≤ 8). Target < 5%; currently 0% on the
+  fixture set, enforced in CI as part of `npm test`.
+- `node scripts/calibrate.mjs outcomes.json` — turns reported outcomes
+  into measured per-bucket probabilities; writes `calibration.next.json`
+  for human review, never auto-applies.
+- Live assessments need `ANTHROPIC_API_KEY` set in the Vercel project
+  env (`PREGRADE_DAILY_LIMIT` optional, default 10/user/day). Mock mode
+  (`VITE_MOCK=1`) runs the whole flow with canned cases — `?case=indent`
+  on `/pregrade` for UI work.

@@ -121,6 +121,14 @@ export const INDENT_WARNING =
 export const AUTHENTICITY_NOTE =
   "Something about this card's stock or gloss reads unusual in these photos. Worth a second look in person.";
 
+export const PRIOR_NOTE =
+  'These percentages are priors, not measured results — reported grading outcomes replace them over time.';
+
+/** Shown once a bucket has ≥30 real outcomes behind it. */
+export function trackRecordSentence(count: number, p10Rate: number): string {
+  return `Estimates like this one have come back as a 10 in ${Math.round(p10Rate * 100)}% of ${count} reported submissions.`;
+}
+
 /** Break-even sentence in plain terms. */
 export function breakEvenSentence(breakEvenP10: number | null, p10: number): string {
   if (breakEvenP10 === null) return '';

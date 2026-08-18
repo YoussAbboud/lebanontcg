@@ -4,10 +4,14 @@ import {
   cornerSentence,
   edgeSentence,
   INDENT_WARNING,
+  PRIOR_NOTE,
   RECOMMENDATION_LABELS,
   SURFACE_NOT_CHECKED,
   surfaceSentence,
+  trackRecordSentence,
 } from '../../lib/pregrade/copy';
+import { CALIBRATION, calibrationKey } from '../../lib/pregrade/estimate';
+import type { Era } from '../../lib/pregrade/types';
 import { PREGRADE_DISCLAIMER, type DefectAssessment, type Estimate } from '../../lib/pregrade/types';
 import { CenteringDiagram, type DiagramBorders } from './CenteringDiagram';
 import type { AxisRatio } from '../../lib/pregrade/types';
@@ -25,10 +29,21 @@ export interface ReportViewData {
   } | null;
   assessment: DefectAssessment;
   estimate: Estimate;
+  era?: Era;
 }
 
 function pct(v: number): string {
   return `${Math.round(v * 100)}%`;
+}
+
+/** ≥30 real outcomes in the bucket → the measured track record; else the
+    probabilities are labelled as the priors they are. */
+function calibrationLine(e: Estimate, era: Era): string {
+  const count = CALIBRATION.counts?.[calibrationKey(e.base, e.borderlineFlags, era)] ?? 0;
+  if (CALIBRATION.measured && count >= 30) {
+    return trackRecordSentence(count, e.band.p10);
+  }
+  return PRIOR_NOTE;
 }
 
 /** The full pre-grade report: band, sub-scores, findings, honesty. */
@@ -70,12 +85,17 @@ export function PregradeReportView({ data }: { data: ReportViewData }) {
       ) : (
         <>
           {!e.isCeiling && (
-            <div className="pgreport-band-row mono-value">
-              <span>P(10) {pct(e.band.p10)}</span>
-              <span>P(9) {pct(e.band.p9)}</span>
-              <span>P(8) {pct(e.band.p8)}</span>
-              <span>P(≤7) {pct(e.band.pLow)}</span>
-            </div>
+            <>
+              <div className="pgreport-band-row mono-value">
+                <span>P(10) {pct(e.band.p10)}</span>
+                <span>P(9) {pct(e.band.p9)}</span>
+                <span>P(8) {pct(e.band.p8)}</span>
+                <span>P(≤7) {pct(e.band.pLow)}</span>
+              </div>
+              <p className="mono-label pgreport-calibration">
+                {calibrationLine(e, data.era ?? 'ultra_modern')}
+              </p>
+            </>
           )}
 
           <div className="pgreport-scores">

@@ -226,6 +226,12 @@ describe('estimateGrade', () => {
   it('vintage bands weight the lower grades in', () => {
     expect(bandFor(10, 0, 'vintage').pLow).toBeGreaterThan(bandFor(10, 0, 'ultra_modern').pLow);
   });
+
+  it('a base-9 vintage card is marginal, not submit — its own band says 50% ≤8', () => {
+    const e = estimateGrade(baseInput({ centering: 9, era: 'vintage' }));
+    expect(e.base).toBe(9);
+    expect(e.recommendation).toBe('marginal');
+  });
 });
 
 // ---------------------------------------------------------------------------

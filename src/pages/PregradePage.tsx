@@ -11,6 +11,7 @@ import {
   type CaptureSlot,
 } from '../lib/pregrade/types';
 import { PregradeWizard } from '../components/pregrade/PregradeWizard';
+import { MyReports } from '../components/pregrade/MyReports';
 import './pregrade.css';
 
 interface SlotMeta {
@@ -234,6 +235,8 @@ export function PregradePage() {
           Continue to centering →
         </button>
       </footer>
+
+      <MyReports />
     </main>
   );
 }

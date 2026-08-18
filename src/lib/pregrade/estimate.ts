@@ -16,6 +16,8 @@ import type {
 interface CalibrationTable {
   version: string;
   measured: boolean;
+  /** Outcome counts per bucket — written by scripts/calibrate.mjs. */
+  counts?: Record<string, number>;
   buckets: Record<string, GradeBand>;
 }
 
@@ -139,10 +141,14 @@ export function estimateGrade(input: EstimateInput): Estimate {
         f.type === 'gloss_break',
     ) ??
       false);
+  // "Submit" must respect the band's own downside: recommending a card
+  // whose probabilities say it ≤8s a third of the time is exactly the
+  // false confidence this feature exists to avoid (vintage 9s live here).
+  const downside = band.p8 + band.pLow;
   if (doNotSubmit) recommendation = 'do_not_submit';
   else if (isCeiling) recommendation = 'inconclusive';
-  else if (base >= 9) recommendation = 'submit';
-  else if (base === 8) recommendation = 'marginal';
+  else if (base >= 9 && downside < 0.35) recommendation = 'submit';
+  else if (base >= 8) recommendation = 'marginal';
   else recommendation = 'do_not_submit';
 
   return { base, isCeiling, band, borderlineFlags: flags, confidence, recommendation, notes };

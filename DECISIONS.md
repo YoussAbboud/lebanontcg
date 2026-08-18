@@ -541,3 +541,36 @@ Running log of product/engineering decisions made while building, newest last.
   resizes); handle/move geometry is pure and unit-tested (moveRect /
   resizeRect in crop.ts). Output keeps the selection's own shape,
   long edge capped at 1600px.
+
+## G0–G6 — Pre-Grade estimator
+
+- Adapted the pre-grade spec to this stack: pure engine modules in
+  src/lib/pregrade (not Next.js paths), a Vercel serverless function
+  for the model call (the SPA has no server), migration 0011, and the
+  MarketplaceClient abstraction so VITE_MOCK=1 runs the entire flow
+  with canned assessments and the REAL centering engine.
+- Design for abstention throughout: quality gates reject bad shots with
+  reasons; the model contract is validated, retried once with the
+  precise failure, then abstained — a confident wrong number on an
+  expensive card is the worst outcome this feature can produce.
+- Centering is arithmetic, and tested like it: sub-pixel contrast-peak
+  edge refinement landed the engine within ±1.5% of ground truth across
+  50 generated cards (incl. dark stock and keystoned shots, where the
+  fixture pushes the inner rect through the same homography so truth
+  survives projective correction).
+- The eval harness caught real overconfidence: a vintage base-9 was
+  recommended 'submit' at high confidence while its own band said 50%
+  chance of ≤8. Recommendation now respects the band's downside
+  (submit only when P(8)+P(≤7) < 0.35), and the false-confident rate on
+  the fixture set is 0%.
+- Separation from real slabs is enforced from both ends: the DB
+  constraint makes a grade value without a grading company impossible,
+  and leak.test.ts greps every pre-grade module (comments included) for
+  the slab column names.
+- Publishing is opt-in per listing and gated by an aHash perceptual
+  match between the report's front capture and the listing cover, so a
+  report can't be attached to a different card's listing.
+- Probabilities are labelled priors until scripts/calibrate.mjs
+  replaces them with measured hit rates (≥10 outcomes per bucket,
+  human-reviewed diff, never auto-applied); reports show the measured
+  track record once a bucket has ≥30 outcomes.

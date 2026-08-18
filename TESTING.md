@@ -415,3 +415,29 @@ inside slides it (clamped at the image edge); the saved file's pixels
 are the selected right half (green/yellow) at the selection's own ~1:2
 shape. The avatar path still runs the fixed square frame with the
 round guide and 512² output.
+
+## G0–G6 — Pre-Grade estimator
+
+Unit (65 tests in src/lib/pregrade): centering ±1.5% over 50 generated
+cards; every estimate modifier (indent/bleed caps, dimples never cap,
+back-only-minor leniency, ceiling on missing surface); hand-worked EV
+incl. the direct break-even solve; quality gates; assessment contract
+validation; perceptual hash; the anti-leak grep; the eval harness
+(MAE ≤ 1.0, false-confident rate < 5% — currently 0%).
+
+Browser smokes (g1–g6, mock mode): quality-gate rejections with the
+right copy on a 360px viewport; centering auto-detection near drawn
+truth with live drag/keyboard updates; the four canned assessment
+paths incl. ceiling phrasing; report + EV verdict movement and the
+do_not_submit override; the full G5 single-session flow (create
+listing from the same photo, phash gate blocks a mis-attach, publish,
+browse toggle, subordinate pill, panel for seller and signed-out
+visitor); outcome recording and prior labelling.
+
+Database: all 11 migrations apply on a fresh local Postgres 16; the
+RLS suite stays 22 true / 0 false; no_pregrade_in_grade_fields and
+published_needs_listing both reject bad rows.
+
+Live checklist: run migration 0011 (or apply-all.sql on a fresh
+project), set ANTHROPIC_API_KEY in Vercel, then walk a real card
+through /pregrade on a phone.

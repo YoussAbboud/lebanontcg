@@ -90,11 +90,11 @@
 }
 
 /* New bids fade up over the art: "@name  $amount". */
-.livebids-floats { position: absolute; left: 14px; bottom: 8px; pointer-events: none; }
+.livebids-floats { position: absolute; left: 15px; bottom: 10px; pointer-events: none; }
 .livebids-float {
   display: block;
-  color: #d3d3d3;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.918);
+  color: #181818;
+  text-shadow: 0 1px 4px rgb(255, 255, 255);
   animation: livebids-rise 2.5s ease-out forwards;
 }
 @keyframes livebids-rise {

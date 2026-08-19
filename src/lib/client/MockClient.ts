@@ -1313,6 +1313,16 @@ export class MockClient implements MarketplaceClient {
     this.broadcast({ type: 'report', report: structuredClone(report) });
   }
 
+  async getAuctionsBySeller(sellerId: string): Promise<Auction[]> {
+    await sleep(netDelay());
+    this.lazyCloseAuctions();
+    return structuredClone(
+      this.auctions
+        .filter((a) => a.sellerId === sellerId)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    );
+  }
+
   async getAuctionNoShowCount(userId: string): Promise<number> {
     await sleep(netDelay());
     const cutoff = Date.now() - 90 * 86400_000;

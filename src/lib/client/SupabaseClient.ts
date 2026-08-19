@@ -90,7 +90,9 @@ interface ListingRow {
   created_at: string;
   updated_at: string;
   listing_images?: ListingImageRow[];
-  auctions?: AuctionRow[];
+  /** One-to-one embed: PostgREST returns an OBJECT (listing_id is
+      unique), but older shapes/arrays are tolerated too. */
+  auctions?: AuctionRow[] | AuctionRow | null;
 }
 
 interface AuctionRow {
@@ -302,10 +304,13 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     };
   }
 
-  /** The embedded auction of an auction-type row (undefined for fixed). */
+  /** The embedded auction of an auction-type row (undefined for fixed).
+      listing_id is unique, so PostgREST embeds a single OBJECT — reading
+      [0] on it silently yielded null and blanked every live surface. */
   private auctionOf(row: ListingRow): Auction | null | undefined {
     if (row.sale_type !== 'auction') return undefined;
-    const a = row.auctions?.[0];
+    const raw = row.auctions;
+    const a = Array.isArray(raw) ? raw[0] : raw;
     return a ? this.mapAuction(a) : null;
   }
 
@@ -1100,6 +1105,21 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       p_auction_id: auctionId,
     });
     if (error) throw new Error(error.message);
+  }
+
+  async getAuctionsBySeller(sellerId: string): Promise<Auction[]> {
+    // Lazy close first so a finished auction never reads as live here.
+    await this.sb.rpc('close_due_auctions').then(
+      () => undefined,
+      () => undefined,
+    );
+    const { data, error } = await this.sb
+      .from('auctions')
+      .select('*')
+      .eq('seller_id', sellerId)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data as AuctionRow[]).map((row) => this.mapAuction(row));
   }
 
   async getAuctionNoShowCount(userId: string): Promise<number> {

@@ -52,7 +52,18 @@ export function LiveBidPage({
     return client.subscribeToAuctionPresence(auctionId, setWatchers, { join: true });
   }, [client, auctionId]);
 
-  if (!auction) return null;
+  // Never a blank page: if the auction row can't be reached, say so.
+  if (!auction) {
+    return (
+      <main className="livebid">
+        <div className="empty-dashed" role="alert">
+          <h3>Couldn&apos;t load this auction</h3>
+          <p>The listing exists but its auction data didn&apos;t come through. Try again.</p>
+          <button className="btn-acid" onClick={onReload}>Retry</button>
+        </div>
+      </main>
+    );
+  }
   const over = isEffectivelyOver(auction, now);
   const soon = isEndingSoon(auction.endsAt, now);
   const isOwner = user?.id === listing.sellerId;

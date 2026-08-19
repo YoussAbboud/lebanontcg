@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ListingWithSeller } from '../lib/types';
 import { formatPrice, relativeTime } from '../lib/format';
-import { sellerDotBackground, faceBackground, glyphOf } from '../lib/face';
+import { faceBackground, glyphOf } from '../lib/face';
+import { Avatar } from './Avatar';
 import './fancarousel.css';
 
 // The Sleeved hero: up to 7 cards fanned in 3D perspective. Offsets,
@@ -204,11 +205,7 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
                   <div className="fan-title">{item.title}</div>
                   <div className={`fan-info ${isHot ? 'fan-info-open' : ''}`}>
                     <div className="fan-seller-row">
-                      <div
-                        className="fan-dot"
-                        style={{ background: sellerDotBackground(handle) }}
-                        aria-hidden="true"
-                      />
+                      <Avatar profile={item.seller} size={22} />
                       <div className="fan-handle">{handle}</div>
                     </div>
                     <div className="fan-asking-row">

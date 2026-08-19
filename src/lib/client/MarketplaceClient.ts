@@ -169,6 +169,9 @@ export interface MarketplaceClient {
   reportAuctionNoShow(auctionId: string): Promise<void>;
   /** Winner-role no-shows recorded against a user in the last 90 days. */
   getAuctionNoShowCount(userId: string): Promise<number>;
+  /** Every auction this seller has run — live and finished. Powers the
+      profile's Live Bids section (auctions never sit in Listings). */
+  getAuctionsBySeller(sellerId: string): Promise<Auction[]>;
 
   // ---- Favorites ---------------------------------------------------------
   getFavoriteIds(): Promise<Set<string>>;

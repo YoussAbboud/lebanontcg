@@ -222,3 +222,11 @@
   color: #10120a;
   letter-spacing: 0.08em;
 }
+
+/* Sold cards: the price is what it went for, and the CTA is spent. */
+.lcard-stat-v.is-sold { color: var(--acid); }
+.lcard-cta.is-done { opacity: 0.55; cursor: default; }
+
+/* Sold cards: the price is what it went for, and the CTA is spent. */
+.lcard-stat-v.is-sold { color: var(--acid); }
+.lcard-cta.is-done { opacity: 0.55; cursor: default; }

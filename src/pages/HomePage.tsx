@@ -37,7 +37,10 @@ export function HomePage() {
     // empty sections so one broken view can't blank the whole home page.
     Promise.all([
       client.searchListings(DEFAULT_FILTER, 0, 15),
-      client.searchListings({ ...DEFAULT_FILTER, sort: 'most_watched' }, 0, 6).catch(() => null),
+      // Featured is a buy-now shelf — live auctions have their own rail.
+      client
+        .searchListings({ ...DEFAULT_FILTER, saleType: 'fixed', sort: 'most_watched' }, 0, 6)
+        .catch(() => null),
       client.listSellers(6).catch(() => []),
     ])
       .then(([newest, watched, topSellers]) => {
@@ -232,6 +235,12 @@ export function HomePage() {
                   <div className="home-strip-body">
                     <div className="mono-label home-strip-eyebrow">{listingEyebrow(f)}</div>
                     <div className="home-strip-title display">{f.title}</div>
+                    <div className="home-strip-seller">
+                      <Avatar profile={f.seller} size={18} />
+                      <span className="mono-label">
+                        {f.seller.username ? `@${f.seller.username}` : f.seller.displayName}
+                      </span>
+                    </div>
                     <div className="home-strip-asking">
                       <span className="mono-label home-strip-eyebrow">Asking</span>
                       <span className="mono-value">{formatPrice(f.price, f.currency)}</span>

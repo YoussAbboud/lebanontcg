@@ -5,9 +5,9 @@ import { GAME_LABELS } from '../lib/types';
 import { formatPrice, relativeTime } from '../lib/format';
 import { auctionPillLabel, isEffectivelyOver } from '../lib/auction';
 import { useNow } from '../lib/useNow';
-import { sellerDotBackground } from '../lib/face';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
+import { Avatar } from './Avatar';
 import { CardFace } from './CardFace';
 import './listingcard.css';
 
@@ -45,6 +45,7 @@ export const ListingCard = memo(function ListingCard({
     ? `@${listing.seller.username}`
     : listing.seller.displayName;
 
+  const sold = listing.status === 'sold';
   const auction = listing.auction ?? null;
   // Tick the pill countdown once a minute; compute-from-target keeps it
   // honest after background throttling.
@@ -82,7 +83,7 @@ export const ListingCard = memo(function ListingCard({
     <article
       role="button"
       tabIndex={0}
-      aria-label={`${listing.title}, ${live ? 'current bid' : 'asking'} ${formatPrice(listing.price, listing.currency)}`}
+      aria-label={`${listing.title}, ${live ? 'current bid' : sold ? 'sold for' : 'asking'} ${formatPrice(listing.price, listing.currency)}`}
       className={`lcard card-raised ${pinned || live ? 'is-acid' : ''}`}
       onClick={open}
       onKeyDown={(e) => {
@@ -90,11 +91,7 @@ export const ListingCard = memo(function ListingCard({
       }}
     >
       <div className="lcard-top">
-        <div
-          className="lcard-dot"
-          style={{ background: sellerDotBackground(handle) }}
-          aria-hidden="true"
-        />
+        <Avatar profile={listing.seller} size={22} />
         <div className="lcard-handle">{handle}</div>
         <div className="lcard-likes">♡ {listing.likes}</div>
       </div>
@@ -129,8 +126,10 @@ export const ListingCard = memo(function ListingCard({
         <div className="lcard-oneliner">{oneLinerOf(listing)}</div>
         <div className="lcard-stats">
           <div>
-            <div className="mono-label lcard-stat-k">{live ? 'Current bid' : 'Asking'}</div>
-            <div className="mono-value lcard-stat-v">
+            <div className="mono-label lcard-stat-k">
+              {live ? 'Current bid' : sold ? 'Sold for' : 'Asking'}
+            </div>
+            <div className={`mono-value lcard-stat-v ${sold ? 'is-sold' : ''}`}>
               {formatPrice(listing.price, listing.currency)}
               {listing.quantity > 1 ? ` ×${listing.quantity}` : ''}
             </div>
@@ -140,7 +139,11 @@ export const ListingCard = memo(function ListingCard({
             <div className="mono-value lcard-stat-v">{relativeTime(listing.createdAt)}</div>
           </div>
         </div>
-        {!isOwner && live ? (
+        {!isOwner && sold ? (
+          <button type="button" className="lcard-cta is-done" disabled>
+            Sold
+          </button>
+        ) : !isOwner && live ? (
           <button
             type="button"
             className="lcard-cta"

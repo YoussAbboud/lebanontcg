@@ -547,3 +547,14 @@ bid fades up on the home card with name + amount and the card price
 follows; the auction page is the Live Bid room (no listing layout);
 the price chart draws its line, labels start/current, and its hover
 tooltip names the bid. a1/a2/a3 updated for the new page selectors.
+
+## A6 — Profile sections + live fixes
+
+a6-smoke.mjs (16 checks): Live Bids section separate from Listings
+(exact-title match — the seed has a fixed listing named like the
+auction), visitor-visible sold card with "Sold for $30" and a spent
+CTA, the three-tab filter behaviour, featured strip free of auctions
+but carrying seller avatars, no unpilled auction card on home, browse
+auction cards all pilled, avatars in fan/trending. The PostgREST
+object-vs-array embed fix is code-level (live-only shape) — mock can't
+reproduce it.

@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import type { Listing, ListingWithSeller, Profile, Review, SellerStats } from '../lib/types';
+import type { Auction, Listing, ListingWithSeller, Profile, Review, SellerStats } from '../lib/types';
 import { GAME_LABELS } from '../lib/types';
 import { avatarBackground } from '../lib/face';
-import { memberSince, relativeTime } from '../lib/format';
+import { formatPrice, memberSince, relativeTime } from '../lib/format';
+import { formatTimeLeft, isEffectivelyOver } from '../lib/auction';
+import { useNow } from '../lib/useNow';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { Avatar } from '../components/Avatar';
@@ -19,6 +21,8 @@ export function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<SellerStats | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [tab, setTab] = useState<'all' | 'active' | 'sold'>('all');
   const [reviews, setReviews] = useState<Review[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [blocked, setBlocked] = useState(false);
@@ -28,6 +32,7 @@ export function ProfilePage() {
   const [msgBusy, setMsgBusy] = useState(false);
 
   const isOwn = Boolean(user && profile && user.id === profile.id);
+  const now = useNow(30_000);
 
   const load = useCallback(async () => {
     if (!username) return;
@@ -39,15 +44,22 @@ export function ProfilePage() {
         return;
       }
       const own = user?.id === p.id;
-      const [ls, rs, blockedIds, sellerStats] = await Promise.all([
-        client.getListingsBySeller(p.id, own ? ['active', 'reserved', 'sold', 'removed'] : ['active']),
+      const [ls, rs, blockedIds, sellerStats, aucs] = await Promise.all([
+        // Sold listings are part of a seller's record, not just their own
+        // view — only removed ones stay private to the owner.
+        client.getListingsBySeller(
+          p.id,
+          own ? ['active', 'reserved', 'sold', 'removed'] : ['active', 'reserved', 'sold'],
+        ),
         client.getReviewsForUser(p.id),
         user ? client.getBlockedIds() : Promise.resolve(new Set<string>()),
         client.getSellerStats(p.id),
+        client.getAuctionsBySeller(p.id).catch(() => [] as Auction[]),
       ]);
       setProfile(p);
       void client.getAuctionNoShowCount(p.id).then(setNoShows).catch(() => setNoShows(0));
       setListings(ls);
+      setAuctions(aucs);
       setReviews(rs);
       setBlocked(blockedIds.has(p.id));
       setStats(sellerStats);
@@ -95,12 +107,59 @@ export function ProfilePage() {
   }
 
   const activeListings = listings.filter((l) => l.status === 'active');
-  const hydrated: ListingWithSeller[] = listings.map((l) => ({
+  const auctionByListing = new Map(auctions.map((a) => [a.listingId, a]));
+  const hydrate = (l: Listing): ListingWithSeller => ({
     ...l,
     seller: profile,
     sellerActiveListingCount: activeListings.length,
     likes: 0,
-  }));
+    ...(l.saleType === 'auction' ? { auction: auctionByListing.get(l.id) ?? null } : {}),
+  });
+
+  // Auctions are events with their own section — they never sit in the
+  // Listings grid, live or finished.
+  const fixed = listings.filter((l) => l.saleType !== 'auction');
+  const auctionListings = listings
+    .filter((l) => l.saleType === 'auction')
+    .map(hydrate)
+    .sort((a, b) => {
+      const aLive = a.auction && !isEffectivelyOver(a.auction, now) ? 0 : 1;
+      const bLive = b.auction && !isEffectivelyOver(b.auction, now) ? 0 : 1;
+      return aLive - bLive || b.createdAt.localeCompare(a.createdAt);
+    });
+  const liveCount = auctionListings.filter(
+    (l) => l.auction && !isEffectivelyOver(l.auction, now),
+  ).length;
+
+  const TABS: Array<{ key: 'all' | 'active' | 'sold'; label: string; count: number }> = [
+    { key: 'all', label: 'All', count: fixed.length },
+    {
+      key: 'active',
+      label: 'Active',
+      count: fixed.filter((l) => l.status === 'active' || l.status === 'reserved').length,
+    },
+    { key: 'sold', label: 'Sold', count: fixed.filter((l) => l.status === 'sold').length },
+  ];
+  const shown = fixed.filter((l) =>
+    tab === 'all'
+      ? true
+      : tab === 'sold'
+        ? l.status === 'sold'
+        : l.status === 'active' || l.status === 'reserved',
+  );
+  const hydrated: ListingWithSeller[] = shown.map(hydrate);
+
+  /** One line under an auction card: where it is, or how it ended. */
+  const auctionOutcome = (l: ListingWithSeller): string => {
+    const a = l.auction;
+    if (!a) return '';
+    if (!isEffectivelyOver(a, now)) return `Live · ends in ${formatTimeLeft(a.endsAt, now)}`;
+    if (a.status === 'cancelled') return 'Cancelled by the seller';
+    if (a.winnerId && a.winningBid !== null) {
+      return `Won at ${formatPrice(a.winningBid, a.currency)}`;
+    }
+    return a.reservePrice !== null ? 'Ended — reserve not met' : 'Ended without a winner';
+  };
 
   const messageSeller = async () => {
     if (!user) {
@@ -235,18 +294,67 @@ export function ProfilePage() {
         </div>
       </div>
 
+      {auctionListings.length > 0 && (
+        <>
+          <div className="section-head profile-livebids-head">
+            <h2>
+              {liveCount > 0 && <span className="profile-livedot" aria-hidden="true" />} Live Bids
+            </h2>
+            <div className="mono-label">
+              {liveCount > 0
+                ? `${String(liveCount).padStart(2, '0')} live now · ${auctionListings.length} total`
+                : `${String(auctionListings.length).padStart(2, '0')} finished`}
+            </div>
+          </div>
+          <div className="profile-grid">
+            {auctionListings.map((l) => (
+              <div key={l.id} className="profile-auction">
+                <ListingCard listing={l} />
+                <div
+                  className={`mono-label profile-auction-note ${
+                    l.auction && !isEffectivelyOver(l.auction, now) ? 'is-live' : ''
+                  }`}
+                >
+                  {auctionOutcome(l)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
       <div className="section-head profile-listings-head">
         <h2>Listings</h2>
         <div className="mono-label">
-          {String(isOwn ? listings.length : activeListings.length).padStart(2, '0')}{' '}
-          {isOwn ? 'total' : 'active'}
+          {String(TABS.find((t) => t.key === tab)?.count ?? 0).padStart(2, '0')} {tab}
         </div>
+      </div>
+      <div className="profile-tabs" role="tablist" aria-label="Filter listings">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            role="tab"
+            className="pill"
+            aria-selected={tab === t.key}
+            aria-pressed={tab === t.key}
+            onClick={() => setTab(t.key)}
+          >
+            {t.label} <span className="profile-tab-count">{t.count}</span>
+          </button>
+        ))}
       </div>
       {hydrated.length === 0 ? (
         <div className="empty-dashed">
-          <h3>No listings</h3>
-          <p>{isOwn ? 'List a card to get started.' : 'Nothing for sale right now.'}</p>
-          {isOwn && <Link to="/sell" className="btn-acid">List a card</Link>}
+          <h3>{tab === 'sold' ? 'Nothing sold yet' : 'No listings'}</h3>
+          <p>
+            {tab === 'sold'
+              ? 'Completed deals show up here with what they went for.'
+              : isOwn
+                ? 'List a card to get started.'
+                : 'Nothing for sale right now.'}
+          </p>
+          {isOwn && tab !== 'sold' && <Link to="/sell" className="btn-acid">List a card</Link>}
         </div>
       ) : (
         <div className="profile-grid">

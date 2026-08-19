@@ -798,3 +798,27 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   room, not by subscribing to bids — otherwise the home rail's
   subscription claimed the script and fixed the clock before the room
   could apply its ?case= parameter.
+
+## A6 — Seller profile: sold record, filter, Live Bids section + live fixes
+
+- A seller's sold listings are part of their public record: visitors
+  now see active, reserved AND sold listings (removed stays private to
+  the owner), behind an All / Active / Sold filter. Sold cards read
+  "Sold for" with the price in acid and a spent CTA.
+- Auctions never sit in the Listings grid — the profile gets its own
+  Live Bids section (live ones first with a pulsing dot and "ends in",
+  finished ones with their outcome: won-at price, reserve not met,
+  cancelled). Powered by getAuctionsBySeller on both clients.
+- THE live bug: auctions.listing_id is UNIQUE, so PostgREST embeds
+  auctions as a single OBJECT, not an array — the client read
+  `row.auctions?.[0]`, silently got undefined, and every live surface
+  (Live Bid page, home rail, LIVE pills) blanked while mock worked.
+  auctionOf now accepts both shapes. The Live Bid page also gained a
+  retry panel so a data failure is never a blank page.
+- Featured this week is a buy-now shelf (saleType fixed); trending
+  keeps auctions and they always wear the LIVE pill.
+- The seller identity on fan cards, grid cards and the featured strip
+  is the real profile picture (the Avatar component, which resolves
+  storage paths and falls back to the procedural gradient) — the old
+  hash-gradient dots looked like missing images once real avatars
+  existed.

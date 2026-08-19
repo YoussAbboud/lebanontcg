@@ -15,13 +15,16 @@
 .sell-title { font-size: var(--fs-28); }
 .sell-steplabel { margin-left: auto; }
 
-.sell-bars {
-  display: flex;
+/* Bars and step labels share one grid, so each label sits exactly
+   under its bar at every width. */
+.sell-bars,
+.sell-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  margin-top: 18px;
 }
+.sell-bars { margin-top: 18px; }
 .sell-bar {
-  flex: 1;
   height: 3px;
   border-radius: 3px;
   background: var(--border);
@@ -29,18 +32,16 @@
 }
 .sell-bar-done { background: var(--acid); }
 
-.sell-steps {
-  margin-top: 12px;
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
-}
+.sell-steps { margin-top: 10px; }
 .sell-steplink {
   background: transparent;
   border: none;
   cursor: var(--cursor-default);
   padding: 6px 0;
   color: var(--muted);
+  text-align: left;
+  white-space: nowrap;
+  min-width: 0;
 }
 .sell-steplink-on { color: var(--acid); }
 

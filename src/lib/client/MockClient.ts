@@ -85,6 +85,13 @@ export class MockClient implements MarketplaceClient {
   private messages: Message[];
   private auctions: Auction[] = [];
   private bids: Bid[] = [];
+  private noShows: Array<{
+    auctionId: string;
+    reporterId: string;
+    reportedId: string;
+    role: 'winner' | 'seller';
+    createdAt: string;
+  }> = [];
   private favorites = new Map<string, Set<string>>();
   private reviews: Review[];
   private blocks = new Map<string, Set<string>>();
@@ -161,6 +168,7 @@ export class MockClient implements MarketplaceClient {
         this.messages = s.messages;
         this.auctions = s.auctions ?? this.auctions;
         this.bids = s.bids ?? this.bids;
+        this.noShows = s.noShows ?? this.noShows;
         this.reviews = s.reviews;
         this.reports = s.reports;
         this.favorites = new Map(s.favorites.map(([k, v]) => [k, new Set(v)]));
@@ -278,6 +286,16 @@ export class MockClient implements MarketplaceClient {
         this.emitAuction(patch.auction.id, { type: 'updated', auction: structuredClone(patch.auction) });
         break;
       }
+      case 'noshow': {
+        if (
+          !this.noShows.some(
+            (n) => n.auctionId === patch.noShow.auctionId && n.reporterId === patch.noShow.reporterId,
+          )
+        ) {
+          this.noShows.push(patch.noShow);
+        }
+        break;
+      }
       case 'bid': {
         if (!this.bids.some((b) => b.id === patch.bid.id)) {
           this.bids.push(patch.bid);
@@ -312,6 +330,7 @@ export class MockClient implements MarketplaceClient {
       messages: this.messages,
       auctions: this.auctions,
       bids: this.bids,
+      noShows: this.noShows,
       reviews: this.reviews,
       reports: this.reports,
       favorites: [...this.favorites.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
@@ -925,7 +944,13 @@ export class MockClient implements MarketplaceClient {
     const bids = this.bids
       .filter((b) => b.auctionId === auction.id)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.amount - a.amount);
-    return structuredClone({ auction, bids });
+    const myNoShowReported = Boolean(
+      this.auth.user &&
+        this.noShows.some(
+          (n) => n.auctionId === auction.id && n.reporterId === this.auth.user!.id,
+        ),
+    );
+    return structuredClone({ auction, bids, myNoShowReported });
   }
 
   /** The rules, mirrored from place_bid — used by the signed-in user
@@ -940,6 +965,9 @@ export class MockClient implements MarketplaceClient {
     if (a.sellerId === bidder.id) throw new Error('Sellers cannot bid on their own auction.');
     if (this.isBlockedBetween(bidder.id, a.sellerId)) {
       throw new Error('You cannot bid on this auction.');
+    }
+    if (this.isBidBanned(bidder.id)) {
+      throw new Error('Bidding is blocked on this account after repeated no-shows.');
     }
     const top = this.topBidOf(a.id);
     const min = minNextBid(top ? top.amount : null, a.startingPrice);
@@ -1150,6 +1178,71 @@ export class MockClient implements MarketplaceClient {
     this.emitInbox();
     this.broadcast({ type: 'auction', auction: structuredClone(a) });
     this.emitAuction(a.id, { type: 'updated', auction: structuredClone(a) });
+  }
+
+  /** Mirrors is_bid_banned (0015): three winner-role no-shows in 90 days. */
+  private isBidBanned(userId: string): boolean {
+    const cutoff = Date.now() - 90 * 86400_000;
+    return (
+      this.noShows.filter(
+        (n) =>
+          n.reportedId === userId &&
+          n.role === 'winner' &&
+          new Date(n.createdAt).getTime() > cutoff,
+      ).length >= 3
+    );
+  }
+
+  async reportAuctionNoShow(auctionId: string): Promise<void> {
+    const me = this.me();
+    await sleep(netDelay());
+    const a = this.auctions.find((x) => x.id === auctionId);
+    if (!a) throw new Error('Auction not found.');
+    if (a.status !== 'closed' || !a.winnerId) {
+      throw new Error('No-shows can only be reported on a closed auction with a winner.');
+    }
+    let reportedId: string;
+    let role: 'winner' | 'seller';
+    if (me.id === a.sellerId) {
+      reportedId = a.winnerId;
+      role = 'winner';
+    } else if (me.id === a.winnerId) {
+      reportedId = a.sellerId;
+      role = 'seller';
+    } else {
+      throw new Error('Only the seller or the winner can report a no-show.');
+    }
+    if (this.noShows.some((n) => n.auctionId === auctionId && n.reporterId === me.id)) {
+      throw new Error('Already reported.');
+    }
+    const noShow = {
+      auctionId,
+      reporterId: me.id,
+      reportedId,
+      role,
+      createdAt: new Date().toISOString(),
+    };
+    this.noShows.push(noShow);
+    const report: ReportInput = {
+      targetType: 'user',
+      targetId: reportedId,
+      reason: 'other',
+      detail: `Auction no-show (${role}) on auction ${auctionId}`,
+    };
+    this.reports.push(report);
+    this.broadcast({ type: 'noshow', noShow: structuredClone(noShow) });
+    this.broadcast({ type: 'report', report: structuredClone(report) });
+  }
+
+  async getAuctionNoShowCount(userId: string): Promise<number> {
+    await sleep(netDelay());
+    const cutoff = Date.now() - 90 * 86400_000;
+    return this.noShows.filter(
+      (n) =>
+        n.reportedId === userId &&
+        n.role === 'winner' &&
+        new Date(n.createdAt).getTime() > cutoff,
+    ).length;
   }
 
   // ---- Favorites ----------------------------------------------------------
@@ -1681,6 +1774,13 @@ interface SnapshotState {
   messages: Message[];
   auctions?: Auction[];
   bids?: Bid[];
+  noShows?: Array<{
+    auctionId: string;
+    reporterId: string;
+    reportedId: string;
+    role: 'winner' | 'seller';
+    createdAt: string;
+  }>;
   reviews: Review[];
   reports: ReportInput[];
   favorites: Array<[string, string[]]>;
@@ -1704,4 +1804,14 @@ type RemotePatch =
   | { type: 'profile'; profile: Profile }
   | { type: 'credential'; email: string; userId: string; password: string | null }
   | { type: 'auction'; auction: Auction }
-  | { type: 'bid'; bid: Bid };
+  | { type: 'bid'; bid: Bid }
+  | {
+      type: 'noshow';
+      noShow: {
+        auctionId: string;
+        reporterId: string;
+        reportedId: string;
+        role: 'winner' | 'seller';
+        createdAt: string;
+      };
+    };

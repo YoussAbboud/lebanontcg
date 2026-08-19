@@ -150,6 +150,15 @@ export interface MarketplaceClient {
   endAuctionEarly(auctionId: string): Promise<void>;
   /** Seller only: no winner, reason required, every bidder notified. */
   cancelAuction(auctionId: string, reason: string): Promise<void>;
+  /**
+   * After a closed auction: the seller marks the winner a no-show, or
+   * the winner mirrors it for an unresponsive seller. Three winner
+   * no-shows in 90 days block bidding (listings and chat unaffected);
+   * every report also feeds the moderation queue.
+   */
+  reportAuctionNoShow(auctionId: string): Promise<void>;
+  /** Winner-role no-shows recorded against a user in the last 90 days. */
+  getAuctionNoShowCount(userId: string): Promise<number>;
 
   // ---- Favorites ---------------------------------------------------------
   getFavoriteIds(): Promise<Set<string>>;

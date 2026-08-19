@@ -22,6 +22,7 @@ export function ProfilePage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [blocked, setBlocked] = useState(false);
+  const [noShows, setNoShows] = useState(0);
   const [blockBusy, setBlockBusy] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [msgBusy, setMsgBusy] = useState(false);
@@ -45,6 +46,7 @@ export function ProfilePage() {
         client.getSellerStats(p.id),
       ]);
       setProfile(p);
+      void client.getAuctionNoShowCount(p.id).then(setNoShows).catch(() => setNoShows(0));
       setListings(ls);
       setReviews(rs);
       setBlocked(blockedIds.has(p.id));
@@ -163,6 +165,12 @@ export function ProfilePage() {
               ` · ${stats.games.map((g) => GAME_LABELS[g]).join(' · ')}`}
           </div>
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          {noShows > 0 && (
+            <p className="mono-label profile-noshow" role="note">
+              ⚠ {noShows} auction no-show{noShows === 1 ? '' : 's'} reported in the last 90 days
+              {noShows >= 3 ? ' — bidding is blocked' : ''}
+            </p>
+          )}
           {blocked && (
             <p className="profile-blocked mono-label">
               Blocked — they can&apos;t message you and you can&apos;t message them.

@@ -138,6 +138,8 @@ export interface AuctionDetail {
   auction: Auction;
   /** Newest first. */
   bids: Bid[];
+  /** The signed-in user already filed their no-show report here. */
+  myNoShowReported?: boolean;
 }
 
 /** Auction parameters chosen at listing creation. */

@@ -115,3 +115,6 @@
   font-size: var(--fs-13);
   margin-top: 8px;
 }
+
+/* Auction accountability: winner no-shows in the last 90 days. */
+.profile-noshow { color: var(--danger, #e5484d); margin: 6px 0 0; }

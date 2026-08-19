@@ -327,13 +327,22 @@ export function ListingPage() {
                   )}
                 </>
               ) : (
-                <span className="mono-label ldetail-auction-note">
-                  {auction.status === 'cancelled'
-                    ? 'You cancelled this auction.'
-                    : auction.winnerId
-                      ? 'Auction closed — the winner is in your messages.'
-                      : 'Auction ended without a winner.'}
-                </span>
+                <>
+                  <span className="mono-label ldetail-auction-note">
+                    {auction.status === 'cancelled'
+                      ? 'You cancelled this auction.'
+                      : auction.winnerId
+                        ? 'Auction closed — the winner is in your messages.'
+                        : auction.reservePrice !== null
+                          ? 'Reserve not met — the card stays yours.'
+                          : 'Auction ended without a winner.'}
+                  </span>
+                  {!auction.winnerId && (
+                    <Link to={`/sell?relist=${listing.id}`} className="btn-acid">
+                      Relist
+                    </Link>
+                  )}
+                </>
               )}
             </div>
           ) : isOwner ? (

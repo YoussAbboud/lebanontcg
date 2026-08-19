@@ -983,7 +983,17 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     const bids = (row.bids ?? [])
       .map((b) => this.mapBid(b))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.amount - a.amount);
-    return { auction: this.mapAuction(row), bids };
+    let myNoShowReported = false;
+    const uid = this.auth.user?.id;
+    if (uid && row.status === 'closed' && row.winner_id) {
+      const { count } = await this.sb
+        .from('auction_no_shows')
+        .select('id', { count: 'exact', head: true })
+        .eq('auction_id', row.id)
+        .eq('reporter_id', uid);
+      myNoShowReported = (count ?? 0) > 0;
+    }
+    return { auction: this.mapAuction(row), bids, myNoShowReported };
   }
 
   async placeBid(auctionId: string, amount: number): Promise<PlacedBid> {
@@ -1056,6 +1066,24 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       p_reason: reason,
     });
     if (error) throw new Error(error.message);
+  }
+
+  async reportAuctionNoShow(auctionId: string): Promise<void> {
+    const { error } = await this.sb.rpc('report_auction_no_show', {
+      p_auction_id: auctionId,
+    });
+    if (error) throw new Error(error.message);
+  }
+
+  async getAuctionNoShowCount(userId: string): Promise<number> {
+    const since = new Date(Date.now() - 90 * 86400_000).toISOString();
+    const { count } = await this.sb
+      .from('auction_no_shows')
+      .select('id', { count: 'exact', head: true })
+      .eq('reported_id', userId)
+      .eq('role', 'winner')
+      .gt('created_at', since);
+    return count ?? 0;
   }
 
   // ---- Favorites ----------------------------------------------------------

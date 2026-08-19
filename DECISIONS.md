@@ -742,3 +742,23 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   soon" sort appears only under Auctions (ordering comes from the
   auctions table, so live paging happens there first). Home's fan gains
   a Fresh drops / Ending soon toggle.
+
+## A3 — Close, handoff, relist, accountability
+
+- Closing was built in A0 (close_due_auctions: pg_cron sweep + lazy
+  close on read + the mock's scripted sweep) — A3 completes the loop
+  around it. Winner handoff = the conversation + system message + the
+  listing parked as reserved; won/closed/cancelled notices ride the
+  existing chat inbox (its unread badges are the notification surface).
+  A dedicated ending-in-15-minutes push would need a notifications
+  table + scheduler and is deliberately left out of this pass.
+- Relist never mutates the closed listing: /sell?relist=<id> prefills
+  the form from the ended auction (type defaulted back to Fixed price,
+  price empty) and copies the photos into fresh uploads, so the new
+  listing owns its own files and the original stays closed evidence.
+- No-shows (0015): report_auction_no_show() — seller marks the winner,
+  winner mirrors for the seller, one report per side per auction,
+  closed-with-winner only. Every report also lands in the existing
+  moderation queue. is_bid_banned() (three winner no-shows in 90 days)
+  swaps in for the 0013 placeholder and blocks BIDDING only — listings
+  and chat are untouched. The count is public and shows on profiles.

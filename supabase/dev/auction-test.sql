@@ -215,3 +215,71 @@ select public.create_auction_listing(
   '{"title":"Bad Duration","game":"pokemon","condition":"NM"}'::jsonb, 25, null, 5);
 select 'A33 (expect error above: invalid duration)';
 reset role;
+
+-- 0015: no-show accountability.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a3';
+select public.report_auction_no_show('30000000-0000-0000-0000-000000000001');
+select 'A34 (expect error above: only seller or winner report no-shows)';
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select public.report_auction_no_show('30000000-0000-0000-0000-000000000001');
+select 'A35 seller reported the winner no-show: ' || (count(*) = 1)::text
+  from public.auction_no_shows
+  where auction_id = '30000000-0000-0000-0000-000000000001'
+    and reported_id = '00000000-0000-0000-0000-0000000000a2' and role = 'winner';
+-- The queue is deliberately not user-readable — assert as the service.
+reset role;
+select 'A36 no-show feeds the report queue: ' || (count(*) = 1)::text
+  from public.reports
+  where target_type = 'user' and target_id = '00000000-0000-0000-0000-0000000000a2'
+    and detail like 'Auction no-show (winner)%';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select public.report_auction_no_show('30000000-0000-0000-0000-000000000001');
+select 'A37 (expect error above: duplicate no-show report)';
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a2';
+select public.report_auction_no_show('30000000-0000-0000-0000-000000000001');
+select 'A38 winner mirrors for an unresponsive seller: ' || (count(*) = 1)::text
+  from public.auction_no_shows
+  where auction_id = '30000000-0000-0000-0000-000000000001'
+    and reported_id = '00000000-0000-0000-0000-0000000000a1' and role = 'seller';
+
+-- Three winner no-shows in 90 days block bidding (two more quick auctions).
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+begin;
+insert into public.listings (id, seller_id, title, game, condition, price, sale_type)
+values ('20000000-0000-0000-0000-000000000006', auth.uid(), 'NoShow A', 'magic', 'NM', 10, 'auction');
+insert into public.auctions (id, listing_id, seller_id, starting_price, currency, ends_at)
+values ('30000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000006', auth.uid(), 10, 'USD', now() + interval '1 day');
+commit;
+begin;
+insert into public.listings (id, seller_id, title, game, condition, price, sale_type)
+values ('20000000-0000-0000-0000-000000000007', auth.uid(), 'NoShow B', 'magic', 'NM', 10, 'auction');
+insert into public.auctions (id, listing_id, seller_id, starting_price, currency, ends_at)
+values ('30000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000007', auth.uid(), 10, 'USD', now() + interval '1 day');
+commit;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a2';
+select public.place_bid('30000000-0000-0000-0000-000000000004', 10);
+select public.place_bid('30000000-0000-0000-0000-000000000005', 10);
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select public.end_auction_early('30000000-0000-0000-0000-000000000004');
+select public.end_auction_early('30000000-0000-0000-0000-000000000005');
+select public.report_auction_no_show('30000000-0000-0000-0000-000000000004');
+select public.report_auction_no_show('30000000-0000-0000-0000-000000000005');
+select 'A39 three strikes recorded: ' || (count(*) = 3)::text
+  from public.auction_no_shows
+  where reported_id = '00000000-0000-0000-0000-0000000000a2' and role = 'winner';
+
+begin;
+insert into public.listings (id, seller_id, title, game, condition, price, sale_type)
+values ('20000000-0000-0000-0000-000000000008', auth.uid(), 'Post-ban Auction', 'magic', 'NM', 10, 'auction');
+insert into public.auctions (id, listing_id, seller_id, starting_price, currency, ends_at)
+values ('30000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000008', auth.uid(), 10, 'USD', now() + interval '1 day');
+commit;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a2';
+select public.place_bid('30000000-0000-0000-0000-000000000006', 10);
+select 'A40 (expect error above: repeated no-shows block bidding)';
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a3';
+select 'A41 other bidders unaffected: '
+  || ((public.place_bid('30000000-0000-0000-0000-000000000006', 10)->>'amount')::numeric = 10)::text;
+reset role;

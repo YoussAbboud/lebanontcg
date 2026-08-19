@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { Condition, Finish, Game, ImageDraft, ListingInput, ListingWithSeller, SaleType } from '../lib/types';
 import { AUCTION_DURATIONS, CONDITIONS, FINISHES, FINISH_LABELS, GAMES, GAME_LABELS } from '../lib/types';
 import { useApp } from '../state/AppContext';
@@ -115,6 +115,10 @@ function validateStep(step: number, form: FormState, images: ImageDraft[]): Erro
 
 export function SellPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  // Relist: prefill from an ended auction's card data and photos. It
+  // creates a brand-new listing — the original stays closed.
+  const relistId = searchParams.get('relist');
   const editing = Boolean(id);
   const { client, user } = useApp();
   const toast = useToast();
@@ -125,7 +129,7 @@ export function SellPage() {
   const [images, setImages] = useState<ImageDraft[]>([]);
   const [errors, setErrors] = useState<Errors>({});
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing' | 'forbidden'>(
-    editing ? 'loading' : 'ready',
+    editing || relistId ? 'loading' : 'ready',
   );
   const [saving, setSaving] = useState(false);
 
@@ -169,6 +173,61 @@ export function SellPage() {
       cancelled = true;
     };
   }, [client, id, user]);
+
+  useEffect(() => {
+    if (!relistId || editing || !user) return;
+    let cancelled = false;
+    setLoadState('loading');
+    (async () => {
+      const source = await client.getListing(relistId);
+      if (cancelled) return;
+      if (!source) {
+        setLoadState('missing');
+        return;
+      }
+      if (source.sellerId !== user.id) {
+        setLoadState('forbidden');
+        return;
+      }
+      setForm({
+        ...BLANK,
+        saleType: 'fixed',
+        title: source.title,
+        game: source.game,
+        setName: source.setName,
+        cardNumber: source.cardNumber,
+        language: source.language,
+        condition: source.condition,
+        finish: source.finish,
+        graded: Boolean(source.gradeValue),
+        gradeCompany: source.gradeCompany ?? 'PSA',
+        gradeValue: source.gradeValue ?? '',
+        description: source.description,
+      });
+      // Photos are copied into fresh drafts — the new listing owns its
+      // own uploads; the old listing keeps its files untouched.
+      const drafts: ImageDraft[] = [];
+      for (const img of source.images) {
+        try {
+          const blob = await fetch(img.url).then((r) => r.blob());
+          drafts.push({
+            id: `relist-${img.id}`,
+            kind: 'new',
+            url: URL.createObjectURL(blob),
+            file: blob,
+          });
+        } catch {
+          // A photo that won't fetch is skipped, not fatal.
+        }
+      }
+      if (cancelled) return;
+      setImages(drafts);
+      setLoadState('ready');
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [client, relistId, editing, user]);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));

@@ -523,3 +523,16 @@ browse three-way fork + gated Ending-soon sort behave, the home fan
 flips to ending soon, and the reserve_not_met / cancelled cases land
 their endings (cancellation notice verified in the bidder's inbox —
 navigated in-app, since a reload resets a single-tab mock world).
+
+## A3 — Close, handoff, relist, no-shows
+
+auction-test.sql grows to 24 assertions: outsider/duplicate no-show
+reports rejected, seller report + winner mirror recorded and queued
+(queue asserted as service — it is deliberately not user-readable),
+three strikes ban bidding while another bidder is unaffected.
+a3-smoke.mjs (16 checks): the scripted auction closes with the seller
+away on Browse and the handoff message still lands in chat; the
+no-show action records once and shows on the winner's profile; a
+below-reserve close offers Relist, which prefills a new fixed-price
+listing with copied photos and leaves the original closed. Full
+battery green: a1/a2/g1–g6/crop/fan/review/r4/r8/sell/heic.

@@ -10,6 +10,7 @@ import {
 import { formatPrice, relativeTime } from '../lib/format';
 import { useNow } from '../lib/useNow';
 import { useApp } from '../state/AppContext';
+import { useToast } from '../state/ToastContext';
 import './auctionpanel.css';
 
 /**
@@ -27,6 +28,8 @@ export function AuctionPanel({
   onAuctionChanged(): void;
 }) {
   const { client, user } = useApp();
+  const toast = useToast();
+  const [reportingNoShow, setReportingNoShow] = useState(false);
   const [detail, setDetail] = useState<AuctionDetail | null>(null);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -88,6 +91,29 @@ export function AuctionPanel({
     auction.reservePrice !== null && (top === null || top.amount < auction.reservePrice);
 
   const shown = input === '' || !inputTouched.current ? String(minNext) : input;
+
+  // Accountability: after a close with a winner, the seller can mark the
+  // winner a no-show; the winner mirrors it for an unresponsive seller.
+  const closedWithWinner = auction.status === 'closed' && auction.winnerId !== null;
+  const canReportNoShow =
+    closedWithWinner &&
+    user !== null &&
+    (user.id === auction.sellerId || user.id === auction.winnerId) &&
+    !detail.myNoShowReported;
+
+  const reportNoShow = async () => {
+    if (reportingNoShow) return;
+    setReportingNoShow(true);
+    try {
+      await client.reportAuctionNoShow(auction.id);
+      toast('Recorded. Three winner no-shows in 90 days block bidding.');
+      await load();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not record the no-show.');
+    } finally {
+      setReportingNoShow(false);
+    }
+  };
 
   const place = async () => {
     if (!user || busy) return;
@@ -194,6 +220,21 @@ export function AuctionPanel({
         </p>
       )}
       {!over && <p className="mono-label aucpanel-disclaimer">{BID_DISCLAIMER}</p>}
+      {canReportNoShow && (
+        <button
+          type="button"
+          className="btn-ghost-mono aucpanel-noshow"
+          disabled={reportingNoShow}
+          onClick={() => void reportNoShow()}
+        >
+          {user?.id === auction.sellerId
+            ? "Winner didn't follow through"
+            : "Seller didn't follow through"}
+        </button>
+      )}
+      {closedWithWinner && detail.myNoShowReported && (
+        <p className="mono-label aucpanel-noshow-done">No-show recorded — it feeds the report queue.</p>
+      )}
 
       {bids.length > 0 && (
         <ol className="aucpanel-history" aria-label="Bid history">

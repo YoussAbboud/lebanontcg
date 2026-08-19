@@ -140,9 +140,7 @@ export function HomePage() {
         <FanCarousel items={fanItems} />
       )}
 
-      {state === 'ready' && <LiveBids />}
-
-      {featured.length > 0 && (
+{featured.length > 0 && (
         <section aria-label="Featured this week" className="home-featured">
           <div className="section-head">
             <h2>Featured this week</h2>
@@ -210,6 +208,8 @@ export function HomePage() {
           </div>
         </section>
       )}
+
+      {state === 'ready' && <LiveBids />}
 
       <section aria-label="Trending sellers and listings" className="home-trending dotgrid">
         <div className="section-head">

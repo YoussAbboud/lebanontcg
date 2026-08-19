@@ -536,3 +536,14 @@ no-show action records once and shows on the winner's profile; a
 below-reserve close offers Relist, which prefills a new fixed-price
 listing with copied photos and leaves the original closed. Full
 battery green: a1/a2/g1–g6/crop/fan/review/r4/r8/sell/heic.
+
+## A4/A5 — Pin cropping + Live Bids
+
+a5-smoke.mjs (15 checks): the listing crop dialog switches to the pin
+tool and back, and a flattened photo lands at 1000×1400; the home Live
+Bids rail renders cards with watcher bubbles and clocks; opening the
+Live Bid page in a second tab raises the home bubble within seconds; a
+bid fades up on the home card with name + amount and the card price
+follows; the auction page is the Live Bid room (no listing layout);
+the price chart draws its line, labels start/current, and its hover
+tooltip names the bid. a1/a2/a3 updated for the new page selectors.

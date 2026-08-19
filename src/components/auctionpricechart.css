@@ -1,0 +1,35 @@
+/* Auction price chart — single accent series, recessive grid, ink text. */
+
+.aucchart { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.aucchart-title { color: var(--muted); }
+.aucchart-stage { position: relative; }
+.aucchart svg { display: block; width: 100%; height: 150px; touch-action: none; }
+.aucchart-grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 4; }
+.aucchart-line {
+  fill: none;
+  stroke: var(--acid);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.aucchart-crosshair { stroke: var(--muted); stroke-width: 1; opacity: 0.7; }
+.aucchart-dot { fill: var(--acid); stroke: var(--panel, #14161c); stroke-width: 2; }
+.aucchart-dot.is-hover { fill: #fff; }
+.aucchart-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--raised-2, rgba(10, 12, 16, 0.92));
+  pointer-events: none;
+  white-space: nowrap;
+}
+.aucchart-tip-name { font-size: var(--fs-13); }
+.aucchart-tip-when { color: var(--muted); }
+.aucchart-labels { display: flex; justify-content: space-between; align-items: baseline; color: var(--muted); }
+.aucchart-current { color: var(--acid); font-size: 16px; }

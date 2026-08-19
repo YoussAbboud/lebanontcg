@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { ListingStatus, ListingWithSeller } from '../lib/types';
 import { CONDITION_LABELS, FINISH_LABELS, GAME_LABELS } from '../lib/types';
 import { allowedTransitions, STATUS_LABELS } from '../lib/status';
-import { formatTimeLeft, isEffectivelyOver } from '../lib/auction';
 import { avatarBackground, faceBackground, glyphOf } from '../lib/face';
 import { formatPrice, memberSince } from '../lib/format';
 import { useApp } from '../state/AppContext';
@@ -12,7 +11,7 @@ import { Avatar } from '../components/Avatar';
 import { ReportDialog } from '../components/ReportDialog';
 import { PregradeListingPanel } from '../components/pregrade/PregradeListingPanel';
 import { ImageLightbox } from '../components/ImageLightbox';
-import { AuctionPanel } from '../components/AuctionPanel';
+import { LiveBidPage } from './LiveBidPage';
 import './listing.css';
 
 type LoadState = 'loading' | 'ready' | 'error' | 'missing';
@@ -27,8 +26,6 @@ export function ListingPage() {
   const [photo, setPhoto] = useState(0);
   const [busy, setBusy] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [cancelOpen, setCancelOpen] = useState(false);
-  const [cancelReason, setCancelReason] = useState('');
   const [lightbox, setLightbox] = useState(false);
   // Desktop hover zoom: the cursor drives transform-origin so the point
   // under the pointer stays put while the photo scales.
@@ -96,9 +93,12 @@ export function ListingPage() {
     );
   }
 
+  // An auction is an event with its own room — not a listing page.
+  if (listing.saleType === 'auction') {
+    return <LiveBidPage listing={listing} onReload={() => void load()} />;
+  }
+
   const isOwner = user?.id === listing.sellerId;
-  const auction = listing.auction ?? null;
-  const liveAuction = Boolean(auction && !isEffectivelyOver(auction));
   const watched = favoriteIds.has(listing.id);
   const cover = listing.images[photo] ?? listing.images[0];
   const sellerHandle = listing.seller.username
@@ -116,35 +116,6 @@ export function ListingPage() {
     ['Quantity', String(listing.quantity)],
     ['Status', STATUS_LABELS[listing.status]],
   ];
-
-  const endAuctionNow = async () => {
-    if (!auction || !window.confirm('End the auction now? The highest bid wins as-is.')) return;
-    setBusy(true);
-    try {
-      await client.endAuctionEarly(auction.id);
-      toast('Auction ended');
-      await load();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not end the auction.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const cancelAuctionNow = async () => {
-    if (!auction) return;
-    setBusy(true);
-    try {
-      await client.cancelAuction(auction.id, cancelReason.trim());
-      toast('Auction cancelled — every bidder was notified.');
-      setCancelOpen(false);
-      await load();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : 'Could not cancel the auction.');
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const messageSeller = async () => {
     if (!user) {
@@ -262,20 +233,10 @@ export function ListingPage() {
           </div>
           <h1 className="display ldetail-title">{listing.title}</h1>
           <div className="ldetail-price-row">
-            <span className="mono-label">
-              {auction ? (liveAuction ? 'Current bid' : 'Final bid') : 'Asking'}
-            </span>
+            <span className="mono-label">Asking</span>
             <span className="display ldetail-price">
               {formatPrice(listing.price, listing.currency)}
             </span>
-            {liveAuction && auction && (
-              <span className="mono-label ldetail-tag">
-                LIVE · ends in {formatTimeLeft(auction.endsAt)}
-              </span>
-            )}
-            {auction && auction.status === 'cancelled' && (
-              <span className="mono-label ldetail-tag-muted">Auction cancelled</span>
-            )}
             {listing.status !== 'active' && (
               <span
                 className={`mono-label ${listing.status === 'sold' ? 'ldetail-tag-muted' : 'ldetail-tag'}`}
@@ -285,67 +246,7 @@ export function ListingPage() {
             )}
           </div>
 
-          {isOwner && auction ? (
-            <div className="ldetail-actions ldetail-auction-owner">
-              {liveAuction ? (
-                <>
-                  <Link to={`/sell/${listing.id}`} className="btn-outline">Edit</Link>
-                  <button
-                    type="button"
-                    className="btn-acid"
-                    disabled={busy}
-                    onClick={() => void endAuctionNow()}
-                  >
-                    End auction now
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-outline btn-danger-outline"
-                    disabled={busy}
-                    onClick={() => setCancelOpen((v) => !v)}
-                  >
-                    Cancel auction
-                  </button>
-                  {cancelOpen && (
-                    <div className="ldetail-cancelform">
-                      <input
-                        className="input"
-                        placeholder="Why? Every bidder is told."
-                        value={cancelReason}
-                        maxLength={200}
-                        onChange={(e) => setCancelReason(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="btn-outline btn-danger-outline"
-                        disabled={busy || cancelReason.trim().length < 3}
-                        onClick={() => void cancelAuctionNow()}
-                      >
-                        Confirm cancel
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <span className="mono-label ldetail-auction-note">
-                    {auction.status === 'cancelled'
-                      ? 'You cancelled this auction.'
-                      : auction.winnerId
-                        ? 'Auction closed — the winner is in your messages.'
-                        : auction.reservePrice !== null
-                          ? 'Reserve not met — the card stays yours.'
-                          : 'Auction ended without a winner.'}
-                  </span>
-                  {!auction.winnerId && (
-                    <Link to={`/sell?relist=${listing.id}`} className="btn-acid">
-                      Relist
-                    </Link>
-                  )}
-                </>
-              )}
-            </div>
-          ) : isOwner ? (
+          {isOwner ? (
             <div className="ldetail-actions">
               {(listing.status === 'active' || listing.status === 'reserved') && (
                 <Link to={`/sell/${listing.id}`} className="btn-outline">Edit</Link>
@@ -378,9 +279,7 @@ export function ListingPage() {
                   ? 'Sold'
                   : listing.status === 'removed'
                     ? 'Unavailable'
-                    : liveAuction
-                      ? 'Ask a question'
-                      : 'Message seller'}
+                    : 'Message seller'}
               </button>
               <button
                 type="button"
@@ -400,10 +299,6 @@ export function ListingPage() {
                 ⚑
               </button>
             </div>
-          )}
-
-          {auction && (
-            <AuctionPanel listing={listing} onAuctionChanged={() => void load()} />
           )}
 
           <table className="ldetail-specs">

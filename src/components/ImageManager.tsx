@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ImageDraft } from '../lib/types';
 import { MAX_LISTING_IMAGES } from '../lib/types';
 import { ImageCropper } from './ImageCropper';
+import { CornerPinCropper } from './pregrade/CornerPinCropper';
 import './imagemanager.css';
 import { looksLikePickedImage } from '../lib/heic';
 
@@ -28,6 +29,10 @@ export function ImageManager({ images, onChange, error }: Props) {
   const [overIndex, setOverIndex] = useState<number | null>(null);
   // Files waiting for their crop step, front of the array first.
   const [cropQueue, setCropQueue] = useState<File[]>([]);
+  // Free rectangle by default; "pin" is the pre-grade corner-pin tool —
+  // drop four free pins on the card's corners and the shot flattens to a
+  // clean card. Two-way switch inside either dialog.
+  const [cropMode, setCropMode] = useState<'rect' | 'pin'>('rect');
 
   const addFiles = (files: FileList | File[]) => {
     const room = MAX_LISTING_IMAGES - images.length - cropQueue.length;
@@ -151,21 +156,37 @@ export function ImageManager({ images, onChange, error }: Props) {
         </p>
       )}
 
-      {cropQueue.length > 0 && (
-        <ImageCropper
-          file={cropQueue[0]}
-          outLongEdge={LISTING_OUT_LONG_EDGE}
-          title="Crop your photo"
-          onCancel={() => setCropQueue((q) => q.slice(1))}
-          onDone={(out) => {
-            onChange([
-              ...images,
-              { id: `draft-${++draftCounter}`, kind: 'new', url: out.url, file: out.blob },
-            ]);
-            setCropQueue((q) => q.slice(1));
-          }}
-        />
-      )}
+      {cropQueue.length > 0 &&
+        (cropMode === 'pin' ? (
+          <CornerPinCropper
+            file={cropQueue[0]}
+            title="Pin the card's corners"
+            onCancel={() => setCropQueue((q) => q.slice(1))}
+            onUseRectCrop={() => setCropMode('rect')}
+            onDone={(out) => {
+              onChange([
+                ...images,
+                { id: `draft-${++draftCounter}`, kind: 'new', url: out.url, file: out.blob },
+              ]);
+              setCropQueue((q) => q.slice(1));
+            }}
+          />
+        ) : (
+          <ImageCropper
+            file={cropQueue[0]}
+            outLongEdge={LISTING_OUT_LONG_EDGE}
+            title="Crop your photo"
+            onCancel={() => setCropQueue((q) => q.slice(1))}
+            onUsePinCrop={() => setCropMode('pin')}
+            onDone={(out) => {
+              onChange([
+                ...images,
+                { id: `draft-${++draftCounter}`, kind: 'new', url: out.url, file: out.blob },
+              ]);
+              setCropQueue((q) => q.slice(1));
+            }}
+          />
+        ))}
     </div>
   );
 }

@@ -23,9 +23,13 @@ import './auctionpanel.css';
 export function AuctionPanel({
   listing,
   onAuctionChanged,
+  onDetail,
 }: {
   listing: ListingWithSeller;
   onAuctionChanged(): void;
+  /** Mirror of the loaded detail — the Live Bid page feeds its banner
+      and price chart from it. */
+  onDetail?(detail: AuctionDetail): void;
 }) {
   const { client, user } = useApp();
   const toast = useToast();
@@ -42,9 +46,12 @@ export function AuctionPanel({
 
   const load = useCallback(async () => {
     const d = await client.getAuctionForListing(listing.id).catch(() => null);
-    if (d) setDetail(d);
+    if (d) {
+      setDetail(d);
+      onDetail?.(d);
+    }
     return d;
-  }, [client, listing.id]);
+  }, [client, listing.id, onDetail]);
 
   useEffect(() => {
     void load();

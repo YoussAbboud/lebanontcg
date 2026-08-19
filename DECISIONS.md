@@ -762,3 +762,39 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   moderation queue. is_bid_banned() (three winner no-shows in 90 days)
   swaps in for the 0013 placeholder and blocks BIDDING only — listings
   and chat are untouched. The count is public and shows on profiles.
+
+## A4 — Corner-pin cropping for listing photos
+
+- The pre-grade corner-pin tool (four free pins → perspective flatten)
+  is now a mode in the listing photo dialog, switchable both ways
+  ("Pin corners instead" / "Rectangle crop instead") and sticky for the
+  rest of the queue. Same component, same output: a clean 1000×1400
+  card with the table and background gone.
+
+## A5 — Live Bids: a room, not a listing page
+
+- An auction is an event, so it gets its own page (LiveBidPage) instead
+  of the fixed-price layout: a pulsing LIVE banner carrying the watcher
+  count and the clock, the photo beside the bid arena, then the price
+  chart, specs and seller. /listing/:id branches on sale type, so old
+  links keep working and nothing else had to move.
+- Presence is transient and needs no schema: live uses Supabase
+  Realtime presence channels (per-auction, keyed by user id or a
+  per-tab anon key); mock uses BroadcastChannel heartbeats with a 12s
+  expiry. `join: true` marks a real viewer — home cards observe
+  WITHOUT joining, so a card can never inflate its own count. The mock
+  adds three phantom watchers to the demo auction so the rail looks
+  inhabited offline.
+- Home's Live Bids rail subscribes per card: the price is the live top
+  bid, and each new bid floats up over the art as "@name $amount" for
+  ~2.5s. It's the same AuctionEvent stream the room uses.
+- The price chart is one series (start → now) drawn as a step-after
+  line, because the price HOLDS between bids — a straight interpolation
+  would imply prices that never existed. Single series → no legend
+  (the title names it), direct labels only at start and current, a
+  crosshair + tooltip naming the bid under the pointer, recessive
+  dashed grid, and text in ink tokens with only the line in acid.
+- Ownership fix: the scripted mock auction is started by JOINING the
+  room, not by subscribing to bids — otherwise the home rail's
+  subscription claimed the script and fixed the clock before the room
+  could apply its ?case= parameter.

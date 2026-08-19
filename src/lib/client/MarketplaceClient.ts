@@ -146,6 +146,16 @@ export interface MarketplaceClient {
   placeBid(auctionId: string, amount: number): Promise<PlacedBid>;
   /** Live events for one auction: new bids and auction-row changes. */
   subscribeToAuction(auctionId: string, cb: (ev: AuctionEvent) => void): Unsubscribe;
+  /**
+   * Live viewer count for one auction. `join: true` marks this tab as a
+   * viewer (use it on the auction's page); observers — home cards,
+   * dashboards — subscribe without joining and don't inflate the count.
+   */
+  subscribeToAuctionPresence(
+    auctionId: string,
+    cb: (count: number) => void,
+    opts?: { join?: boolean },
+  ): Unsubscribe;
   /** Seller only: close now — the highest bid (if any) wins as-is. */
   endAuctionEarly(auctionId: string): Promise<void>;
   /** Seller only: no winner, reason required, every bidder notified. */

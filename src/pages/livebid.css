@@ -1,0 +1,106 @@
+/* The Live Bid page — an auction is an event, and the page dresses like
+   one: pulsing banner, photo beside the bid arena, chart underneath. */
+
+.livebid { display: flex; flex-direction: column; gap: 18px; }
+
+.livebid-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1px solid var(--border);
+}
+.livebid-banner.is-live { border-color: var(--acid); }
+.livebid-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+.livebid-banner.is-live .livebid-dot {
+  background: var(--acid);
+  animation: livebid-pulse 1.6s ease-in-out infinite;
+}
+@keyframes livebid-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(210, 255, 60, 0.55); }
+  55% { box-shadow: 0 0 0 8px rgba(210, 255, 60, 0); }
+}
+.livebid-state { letter-spacing: 0.14em; }
+.livebid-banner.is-live .livebid-state { color: var(--acid); }
+.livebid-watchers {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: var(--muted);
+}
+.livebid-clock { margin-left: auto; font-size: 16px; }
+.livebid-banner.is-soon .livebid-clock { color: var(--acid); }
+
+.livebid-arena {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 22px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .livebid-arena { grid-template-columns: 1fr; }
+}
+
+.livebid-face {
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  overflow: hidden;
+  background: var(--input-bg);
+  cursor: var(--cursor-hand, pointer);
+  aspect-ratio: 5 / 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.livebid-face img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.livebid-glyph { font-size: 64px; opacity: 0.4; }
+.livebid-thumbs { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.livebid-thumb {
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0;
+  background: none;
+  opacity: 0.65;
+}
+.livebid-thumb.is-on { border-color: var(--acid); opacity: 1; }
+.livebid-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.livebid-rail { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.livebid-title { font-size: var(--fs-28); margin: 0; }
+.livebid-rail .aucpanel { margin-top: 0; }
+.livebid-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.livebid-ownernote { color: var(--muted); }
+.livebid-cancelform { display: flex; gap: 8px; width: 100%; }
+.livebid-cancelform .input { flex: 1; }
+
+.livebid-chartpanel { padding: 16px 18px; }
+
+.livebid-below {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 22px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .livebid-below { grid-template-columns: 1fr; }
+}
+.livebid-specs { width: 100%; }
+.livebid-seller {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+}
+.livebid-seller-name { font-weight: 600; }
+.livebid-desc { margin: 0; white-space: pre-wrap; }

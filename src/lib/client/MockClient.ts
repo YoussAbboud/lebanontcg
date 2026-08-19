@@ -112,6 +112,10 @@ export class MockClient implements MarketplaceClient {
   private inboxListeners = new Set<() => void>();
   private listingListeners = new Map<string, Set<(l: Listing) => void>>();
   private auctionListeners = new Map<string, Set<(ev: AuctionEvent) => void>>();
+  /** auctionId -> tabId -> last heartbeat (ms). Transient, never snapshotted. */
+  private presence = new Map<string, Map<string, number>>();
+  private presenceListeners = new Map<string, Set<(count: number) => void>>();
+  private presenceTimers = new Map<string, number>();
 
   /** Cross-tab sync so two tabs (two mock users) share one world. */
   private channel: BroadcastChannel | null = null;
@@ -279,6 +283,14 @@ export class MockClient implements MarketplaceClient {
         this.credentials.set(patch.email, { userId: patch.userId, password: patch.password });
         break;
       }
+      case 'presence': {
+        const room = this.presence.get(patch.auctionId) ?? new Map<string, number>();
+        if (patch.leaving) room.delete(patch.tabId);
+        else room.set(patch.tabId, patch.at);
+        this.presence.set(patch.auctionId, room);
+        this.emitPresence(patch.auctionId);
+        break;
+      }
       case 'auction': {
         const i = this.auctions.findIndex((a) => a.id === patch.auction.id);
         if (i >= 0) this.auctions[i] = patch.auction;
@@ -359,6 +371,28 @@ export class MockClient implements MarketplaceClient {
 
   private emitAuction(auctionId: string, ev: AuctionEvent) {
     for (const cb of this.auctionListeners.get(auctionId) ?? []) cb(ev);
+  }
+
+  /** Distinct live tabs (heartbeats < 12s old) — plus, for the scripted
+      demo auction, three phantom viewers so the mock feels inhabited. */
+  private presenceCount(auctionId: string): number {
+    const room = this.presence.get(auctionId);
+    const cutoff = Date.now() - 12_000;
+    let n = 0;
+    if (room) {
+      for (const [tab, at] of room) {
+        if (at >= cutoff) n++;
+        else room.delete(tab);
+      }
+    }
+    const a = this.auctions.find((x) => x.id === auctionId);
+    if (auctionId === 'a-1' && a?.status === 'live') n += 3;
+    return n;
+  }
+
+  private emitPresence(auctionId: string) {
+    const n = this.presenceCount(auctionId);
+    for (const cb of this.presenceListeners.get(auctionId) ?? []) cb(n);
   }
 
   private emitInbox() {
@@ -1014,7 +1048,6 @@ export class MockClient implements MarketplaceClient {
   subscribeToAuction(auctionId: string, cb: (ev: AuctionEvent) => void): Unsubscribe {
     if (!this.auctionListeners.has(auctionId)) this.auctionListeners.set(auctionId, new Set());
     this.auctionListeners.get(auctionId)!.add(cb);
-    this.maybeStartAuctionScript(auctionId);
     return () => this.auctionListeners.get(auctionId)?.delete(cb);
   }
 
@@ -1106,6 +1139,52 @@ export class MockClient implements MarketplaceClient {
       window.setTimeout(sweep, 3_000);
     };
     window.setTimeout(sweep, Math.max(1_000, new Date(a.endsAt).getTime() - Date.now()));
+  }
+
+  subscribeToAuctionPresence(
+    auctionId: string,
+    cb: (count: number) => void,
+    opts?: { join?: boolean },
+  ): Unsubscribe {
+    if (!this.presenceListeners.has(auctionId)) {
+      this.presenceListeners.set(auctionId, new Set());
+    }
+    this.presenceListeners.get(auctionId)!.add(cb);
+
+    const beat = () => {
+      const room = this.presence.get(auctionId) ?? new Map<string, number>();
+      room.set(tabId, Date.now());
+      this.presence.set(auctionId, room);
+      this.broadcast({ type: 'presence', auctionId, tabId, at: Date.now() });
+      this.emitPresence(auctionId);
+    };
+    let heartbeat: number | undefined;
+    if (opts?.join) {
+      // Being in the room is what starts the scripted demo auction —
+      // passive observers (home cards) must never claim it, or they'd
+      // fix the clock before the room could apply its ?case=.
+      this.maybeStartAuctionScript(auctionId);
+      beat();
+      heartbeat = window.setInterval(beat, 4_000);
+    } else {
+      cb(this.presenceCount(auctionId));
+    }
+    // Observers still need stale tabs pruned and demo drift refreshed.
+    const pruneKey = `${auctionId}:${Math.random()}`;
+    const prune = window.setInterval(() => this.emitPresence(auctionId), 5_000);
+    this.presenceTimers.set(pruneKey, prune);
+
+    return () => {
+      this.presenceListeners.get(auctionId)?.delete(cb);
+      window.clearInterval(prune);
+      this.presenceTimers.delete(pruneKey);
+      if (heartbeat !== undefined) {
+        window.clearInterval(heartbeat);
+        this.presence.get(auctionId)?.delete(tabId);
+        this.broadcast({ type: 'presence', auctionId, tabId, at: Date.now(), leaving: true });
+        this.emitPresence(auctionId);
+      }
+    };
   }
 
   async endAuctionEarly(auctionId: string): Promise<void> {
@@ -1805,6 +1884,7 @@ type RemotePatch =
   | { type: 'credential'; email: string; userId: string; password: string | null }
   | { type: 'auction'; auction: Auction }
   | { type: 'bid'; bid: Bid }
+  | { type: 'presence'; auctionId: string; tabId: string; at: number; leaving?: boolean }
   | {
       type: 'noshow';
       noShow: {

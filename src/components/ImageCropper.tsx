@@ -39,6 +39,8 @@ interface Props {
   round?: boolean;
   onCancel(): void;
   onDone(out: CroppedImage): void;
+  /** Offered in free mode: switch to the corner-pin (flatten) tool. */
+  onUsePinCrop?(): void;
 }
 
 /** Fixed mode: zoom range on top of the always-covering minimum scale. */
@@ -68,6 +70,7 @@ export function ImageCropper({
   round,
   onCancel,
   onDone,
+  onUsePinCrop,
 }: Props) {
   const free = aspect === undefined;
   const stageRef = useRef<HTMLDivElement>(null);
@@ -435,6 +438,11 @@ export function ImageCropper({
         )}
 
         <div className="crop-actions">
+          {onUsePinCrop && (
+            <button type="button" className="btn-ghost-mono crop-pin-switch" onClick={onUsePinCrop}>
+              Pin corners instead
+            </button>
+          )}
           <button type="button" className="btn-outline" onClick={onCancel}>
             Cancel
           </button>

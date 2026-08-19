@@ -1055,6 +1055,33 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     };
   }
 
+  subscribeToAuctionPresence(
+    auctionId: string,
+    cb: (count: number) => void,
+    opts?: { join?: boolean },
+  ): Unsubscribe {
+    // Supabase Realtime presence: joiners track themselves; observers
+    // subscribe without tracking and only read the state. Anonymous
+    // viewers get a per-tab key so each open tab counts once.
+    const key = this.auth.user?.id ?? `anon-${Math.random().toString(36).slice(2, 10)}`;
+    const channel = this.sb.channel(`presence-auction-${auctionId}`, {
+      config: { presence: { key } },
+    });
+    const emit = () => cb(Object.keys(channel.presenceState()).length);
+    channel
+      .on('presence', { event: 'sync' }, emit)
+      .on('presence', { event: 'join' }, emit)
+      .on('presence', { event: 'leave' }, emit)
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED' && opts?.join) {
+          void channel.track({ at: Date.now() });
+        }
+      });
+    return () => {
+      void this.sb.removeChannel(channel);
+    };
+  }
+
   async endAuctionEarly(auctionId: string): Promise<void> {
     const { error } = await this.sb.rpc('end_auction_early', { p_auction_id: auctionId });
     if (error) throw new Error(error.message);

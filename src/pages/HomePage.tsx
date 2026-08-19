@@ -7,6 +7,7 @@ import { formatPrice } from '../lib/format';
 import { avatarBackground, faceBackground, glyphOf } from '../lib/face';
 import { useApp } from '../state/AppContext';
 import { FanCarousel } from '../components/FanCarousel';
+import { LiveBids } from '../components/LiveBids';
 import { ListingCard } from '../components/ListingCard';
 import { listingEyebrow } from '../components/ListingCard';
 import { Avatar } from '../components/Avatar';
@@ -177,6 +178,8 @@ export function HomePage() {
           )}
         </>
       )}
+
+      {state === 'ready' && <LiveBids />}
 
       {featured.length > 0 && (
         <section aria-label="Featured this week" className="home-featured">

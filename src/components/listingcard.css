@@ -209,3 +209,16 @@
   color: var(--text-2, var(--muted));
   white-space: nowrap;
 }
+
+/* Live auction pill over the card art — the countdown pill that marks
+   an auction card in any grid. */
+.lcard-live {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--acid);
+  color: #10120a;
+  letter-spacing: 0.08em;
+}

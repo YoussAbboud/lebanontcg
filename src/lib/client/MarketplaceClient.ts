@@ -1,4 +1,8 @@
 import type {
+  Auction,
+  AuctionDetail,
+  AuctionInput,
+  Bid,
   Conversation,
   ConversationSummary,
   ImageDraft,
@@ -38,6 +42,21 @@ export interface AuthState {
 export interface SignUpResult {
   /** True when a confirmation email was sent and there's no session yet. */
   needsEmailConfirmation: boolean;
+}
+
+export interface AuctionEvent {
+  /** 'bid' = a new bid landed (payload attached); 'updated' = the
+      auction row changed (extension, close, cancel) — refetch-friendly. */
+  type: 'bid' | 'updated';
+  auction: Auction;
+  bid?: Bid;
+}
+
+export interface PlacedBid {
+  amount: number;
+  endsAt: string;
+  /** The bid landed in the final minute and pushed the close out 60s. */
+  extended: boolean;
 }
 
 export interface ConversationEvent {
@@ -106,6 +125,31 @@ export interface MarketplaceClient {
     status: ListingStatus,
     opts?: { reservedForConversationId?: string | null },
   ): Promise<Listing>;
+
+  // ---- Auctions ----------------------------------------------------------
+  /** Create an auction-type listing (listing + auction in one
+      transaction — the pairing is enforced at the DB). */
+  createAuctionListing(
+    input: ListingInput,
+    images: ImageDraft[],
+    auction: AuctionInput,
+  ): Promise<Listing>;
+  /** The auction + full bid history for a listing (newest first).
+      Lazily closes overdue auctions so a stale one never reads live. */
+  getAuctionForListing(listingId: string): Promise<AuctionDetail | null>;
+  /**
+   * Place a bid. ALL validation happens server-side (place_bid in
+   * Postgres / the mock engine): live status, not the seller, blocks,
+   * minimum increment, anti-snipe. Rejections throw with the reason
+   * (e.g. the new minimum) — never a silent failure.
+   */
+  placeBid(auctionId: string, amount: number): Promise<PlacedBid>;
+  /** Live events for one auction: new bids and auction-row changes. */
+  subscribeToAuction(auctionId: string, cb: (ev: AuctionEvent) => void): Unsubscribe;
+  /** Seller only: close now — the highest bid (if any) wins as-is. */
+  endAuctionEarly(auctionId: string): Promise<void>;
+  /** Seller only: no winner, reason required, every bidder notified. */
+  cancelAuction(auctionId: string, reason: string): Promise<void>;
 
   // ---- Favorites ---------------------------------------------------------
   getFavoriteIds(): Promise<Set<string>>;

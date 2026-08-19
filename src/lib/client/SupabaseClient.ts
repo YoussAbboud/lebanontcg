@@ -1,5 +1,10 @@
 import { createClient as createSupabase, type SupabaseClient } from '@supabase/supabase-js';
 import type {
+  Auction,
+  AuctionDetail,
+  AuctionInput,
+  AuctionStatus,
+  Bid,
   Condition,
   Conversation,
   ConversationSummary,
@@ -32,9 +37,11 @@ import { PHASH_MISMATCH_COPY } from '../pregrade/phash';
 import { capturesMatchCover } from '../pregrade/phashGate';
 import { toStorageImage } from '../pregrade/decode';
 import type {
+  AuctionEvent,
   AuthState,
   ConversationEvent,
   MarketplaceClient,
+  PlacedBid,
   SignUpResult,
   Unsubscribe,
 } from './MarketplaceClient';
@@ -78,10 +85,37 @@ interface ListingRow {
   quantity: number;
   description: string;
   status: ListingStatus;
+  sale_type: 'fixed' | 'auction';
   reserved_for_conversation_id: string | null;
   created_at: string;
   updated_at: string;
   listing_images?: ListingImageRow[];
+  auctions?: AuctionRow[];
+}
+
+interface AuctionRow {
+  id: string;
+  listing_id: string;
+  seller_id: string;
+  starting_price: number | string;
+  reserve_price: number | string | null;
+  currency: string;
+  ends_at: string;
+  status: AuctionStatus;
+  winner_id: string | null;
+  winning_bid: number | string | null;
+  cancel_reason: string | null;
+  created_at: string;
+}
+
+interface BidRow {
+  id: string;
+  auction_id: string;
+  bidder_id: string;
+  amount: number | string;
+  extended: boolean;
+  created_at: string;
+  bidder?: { username: string | null; display_name: string } | null;
 }
 
 interface ConversationRow {
@@ -163,7 +197,7 @@ interface PregradeRow {
   pregrade_outcomes?: PregradeOutcomeRow[];
 }
 
-const LISTING_SELECT = '*, listing_images(*)';
+const LISTING_SELECT = '*, listing_images(*), auctions(*)';
 
 export class SupabaseMarketplaceClient implements MarketplaceClient {
   readonly isMock = false;
@@ -227,11 +261,52 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       quantity: row.quantity,
       description: row.description,
       status: row.status,
+      saleType: row.sale_type ?? 'fixed',
       reservedForConversationId: row.reserved_for_conversation_id,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       images,
     };
+  }
+
+  private mapAuction(row: AuctionRow): Auction {
+    return {
+      id: row.id,
+      listingId: row.listing_id,
+      sellerId: row.seller_id,
+      startingPrice: Number(row.starting_price),
+      reservePrice: row.reserve_price === null ? null : Number(row.reserve_price),
+      currency: row.currency,
+      endsAt: row.ends_at,
+      status: row.status,
+      winnerId: row.winner_id,
+      winningBid: row.winning_bid === null ? null : Number(row.winning_bid),
+      cancelReason: row.cancel_reason,
+      createdAt: row.created_at,
+    };
+  }
+
+  private mapBid(row: BidRow): Bid {
+    return {
+      id: row.id,
+      auctionId: row.auction_id,
+      bidderId: row.bidder_id,
+      bidderName: row.bidder
+        ? row.bidder.username
+          ? `@${row.bidder.username}`
+          : row.bidder.display_name
+        : 'a collector',
+      amount: Number(row.amount),
+      extended: row.extended,
+      createdAt: row.created_at,
+    };
+  }
+
+  /** The embedded auction of an auction-type row (undefined for fixed). */
+  private auctionOf(row: ListingRow): Auction | null | undefined {
+    if (row.sale_type !== 'auction') return undefined;
+    const a = row.auctions?.[0];
+    return a ? this.mapAuction(a) : null;
   }
 
   private mapMessage(row: MessageRow): Message {
@@ -526,6 +601,13 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   }
 
   async searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage> {
+    if ((filter.saleType ?? 'all') === 'auction' || filter.sort === 'ending_soon') {
+      // A stale auction must never render as live if cron is behind.
+      void this.sb.rpc('close_due_auctions').then(() => undefined, () => undefined);
+    }
+    if (filter.sort === 'ending_soon') {
+      return this.searchEndingSoon(filter, offset, limit);
+    }
     if (filter.sort === 'most_watched') {
       return this.searchMostWatched(filter, offset, limit);
     }
@@ -544,6 +626,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     if (filter.priceMin !== null) q = q.gte('price', filter.priceMin);
     if (filter.priceMax !== null) q = q.lte('price', filter.priceMax);
     if (filter.gradedOnly) q = q.not('grade_value', 'is', null);
+    if ((filter.saleType ?? 'all') !== 'all') q = q.eq('sale_type', filter.saleType);
     if (filter.hasPregrade) {
       const ids = await this.pregradeListingIds();
       if (ids.length === 0) return { items: [], total: 0, hasMore: false };
@@ -575,6 +658,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     ]);
     const items = rows.map((row) => ({
       ...this.mapListing(row),
+      auction: this.auctionOf(row),
       seller: this.mapProfile(row.seller),
       sellerActiveListingCount: 0, // filled on the detail page only
       likes: likes.get(row.id) ?? 0,
@@ -582,6 +666,38 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     }));
     const total = count ?? items.length;
     return { items, total, hasMore: offset + items.length < total };
+  }
+
+  /** Ending-soon: order comes from the auctions table, so page there
+      first and hydrate the listings in that order. */
+  private async searchEndingSoon(
+    filter: ListingFilter,
+    offset: number,
+    limit: number,
+  ): Promise<ListingPage> {
+    const { data, error } = await this.sb
+      .from('auctions')
+      .select('listing_id, ends_at')
+      .eq('status', 'live')
+      .order('ends_at', { ascending: true })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    const orderedIds = ((data ?? []) as { listing_id: string }[]).map((r) => r.listing_id);
+    if (orderedIds.length === 0) return { items: [], total: 0, hasMore: false };
+    const page = await this.searchListings(
+      { ...filter, saleType: 'auction', sort: 'newest' },
+      0,
+      orderedIds.length,
+    );
+    const byId = new Map(page.items.map((i) => [i.id, i]));
+    const ordered = orderedIds
+      .map((id) => byId.get(id))
+      .filter((i): i is NonNullable<typeof i> => Boolean(i));
+    return {
+      items: ordered.slice(offset, offset + limit),
+      total: ordered.length,
+      hasMore: offset + limit < ordered.length,
+    };
   }
 
   /** Listing ids carrying a published pre-grade report. */
@@ -687,6 +803,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     ]);
     return {
       ...this.mapListing(row),
+      auction: this.auctionOf(row),
       seller: this.mapProfile(row.seller),
       sellerActiveListingCount: count ?? 0,
       likes: likes.get(row.id) ?? 0,
@@ -793,13 +910,16 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   }
 
   async updateListing(id: string, input: ListingInput, images: ImageDraft[]): Promise<Listing> {
-    const { data: existingImages } = await this.sb
-      .from('listing_images')
-      .select('*')
-      .eq('listing_id', id);
+    const [{ data: existingImages }, { data: existingRow }] = await Promise.all([
+      this.sb.from('listing_images').select('*').eq('listing_id', id),
+      this.sb.from('listings').select('sale_type').eq('id', id).maybeSingle(),
+    ]);
+    const row = this.listingInputToRow(input);
+    // An auction listing's price mirrors the current bid — edits never move it.
+    if ((existingRow as { sale_type?: string } | null)?.sale_type === 'auction') delete row.price;
     const { error } = await this.sb
       .from('listings')
-      .update(this.listingInputToRow(input))
+      .update(row)
       .eq('id', id);
     if (error) throw new Error(error.message);
     await this.syncImages(id, images, (existingImages ?? []) as ListingImageRow[]);
@@ -823,6 +943,119 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     const listing = await this.getListing(id);
     if (!listing) throw new Error('Listing not found');
     return listing;
+  }
+
+  // ---- Auctions -----------------------------------------------------------
+
+  async createAuctionListing(
+    input: ListingInput,
+    images: ImageDraft[],
+    auction: AuctionInput,
+  ): Promise<Listing> {
+    // Listing + auction must land in ONE transaction (deferred pairing
+    // constraint), so creation is an RPC; images follow separately.
+    const { data, error } = await this.sb.rpc('create_auction_listing', {
+      p_input: this.listingInputToRow(input),
+      p_starting_price: auction.startingPrice,
+      p_reserve_price: auction.reservePrice,
+      p_duration_hours: auction.durationHours,
+    });
+    if (error) throw new Error(error.message);
+    const listingId = data as string;
+    await this.syncImages(listingId, images, []);
+    return (await this.getListing(listingId))!;
+  }
+
+  async getAuctionForListing(listingId: string): Promise<AuctionDetail | null> {
+    // Lazy close first: a stale auction must never read as live.
+    await this.sb.rpc('close_due_auctions').then(
+      () => undefined,
+      () => undefined,
+    );
+    const { data, error } = await this.sb
+      .from('auctions')
+      .select('*, bids(*, bidder:profiles!bids_bidder_id_fkey(username, display_name))')
+      .eq('listing_id', listingId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+    const row = data as AuctionRow & { bids?: BidRow[] };
+    const bids = (row.bids ?? [])
+      .map((b) => this.mapBid(b))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.amount - a.amount);
+    return { auction: this.mapAuction(row), bids };
+  }
+
+  async placeBid(auctionId: string, amount: number): Promise<PlacedBid> {
+    const { data, error } = await this.sb.rpc('place_bid', {
+      p_auction_id: auctionId,
+      p_amount: amount,
+    });
+    if (error) throw new Error(error.message);
+    const out = data as { amount: number | string; ends_at: string; extended: boolean };
+    return { amount: Number(out.amount), endsAt: out.ends_at, extended: out.extended };
+  }
+
+  subscribeToAuction(auctionId: string, cb: (ev: AuctionEvent) => void): Unsubscribe {
+    let latest: Auction | null = null;
+    const refetch = async (bid?: Bid) => {
+      const { data } = await this.sb
+        .from('auctions')
+        .select('*')
+        .eq('id', auctionId)
+        .maybeSingle();
+      if (!data) return;
+      latest = this.mapAuction(data as AuctionRow);
+      cb(bid ? { type: 'bid', auction: latest, bid } : { type: 'updated', auction: latest });
+    };
+    const channel = this.sb
+      .channel(`auction-${auctionId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bids', filter: `auction_id=eq.${auctionId}` },
+        (payload) => {
+          const row = payload.new as BidRow;
+          // Bidder handle needs a lookup; refetch keeps it one code path.
+          void this.sb
+            .from('profiles')
+            .select('username, display_name')
+            .eq('id', row.bidder_id)
+            .maybeSingle()
+            .then(({ data: p }) => {
+              void refetch(
+                this.mapBid({
+                  ...row,
+                  bidder: (p as { username: string | null; display_name: string } | null) ?? null,
+                }),
+              );
+            });
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'auctions', filter: `id=eq.${auctionId}` },
+        (payload) => {
+          latest = this.mapAuction(payload.new as AuctionRow);
+          cb({ type: 'updated', auction: latest });
+        },
+      )
+      .subscribe();
+    return () => {
+      void this.sb.removeChannel(channel);
+    };
+  }
+
+  async endAuctionEarly(auctionId: string): Promise<void> {
+    const { error } = await this.sb.rpc('end_auction_early', { p_auction_id: auctionId });
+    if (error) throw new Error(error.message);
+  }
+
+  async cancelAuction(auctionId: string, reason: string): Promise<void> {
+    const { error } = await this.sb.rpc('cancel_auction', {
+      p_auction_id: auctionId,
+      p_reason: reason,
+    });
+    if (error) throw new Error(error.message);
   }
 
   // ---- Favorites ----------------------------------------------------------

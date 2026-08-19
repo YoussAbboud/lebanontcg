@@ -1,4 +1,5 @@
 import type {
+  Auction,
   Condition,
   Conversation,
   Finish,
@@ -135,6 +136,7 @@ export function buildSeedListings(): Listing[] {
       quantity: s.qty ?? 1,
       description: s.desc,
       status: s.status ?? 'active',
+      saleType: 'fixed',
       reservedForConversationId: null,
       createdAt: days(s.ageDays),
       updatedAt: days(Math.max(0, s.ageDays - 1)),
@@ -253,6 +255,7 @@ export function buildStressListings(count: number): Listing[] {
       quantity: 1 + (i % 3),
       description: 'Synthetic listing generated for the 1,000-listing browse stress test.',
       status: 'active',
+      saleType: 'fixed',
       reservedForConversationId: null,
       createdAt: days(1 + (i % 300)),
       updatedAt: days(i % 300),
@@ -312,3 +315,80 @@ export const seedReviews = [
     createdAt: days(50),
   },
 ];
+
+/**
+ * Seeded live auctions so mixed grids, the browse filter and the
+ * ending-soon rail all have something real to chew on. The first one
+ * ends a few minutes out — the scripted mock bidders (MockClient) run
+ * their little drama on it, including a final-30s anti-snipe bid.
+ */
+export function buildSeedAuctions(): { listings: Listing[]; auctions: Auction[] } {
+  const mins = (n: number) => new Date(Date.now() + n * 60_000).toISOString();
+  const defs = [
+    {
+      lid: 'l-auc-1', aid: 'a-1', seller: 'u-maya',
+      title: 'Umbreon VMAX Alt Art — Evolving Skies', game: 'pokemon' as Game,
+      set: 'Evolving Skies', num: '215/203', cond: 'NM' as Condition, finish: 'holo' as Finish,
+      desc: 'The moonbreon. Pack fresh into a sleeve, auctioning to see where it lands.',
+      starting: 250, reserve: null, endsInMin: 6,
+    },
+    {
+      lid: 'l-auc-2', aid: 'a-2', seller: 'u-karim',
+      title: 'Dark Magician 1st Edition — LOB', game: 'yugioh' as Game,
+      set: 'Legend of Blue Eyes', num: 'LOB-005', cond: 'LP' as Condition, finish: 'holo' as Finish,
+      desc: 'Original LOB Dark Magician, played in 2002 and loved since. Reserve set.',
+      starting: 40, reserve: 90, endsInMin: 60 * 26,
+    },
+    {
+      lid: 'l-auc-3', aid: 'a-3', seller: 'u-lina',
+      title: 'Monkey D. Luffy Leader Parallel — OP-01', game: 'onepiece' as Game,
+      set: 'Romance Dawn', num: 'OP01-003', cond: 'NM' as Condition, finish: 'foil' as Finish,
+      desc: 'Parallel leader, straight from pack to toploader.',
+      starting: 120, reserve: null, endsInMin: 60 * 70,
+    },
+  ];
+  const listings: Listing[] = defs.map((d) => ({
+    id: d.lid,
+    sellerId: d.seller,
+    title: d.title,
+    game: d.game,
+    setName: d.set,
+    cardNumber: d.num,
+    language: 'English',
+    condition: d.cond,
+    finish: d.finish,
+    gradeCompany: null,
+    gradeValue: null,
+    price: d.starting,
+    currency: 'USD',
+    quantity: 1,
+    description: d.desc,
+    status: 'active',
+    saleType: 'auction',
+    reservedForConversationId: null,
+    createdAt: days(1),
+    updatedAt: days(0),
+    images: Array.from({ length: 2 }, (_, j) => ({
+      id: `${d.lid}-img-${j}`,
+      listingId: d.lid,
+      storagePath: `mock-card://${d.game}/${d.lid}-${j}/${d.finish}/${d.cond}`,
+      url: '',
+      sortOrder: j,
+    })),
+  }));
+  const auctions: Auction[] = defs.map((d) => ({
+    id: d.aid,
+    listingId: d.lid,
+    sellerId: d.seller,
+    startingPrice: d.starting,
+    reservePrice: d.reserve,
+    currency: 'USD',
+    endsAt: mins(d.endsInMin),
+    status: 'live',
+    winnerId: null,
+    winningBid: null,
+    cancelReason: null,
+    createdAt: days(1),
+  }));
+  return { listings, auctions };
+}

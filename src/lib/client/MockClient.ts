@@ -1,4 +1,8 @@
 import type {
+  Auction,
+  AuctionDetail,
+  AuctionInput,
+  Bid,
   Conversation,
   ConversationSummary,
   ImageDraft,
@@ -17,15 +21,19 @@ import type {
   SellerStats,
 } from '../types';
 import type {
+  AuctionEvent,
   AuthState,
   ConversationEvent,
   MarketplaceClient,
+  PlacedBid,
   SignUpResult,
   Unsubscribe,
 } from './MarketplaceClient';
 import { listingMatchesFilter, sortListings } from '../filter';
+import { minNextBid } from '../auction';
 import { canTransition, statusChangeSystemMessage } from '../status';
 import {
+  buildSeedAuctions,
   buildSeedConversations,
   buildSeedListings,
   buildStressListings,
@@ -74,6 +82,8 @@ export class MockClient implements MarketplaceClient {
   ];
   private conversations: Conversation[];
   private messages: Message[];
+  private auctions: Auction[] = [];
+  private bids: Bid[] = [];
   private favorites = new Map<string, Set<string>>();
   private reviews: Review[];
   private blocks = new Map<string, Set<string>>();
@@ -93,6 +103,7 @@ export class MockClient implements MarketplaceClient {
   private conversationListeners = new Map<string, Set<(ev: ConversationEvent) => void>>();
   private inboxListeners = new Set<() => void>();
   private listingListeners = new Map<string, Set<(l: Listing) => void>>();
+  private auctionListeners = new Map<string, Set<(ev: AuctionEvent) => void>>();
 
   /** Cross-tab sync so two tabs (two mock users) share one world. */
   private channel: BroadcastChannel | null = null;
@@ -102,6 +113,9 @@ export class MockClient implements MarketplaceClient {
     const seeded = buildSeedConversations();
     this.conversations = seeded.conversations;
     this.messages = seeded.messages;
+    const auc = buildSeedAuctions();
+    this.listings.push(...auc.listings);
+    this.auctions = auc.auctions;
     this.reviews = seedReviews.map((r) => ({
       ...r,
       reviewer: this.profiles.find((p) => p.id === r.reviewerId)!,
@@ -144,6 +158,8 @@ export class MockClient implements MarketplaceClient {
         this.listings = s.listings;
         this.conversations = s.conversations;
         this.messages = s.messages;
+        this.auctions = s.auctions ?? this.auctions;
+        this.bids = s.bids ?? this.bids;
         this.reviews = s.reviews;
         this.reports = s.reports;
         this.favorites = new Map(s.favorites.map(([k, v]) => [k, new Set(v)]));
@@ -254,6 +270,27 @@ export class MockClient implements MarketplaceClient {
         this.credentials.set(patch.email, { userId: patch.userId, password: patch.password });
         break;
       }
+      case 'auction': {
+        const i = this.auctions.findIndex((a) => a.id === patch.auction.id);
+        if (i >= 0) this.auctions[i] = patch.auction;
+        else this.auctions.push(patch.auction);
+        this.emitAuction(patch.auction.id, { type: 'updated', auction: structuredClone(patch.auction) });
+        break;
+      }
+      case 'bid': {
+        if (!this.bids.some((b) => b.id === patch.bid.id)) {
+          this.bids.push(patch.bid);
+        }
+        const auction = this.auctions.find((a) => a.id === patch.bid.auctionId);
+        if (auction) {
+          this.emitAuction(patch.bid.auctionId, {
+            type: 'bid',
+            auction: structuredClone(auction),
+            bid: structuredClone(patch.bid),
+          });
+        }
+        break;
+      }
       case 'profile': {
         const i = this.profiles.findIndex((p) => p.id === patch.profile.id);
         if (i >= 0) this.profiles[i] = patch.profile;
@@ -272,6 +309,8 @@ export class MockClient implements MarketplaceClient {
       listings: this.listings,
       conversations: this.conversations,
       messages: this.messages,
+      auctions: this.auctions,
+      bids: this.bids,
       reviews: this.reviews,
       reports: this.reports,
       favorites: [...this.favorites.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
@@ -296,6 +335,10 @@ export class MockClient implements MarketplaceClient {
 
   private emitConversation(conversationId: string, ev: ConversationEvent) {
     for (const cb of this.conversationListeners.get(conversationId) ?? []) cb(ev);
+  }
+
+  private emitAuction(auctionId: string, ev: AuctionEvent) {
+    for (const cb of this.auctionListeners.get(auctionId) ?? []) cb(ev);
   }
 
   private emitInbox() {
@@ -556,8 +599,13 @@ export class MockClient implements MarketplaceClient {
     const clone = structuredClone(l);
     for (const img of clone.images) img.url = this.resolveImageUrl(img.storagePath);
     const report = this.publishedReportFor(l.id);
+    const auction =
+      l.saleType === 'auction'
+        ? (this.auctions.find((a) => a.listingId === l.id) ?? null)
+        : undefined;
     return {
       ...clone,
+      ...(auction !== undefined ? { auction: structuredClone(auction) } : {}),
       seller,
       sellerActiveListingCount: this.listings.filter(
         (x) => x.sellerId === l.sellerId && x.status === 'active',
@@ -576,6 +624,7 @@ export class MockClient implements MarketplaceClient {
 
   async searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage> {
     await sleep(netDelay());
+    this.lazyCloseAuctions();
     let candidates = this.listings.filter((l) => listingMatchesFilter(l, filter));
     if (filter.sellerHasReviews) {
       candidates = candidates.filter(
@@ -585,6 +634,8 @@ export class MockClient implements MarketplaceClient {
     if (filter.hasPregrade) {
       candidates = candidates.filter((l) => this.publishedReportFor(l.id));
     }
+    const endsAtOf = (l: Listing) =>
+      this.auctions.find((a) => a.listingId === l.id)?.endsAt ?? '9999';
     const matched =
       filter.sort === 'most_watched'
         ? [...candidates].sort(
@@ -593,7 +644,11 @@ export class MockClient implements MarketplaceClient {
               b.createdAt.localeCompare(a.createdAt) ||
               b.id.localeCompare(a.id),
           )
-        : sortListings(candidates, filter.sort);
+        : filter.sort === 'ending_soon'
+          ? [...candidates]
+              .filter((l) => l.saleType === 'auction')
+              .sort((a, b) => endsAtOf(a).localeCompare(endsAtOf(b)))
+          : sortListings(candidates, filter.sort);
     const page = matched.slice(offset, offset + limit);
     return {
       items: page.map((l) => this.hydrate(l)),
@@ -604,6 +659,7 @@ export class MockClient implements MarketplaceClient {
 
   async getListing(id: string): Promise<ListingWithSeller | null> {
     await sleep(netDelay());
+    this.lazyCloseAuctions();
     const l = this.listings.find((l) => l.id === id);
     return l ? this.hydrate(l) : null;
   }
@@ -638,6 +694,7 @@ export class MockClient implements MarketplaceClient {
       sellerId: me.id,
       ...input,
       status: 'active',
+      saleType: 'fixed',
       reservedForConversationId: null,
       createdAt: nowIso,
       updatedAt: nowIso,
@@ -661,7 +718,10 @@ export class MockClient implements MarketplaceClient {
     const listing = this.listings.find((l) => l.id === id);
     if (!listing) throw new Error('Listing not found');
     if (listing.sellerId !== me.id) throw new Error('Only the seller can edit a listing');
+    const priorPrice = listing.price;
     Object.assign(listing, input);
+    // An auction listing's price mirrors the current bid — edits can't move it.
+    if (listing.saleType === 'auction') listing.price = priorPrice;
     listing.updatedAt = new Date().toISOString();
     listing.images = images.map((img, i) => ({
       id: img.kind === 'existing' ? img.id : nextId('img'),
@@ -723,6 +783,277 @@ export class MockClient implements MarketplaceClient {
     this.emitInbox();
     this.broadcast({ type: 'listing', listing: structuredClone(listing) });
     return structuredClone(listing);
+  }
+
+  // ---- Auctions -----------------------------------------------------------
+  // The mock engine mirrors the Postgres rules (place_bid, 0013) exactly:
+  // the client-side checks in the UI are niceties, these are the mock's
+  // actual rules.
+
+  private handleOf(p: Profile): string {
+    return p.username ? `@${p.username}` : p.displayName;
+  }
+
+  private topBidOf(auctionId: string): Bid | null {
+    let top: Bid | null = null;
+    for (const b of this.bids) {
+      if (b.auctionId !== auctionId) continue;
+      if (!top || b.amount > top.amount) top = b;
+    }
+    return top;
+  }
+
+  /** Overdue live auctions close on read, so a stale one never renders
+      as live (mirrors close_due_auctions + the lazy close on read). */
+  private lazyCloseAuctions() {
+    for (const a of this.auctions) {
+      if (a.status === 'live' && new Date(a.endsAt).getTime() <= Date.now()) {
+        this.closeAuction(a);
+      }
+    }
+  }
+
+  /** Resolve the winner against the reserve, open the winner<->seller
+      conversation, post the handoff message, park the listing. */
+  private closeAuction(a: Auction) {
+    const listing = this.listings.find((l) => l.id === a.listingId);
+    const top = this.topBidOf(a.id);
+    const nowIso = new Date().toISOString();
+    if (top && (a.reservePrice === null || top.amount >= a.reservePrice)) {
+      a.status = 'closed';
+      a.winnerId = top.bidderId;
+      a.winningBid = top.amount;
+      let conv = this.conversations.find(
+        (c) => c.listingId === a.listingId && c.buyerId === top.bidderId,
+      );
+      if (!conv) {
+        conv = {
+          id: nextId('c'),
+          listingId: a.listingId,
+          buyerId: top.bidderId,
+          sellerId: a.sellerId,
+          createdAt: nowIso,
+          lastMessageAt: nowIso,
+        };
+        this.conversations.push(conv);
+        this.broadcast({ type: 'conversation', conversation: structuredClone(conv) });
+      }
+      const winner = this.profiles.find((p) => p.id === top.bidderId);
+      const sys: Message = {
+        id: nextId('m'),
+        conversationId: conv.id,
+        senderId: '',
+        kind: 'system',
+        body: `${winner ? this.handleOf(winner) : 'The winner'} won this auction at ${a.currency} ${top.amount.toFixed(2)}. Sort out payment and delivery between yourselves — LebanonTCG isn't part of the transaction.`,
+        amount: null,
+        offerStatus: null,
+        createdAt: nowIso,
+        readAt: null,
+      };
+      this.messages.push(sys);
+      conv.lastMessageAt = sys.createdAt;
+      this.emitConversation(conv.id, { type: 'message', conversationId: conv.id, message: sys });
+      this.broadcast({ type: 'message', message: structuredClone(sys) });
+      if (listing && listing.status === 'active') {
+        listing.status = 'reserved';
+        listing.reservedForConversationId = conv.id;
+        listing.updatedAt = nowIso;
+        this.emitListing(listing);
+        this.broadcast({ type: 'listing', listing: structuredClone(listing) });
+      }
+    } else {
+      // No bids, or reserve not met: nobody wins, the card stays with
+      // the seller and the listing leaves browse. Relist makes a new one.
+      a.status = 'closed';
+      if (listing && listing.status === 'active') {
+        listing.status = 'removed';
+        listing.updatedAt = nowIso;
+        this.emitListing(listing);
+        this.broadcast({ type: 'listing', listing: structuredClone(listing) });
+      }
+    }
+    this.emitInbox();
+    this.broadcast({ type: 'auction', auction: structuredClone(a) });
+    this.emitAuction(a.id, { type: 'updated', auction: structuredClone(a) });
+  }
+
+  async createAuctionListing(
+    input: ListingInput,
+    images: ImageDraft[],
+    auction: AuctionInput,
+  ): Promise<Listing> {
+    const me = this.me();
+    if (!(auction.startingPrice > 0)) throw new Error('Starting price must be above zero.');
+    if (auction.reservePrice !== null && auction.reservePrice < auction.startingPrice) {
+      throw new Error('The reserve cannot be below the starting price.');
+    }
+    if (![1, 6, 24, 72, 168].includes(auction.durationHours)) {
+      throw new Error('Invalid auction duration.');
+    }
+    const listing = await this.createListing(
+      { ...input, price: auction.startingPrice, quantity: 1 },
+      images,
+    );
+    const stored = this.listings.find((l) => l.id === listing.id)!;
+    stored.saleType = 'auction';
+    const a: Auction = {
+      id: nextId('a'),
+      listingId: listing.id,
+      sellerId: me.id,
+      startingPrice: auction.startingPrice,
+      reservePrice: auction.reservePrice,
+      currency: stored.currency,
+      endsAt: new Date(Date.now() + auction.durationHours * 3600_000).toISOString(),
+      status: 'live',
+      winnerId: null,
+      winningBid: null,
+      cancelReason: null,
+      createdAt: new Date().toISOString(),
+    };
+    this.auctions.push(a);
+    this.broadcast({ type: 'listing', listing: structuredClone(stored) });
+    this.broadcast({ type: 'auction', auction: structuredClone(a) });
+    return structuredClone(stored);
+  }
+
+  async getAuctionForListing(listingId: string): Promise<AuctionDetail | null> {
+    await sleep(netDelay());
+    this.lazyCloseAuctions();
+    const auction = this.auctions.find((a) => a.listingId === listingId);
+    if (!auction) return null;
+    const bids = this.bids
+      .filter((b) => b.auctionId === auction.id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.amount - a.amount);
+    return structuredClone({ auction, bids });
+  }
+
+  /** The rules, mirrored from place_bid — used by the signed-in user
+      and by the scripted mock bidders alike. */
+  private placeBidAs(bidder: Profile, auctionId: string, amount: number): PlacedBid {
+    this.lazyCloseAuctions();
+    const a = this.auctions.find((x) => x.id === auctionId);
+    if (!a) throw new Error('Auction not found.');
+    if (a.status !== 'live' || new Date(a.endsAt).getTime() <= Date.now()) {
+      throw new Error('This auction has ended.');
+    }
+    if (a.sellerId === bidder.id) throw new Error('Sellers cannot bid on their own auction.');
+    if (this.isBlockedBetween(bidder.id, a.sellerId)) {
+      throw new Error('You cannot bid on this auction.');
+    }
+    const top = this.topBidOf(a.id);
+    const min = minNextBid(top ? top.amount : null, a.startingPrice);
+    if (amount < min) {
+      throw new Error(`Minimum bid is ${min.toFixed(2)}.`);
+    }
+    const extended = new Date(a.endsAt).getTime() - Date.now() < 60_000;
+    if (extended) {
+      a.endsAt = new Date(new Date(a.endsAt).getTime() + 60_000).toISOString();
+    }
+    const bid: Bid = {
+      id: nextId('bid'),
+      auctionId: a.id,
+      bidderId: bidder.id,
+      bidderName: this.handleOf(bidder),
+      amount,
+      extended,
+      createdAt: new Date().toISOString(),
+    };
+    this.bids.push(bid);
+    const listing = this.listings.find((l) => l.id === a.listingId);
+    if (listing) {
+      listing.price = amount;
+      listing.updatedAt = bid.createdAt;
+      this.emitListing(listing);
+      this.broadcast({ type: 'listing', listing: structuredClone(listing) });
+    }
+    this.broadcast({ type: 'auction', auction: structuredClone(a) });
+    this.broadcast({ type: 'bid', bid: structuredClone(bid) });
+    this.emitAuction(a.id, {
+      type: 'bid',
+      auction: structuredClone(a),
+      bid: structuredClone(bid),
+    });
+    return { amount, endsAt: a.endsAt, extended };
+  }
+
+  async placeBid(auctionId: string, amount: number): Promise<PlacedBid> {
+    const me = this.me();
+    await sleep(netDelay());
+    return this.placeBidAs(me, auctionId, amount);
+  }
+
+  subscribeToAuction(auctionId: string, cb: (ev: AuctionEvent) => void): Unsubscribe {
+    if (!this.auctionListeners.has(auctionId)) this.auctionListeners.set(auctionId, new Set());
+    this.auctionListeners.get(auctionId)!.add(cb);
+    return () => this.auctionListeners.get(auctionId)?.delete(cb);
+  }
+
+  async endAuctionEarly(auctionId: string): Promise<void> {
+    const me = this.me();
+    await sleep(netDelay());
+    const a = this.auctions.find((x) => x.id === auctionId);
+    if (!a) throw new Error('Auction not found.');
+    if (a.sellerId !== me.id) throw new Error('Only the seller can end this auction.');
+    if (a.status !== 'live') throw new Error('This auction is not live.');
+    a.endsAt = new Date().toISOString();
+    this.closeAuction(a);
+  }
+
+  async cancelAuction(auctionId: string, reason: string): Promise<void> {
+    const me = this.me();
+    await sleep(netDelay());
+    if (!reason || reason.trim().length < 3) throw new Error('A cancellation reason is required.');
+    const a = this.auctions.find((x) => x.id === auctionId);
+    if (!a) throw new Error('Auction not found.');
+    if (a.sellerId !== me.id) throw new Error('Only the seller can cancel this auction.');
+    if (a.status !== 'live') throw new Error('This auction is not live.');
+    a.status = 'cancelled';
+    a.cancelReason = reason.trim();
+    const nowIso = new Date().toISOString();
+    const listing = this.listings.find((l) => l.id === a.listingId);
+    if (listing && listing.status === 'active') {
+      listing.status = 'removed';
+      listing.updatedAt = nowIso;
+      this.emitListing(listing);
+      this.broadcast({ type: 'listing', listing: structuredClone(listing) });
+    }
+    // Every bidder hears about it, in chat, with the reason.
+    const bidderIds = [...new Set(this.bids.filter((b) => b.auctionId === a.id).map((b) => b.bidderId))];
+    for (const bidderId of bidderIds) {
+      let conv = this.conversations.find(
+        (c) => c.listingId === a.listingId && c.buyerId === bidderId,
+      );
+      if (!conv) {
+        conv = {
+          id: nextId('c'),
+          listingId: a.listingId,
+          buyerId: bidderId,
+          sellerId: a.sellerId,
+          createdAt: nowIso,
+          lastMessageAt: nowIso,
+        };
+        this.conversations.push(conv);
+        this.broadcast({ type: 'conversation', conversation: structuredClone(conv) });
+      }
+      const sys: Message = {
+        id: nextId('m'),
+        conversationId: conv.id,
+        senderId: '',
+        kind: 'system',
+        body: `The seller cancelled this auction. Reason: ${a.cancelReason}`,
+        amount: null,
+        offerStatus: null,
+        createdAt: nowIso,
+        readAt: null,
+      };
+      this.messages.push(sys);
+      conv.lastMessageAt = sys.createdAt;
+      this.emitConversation(conv.id, { type: 'message', conversationId: conv.id, message: sys });
+      this.broadcast({ type: 'message', message: structuredClone(sys) });
+    }
+    this.emitInbox();
+    this.broadcast({ type: 'auction', auction: structuredClone(a) });
+    this.emitAuction(a.id, { type: 'updated', auction: structuredClone(a) });
   }
 
   // ---- Favorites ----------------------------------------------------------
@@ -1252,6 +1583,8 @@ interface SnapshotState {
   listings: Listing[];
   conversations: Conversation[];
   messages: Message[];
+  auctions?: Auction[];
+  bids?: Bid[];
   reviews: Review[];
   reports: ReportInput[];
   favorites: Array<[string, string[]]>;
@@ -1273,4 +1606,6 @@ type RemotePatch =
   | { type: 'review'; review: Review }
   | { type: 'report'; report: ReportInput }
   | { type: 'profile'; profile: Profile }
-  | { type: 'credential'; email: string; userId: string; password: string | null };
+  | { type: 'credential'; email: string; userId: string; password: string | null }
+  | { type: 'auction'; auction: Auction }
+  | { type: 'bid'; bid: Bid };

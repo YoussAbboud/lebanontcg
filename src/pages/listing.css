@@ -198,3 +198,9 @@
   color: var(--muted);
   line-height: 1.6;
 }
+
+/* Seller controls on their own live auction. */
+.ldetail-auction-owner { flex-wrap: wrap; }
+.ldetail-cancelform { display: flex; gap: 8px; width: 100%; }
+.ldetail-cancelform .input { flex: 1; }
+.ldetail-auction-note { color: var(--muted); }

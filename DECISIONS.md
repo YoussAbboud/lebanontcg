@@ -696,3 +696,23 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   the "is this an image" checks (looksLikePickedImage) no longer
   silently drop untyped or octet-stream HEIC picks — a readable
   cropper error beats a button that does nothing.
+
+## A1 — Fixed vs auction fork at creation
+
+- The sale type is a one-time creation choice, and every layer says so:
+  the /sell step-3 segmented control is hidden entirely when editing,
+  switching type mid-form CLEARS the other type's fields (an auction
+  never inherits a stale asking price), the DB rejects sale_type
+  updates, and edit paths (both clients) silently drop price changes
+  for auction listings since price mirrors the current bid.
+- Creating an auction listing is one RPC (create_auction_listing,
+  0014): PostgREST calls are one transaction each, and the deferred
+  pairing constraint demands listing + auction land together. Runs as
+  the caller so normal RLS insert policies still apply.
+- The mock engine (MockClient) mirrors place_bid's rules line for line
+  and seeds three live auctions — one ending minutes out for the
+  scripted A2 drama — so mixed grids and the fork are real under
+  VITE_MOCK=1. Auctions/bids ride the same BroadcastChannel world.
+- Cards: a live auction card is always-acid with a "LIVE · 2h 14m"
+  pill, prices labelled "Current bid", CTA "Place a bid" (chat stays
+  one click away on the detail page as "Ask a question").

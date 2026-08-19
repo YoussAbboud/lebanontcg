@@ -199,3 +199,19 @@ select 'A30 every bidder notified: ' || (count(distinct c.buyer_id) = 2)::text
     and m.kind = 'system' and m.body like 'The seller cancelled this auction%';
 
 reset role;
+
+-- 0014: atomic creation RPC makes both rows; bad duration rejected.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select 'A31 create_auction_listing returns a listing: '
+  || (public.create_auction_listing(
+        '{"title":"RPC Auction Card","game":"pokemon","condition":"NM","description":""}'::jsonb,
+        25, null, 24) is not null)::text;
+select 'A32 rpc made the pair: ' || (count(*) = 1)::text
+  from public.listings l join public.auctions a on a.listing_id = l.id
+  where l.title = 'RPC Auction Card' and l.sale_type = 'auction'
+    and l.price = 25 and a.starting_price = 25;
+select public.create_auction_listing(
+  '{"title":"Bad Duration","game":"pokemon","condition":"NM"}'::jsonb, 25, null, 5);
+select 'A33 (expect error above: invalid duration)';
+reset role;

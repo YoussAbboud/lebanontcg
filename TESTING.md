@@ -497,3 +497,16 @@ sample (nokiatech, ftyp mif1): it decodes in the pregrade pin dialog
 (pins placed, flatten proceeds to accept/soft-fail — never a decode
 error) and, delivered as application/octet-stream with only the
 filename to go on, in the avatar crop dialog.
+
+## A1 — Creation fork
+
+auction-test.sql grows to 19 assertions (create_auction_listing makes
+the pair atomically; bad duration rejected). a1-smoke.mjs (23 checks):
+live pills + acid + "Current bid" + "Place a bid" on seeded auction
+cards; the step-3 fork swaps fields; reserve-below-start blocked;
+switching type clears the other type's fields both ways; review card
+carries the live pill; "Start auction" publishes and lands on a detail
+page with countdown + seller End/Cancel; cancelling with a reason
+flips the page to cancelled; editing an auction shows a locked type
+and no price inputs. r8's idle-acid check now targets non-live cards
+(live cards are deliberately always-acid).

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import type { Condition, Finish, Game, ImageDraft, ListingInput, ListingWithSeller } from '../lib/types';
-import { CONDITIONS, FINISHES, FINISH_LABELS, GAMES, GAME_LABELS } from '../lib/types';
+import type { Condition, Finish, Game, ImageDraft, ListingInput, ListingWithSeller, SaleType } from '../lib/types';
+import { AUCTION_DURATIONS, CONDITIONS, FINISHES, FINISH_LABELS, GAMES, GAME_LABELS } from '../lib/types';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { ImageManager } from '../components/ImageManager';
@@ -19,6 +19,7 @@ const CONDITION_DESCRIPTIONS: Record<Condition, string> = {
 };
 
 interface FormState {
+  saleType: SaleType;
   title: string;
   game: Game;
   setName: string;
@@ -32,9 +33,13 @@ interface FormState {
   price: string;
   quantity: string;
   description: string;
+  startingPrice: string;
+  reservePrice: string;
+  durationHours: number;
 }
 
 const BLANK: FormState = {
+  saleType: 'fixed',
   title: '',
   game: 'pokemon',
   setName: '',
@@ -48,9 +53,25 @@ const BLANK: FormState = {
   price: '',
   quantity: '1',
   description: '',
+  startingPrice: '',
+  reservePrice: '',
+  durationHours: 24,
 };
 
-type Errors = Partial<Record<'images' | 'title' | 'setName' | 'gradeValue' | 'price' | 'quantity' | 'description', string>>;
+type Errors = Partial<
+  Record<
+    | 'images'
+    | 'title'
+    | 'setName'
+    | 'gradeValue'
+    | 'price'
+    | 'quantity'
+    | 'description'
+    | 'startingPrice'
+    | 'reservePrice',
+    string
+  >
+>;
 
 function validateStep(step: number, form: FormState, images: ImageDraft[]): Errors {
   const errors: Errors = {};
@@ -64,13 +85,29 @@ function validateStep(step: number, form: FormState, images: ImageDraft[]): Erro
     if (form.graded && !form.gradeValue.trim()) errors.gradeValue = 'Enter the grade (e.g. "PSA 9").';
   }
   if (step === 3) {
-    const price = Number(form.price);
-    if (form.price === '' || !Number.isFinite(price)) errors.price = 'Set an asking price.';
-    else if (price <= 0) errors.price = 'Price must be above zero.';
-    else if (price > 1_000_000) errors.price = 'Price is unrealistically high.';
-    const qty = Number(form.quantity);
-    if (!Number.isInteger(qty) || qty < 1) errors.quantity = 'Quantity must be at least 1.';
-    else if (qty > 999) errors.quantity = 'Quantity is too large.';
+    if (form.saleType === 'auction') {
+      const start = Number(form.startingPrice);
+      if (form.startingPrice === '' || !Number.isFinite(start)) {
+        errors.startingPrice = 'Set a starting price.';
+      } else if (start <= 0) errors.startingPrice = 'Starting price must be above zero.';
+      else if (start > 1_000_000) errors.startingPrice = 'Starting price is unrealistically high.';
+      if (form.reservePrice !== '') {
+        const reserve = Number(form.reservePrice);
+        if (!Number.isFinite(reserve) || reserve <= 0) {
+          errors.reservePrice = 'Reserve must be a price.';
+        } else if (Number.isFinite(start) && reserve < start) {
+          errors.reservePrice = 'The reserve cannot be below the starting price.';
+        }
+      }
+    } else {
+      const price = Number(form.price);
+      if (form.price === '' || !Number.isFinite(price)) errors.price = 'Set an asking price.';
+      else if (price <= 0) errors.price = 'Price must be above zero.';
+      else if (price > 1_000_000) errors.price = 'Price is unrealistically high.';
+      const qty = Number(form.quantity);
+      if (!Number.isInteger(qty) || qty < 1) errors.quantity = 'Quantity must be at least 1.';
+      else if (qty > 999) errors.quantity = 'Quantity is too large.';
+    }
     if (form.description.length > 2000) errors.description = 'Keep notes under 2,000 characters.';
   }
   return errors;
@@ -107,6 +144,7 @@ export function SellPage() {
         return;
       }
       setForm({
+        saleType: listing.saleType,
         title: listing.title,
         game: listing.game,
         setName: listing.setName,
@@ -120,6 +158,9 @@ export function SellPage() {
         price: String(listing.price),
         quantity: String(listing.quantity),
         description: listing.description,
+        startingPrice: '',
+        reservePrice: '',
+        durationHours: 24,
       });
       setImages(listing.images.map((img) => ({ id: img.id, kind: 'existing' as const, url: img.url })));
       setLoadState('ready');
@@ -132,6 +173,20 @@ export function SellPage() {
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  /** The type is chosen once — switching mid-form clears the other
+      type's fields rather than carrying them over. Published listings
+      never reach here (the control is hidden while editing). */
+  const switchType = (t: SaleType) => {
+    setErrors({});
+    setForm((f) =>
+      f.saleType === t
+        ? f
+        : t === 'auction'
+          ? { ...f, saleType: t, price: '', quantity: '1' }
+          : { ...f, saleType: t, startingPrice: '', reservePrice: '', durationHours: 24 },
+    );
+  };
+
   const input: ListingInput = useMemo(
     () => ({
       title: form.title.trim(),
@@ -143,9 +198,12 @@ export function SellPage() {
       finish: form.finish,
       gradeCompany: form.graded ? form.gradeCompany.trim() || null : null,
       gradeValue: form.graded ? form.gradeValue.trim() : null,
-      price: Number(form.price) || 0,
+      price:
+        form.saleType === 'auction'
+          ? Number(form.startingPrice) || 0
+          : Number(form.price) || 0,
       currency: 'USD',
-      quantity: Number(form.quantity) || 1,
+      quantity: form.saleType === 'auction' ? 1 : Number(form.quantity) || 1,
       description: form.description.trim(),
     }),
     [form],
@@ -160,6 +218,24 @@ export function SellPage() {
       sellerId: user.id,
       ...input,
       status: 'active',
+      saleType: form.saleType,
+      auction:
+        form.saleType === 'auction'
+          ? {
+              id: 'preview-auction',
+              listingId: id ?? 'preview',
+              sellerId: user.id,
+              startingPrice: Number(form.startingPrice) || 0,
+              reservePrice: form.reservePrice === '' ? null : Number(form.reservePrice),
+              currency: 'USD',
+              endsAt: new Date(Date.now() + form.durationHours * 3600_000).toISOString(),
+              status: 'live' as const,
+              winnerId: null,
+              winningBid: null,
+              cancelReason: null,
+              createdAt: now,
+            }
+          : undefined,
       reservedForConversationId: null,
       createdAt: now,
       updatedAt: now,
@@ -174,7 +250,7 @@ export function SellPage() {
       sellerActiveListingCount: 0,
       likes: 0,
     };
-  }, [user, input, images, id]);
+  }, [user, input, images, id, form.saleType, form.startingPrice, form.reservePrice, form.durationHours]);
 
   if (!user) {
     return (
@@ -241,8 +317,14 @@ export function SellPage() {
     try {
       const listing = editing
         ? await client.updateListing(id!, input, images)
-        : await client.createListing(input, images);
-      toast(editing ? 'Listing updated' : 'Published');
+        : form.saleType === 'auction'
+          ? await client.createAuctionListing(input, images, {
+              startingPrice: Number(form.startingPrice),
+              reservePrice: form.reservePrice === '' ? null : Number(form.reservePrice),
+              durationHours: form.durationHours,
+            })
+          : await client.createListing(input, images);
+      toast(editing ? 'Listing updated' : form.saleType === 'auction' ? 'Auction started' : 'Published');
       navigate(`/listing/${listing.id}`);
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Saving failed — try again.');
@@ -429,6 +511,100 @@ export function SellPage() {
         {step === 3 && (
           <div>
             <div className="display sell-panel-title">The deal</div>
+            {!editing ? (
+              <div className="sell-typerow" role="radiogroup" aria-label="Sale type">
+                {(
+                  [
+                    ['fixed', 'Fixed price'],
+                    ['auction', 'Live auction'],
+                  ] as const
+                ).map(([t, label]) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className="pill sell-typepill"
+                    aria-pressed={form.saleType === t}
+                    onClick={() => switchType(t)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="mono-label sell-typelocked">
+                {form.saleType === 'auction'
+                  ? 'Live auction — the type, starting price and clock were set at creation and cannot change.'
+                  : 'Fixed price listing'}
+              </p>
+            )}
+            {form.saleType === 'auction' && !editing && (
+              <div className="sell-fields sell-fields-deal">
+                <label className="sell-field">
+                  <span className="mono-label">Starting price *</span>
+                  <input
+                    className="input input-mono"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    placeholder="50.00"
+                    value={form.startingPrice}
+                    aria-invalid={Boolean(errors.startingPrice)}
+                    onChange={(e) => set('startingPrice', e.target.value)}
+                  />
+                  {errors.startingPrice && (
+                    <span className="field-error">{errors.startingPrice}</span>
+                  )}
+                </label>
+                <label className="sell-field">
+                  <span className="mono-label">Reserve (optional)</span>
+                  <input
+                    className="input input-mono"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    placeholder="—"
+                    value={form.reservePrice}
+                    aria-invalid={Boolean(errors.reservePrice)}
+                    onChange={(e) => set('reservePrice', e.target.value)}
+                  />
+                  {errors.reservePrice ? (
+                    <span className="field-error">{errors.reservePrice}</span>
+                  ) : (
+                    <span className="mono-label sell-field-hint">
+                      If bidding doesn&apos;t reach this, nobody wins and the card stays yours.
+                    </span>
+                  )}
+                </label>
+                <label className="sell-field">
+                  <span className="mono-label">Duration</span>
+                  <select
+                    className="input"
+                    value={form.durationHours}
+                    onChange={(e) => set('durationHours', Number(e.target.value))}
+                  >
+                    {AUCTION_DURATIONS.map((d) => (
+                      <option key={d.hours} value={d.hours}>
+                        {d.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="sell-field">
+                  <span className="mono-label">Currency</span>
+                  <input className="input input-mono" value="USD" readOnly aria-label="Currency (USD)" />
+                </label>
+              </div>
+            )}
+            {form.saleType === 'auction' && (
+              <p className="sell-auction-note">
+                Bids are public and non-binding — no payment happens on LebanonTCG. When the
+                auction closes, the highest bidder and you are dropped into a chat to sort out
+                the deal yourselves.
+              </p>
+            )}
+            {form.saleType === 'fixed' && (
             <div className="sell-fields sell-fields-deal">
               <label className="sell-field">
                 <span className="mono-label">Quantity</span>
@@ -456,6 +632,7 @@ export function SellPage() {
                   value={form.price}
                   aria-invalid={Boolean(errors.price)}
                   onChange={(e) => set('price', e.target.value)}
+                  readOnly={editing && form.saleType !== 'fixed'}
                 />
                 {errors.price && <span className="field-error">{errors.price}</span>}
               </label>
@@ -464,6 +641,7 @@ export function SellPage() {
                 <input className="input input-mono" value="USD" readOnly aria-label="Currency (USD)" />
               </label>
             </div>
+            )}
             <label className="sell-field sell-desc">
               <span className="mono-label">Notes for buyers</span>
               <textarea
@@ -491,8 +669,9 @@ export function SellPage() {
               <ListingCard listing={preview} />
             </div>
             <div className="sell-disclaimer">
-              LebanonTCG doesn&apos;t handle payment or shipping. You&apos;ll arrange both directly
-              with the buyer in chat.
+              {form.saleType === 'auction'
+                ? "Bids aren't binding and LebanonTCG handles no payment. When the clock runs out, the highest bidder and you get a chat to sort out the deal yourselves."
+                : "LebanonTCG doesn't handle payment or shipping. You'll arrange both directly with the buyer in chat."}
             </div>
             <button
               type="button"
@@ -500,7 +679,13 @@ export function SellPage() {
               disabled={saving}
               onClick={() => void publish()}
             >
-              {saving ? 'Saving…' : editing ? 'Save changes' : 'Publish listing'}
+              {saving
+                ? 'Saving…'
+                : editing
+                  ? 'Save changes'
+                  : form.saleType === 'auction'
+                    ? 'Start auction'
+                    : 'Publish listing'}
             </button>
           </div>
         )}

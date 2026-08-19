@@ -12,6 +12,7 @@ export const DEFAULT_FILTER: ListingFilter = {
   sellerHasReviews: false,
   hasPregrade: false,
   language: null,
+  saleType: 'all',
   sort: 'newest',
 };
 
@@ -27,6 +28,7 @@ export function isDefaultFilter(f: ListingFilter): boolean {
     !f.sellerHasReviews &&
     !f.hasPregrade &&
     !f.language &&
+    (f.saleType ?? 'all') === 'all' &&
     f.sort === 'newest'
   );
 }
@@ -42,6 +44,7 @@ export function activeFacetCount(f: ListingFilter): number {
   if (f.sellerHasReviews) n++;
   if (f.hasPregrade) n++;
   if (f.language) n++;
+  if ((f.saleType ?? 'all') !== 'all') n++;
   return n;
 }
 
@@ -54,6 +57,8 @@ export function listingMatchesFilter(l: Listing, f: ListingFilter): boolean {
   if (f.priceMin !== null && l.price < f.priceMin) return false;
   if (f.priceMax !== null && l.price > f.priceMax) return false;
   if (f.gradedOnly && !l.gradeValue) return false;
+  if (f.saleType === 'fixed' && l.saleType !== 'fixed') return false;
+  if (f.saleType === 'auction' && l.saleType !== 'auction') return false;
   if (f.language && l.language.toLowerCase() !== f.language.toLowerCase()) return false;
   if (f.q) {
     const hay = `${l.title} ${l.setName}`.toLowerCase();
@@ -99,6 +104,7 @@ export function filterToSearchParams(f: ListingFilter): URLSearchParams {
   if (f.sellerHasReviews) p.set('rated', '1');
   if (f.hasPregrade) p.set('pregrade', '1');
   if (f.language) p.set('lang', f.language);
+  if ((f.saleType ?? 'all') !== 'all') p.set('type', f.saleType!);
   if (f.sort !== 'newest') p.set('sort', f.sort);
   return p;
 }
@@ -126,8 +132,15 @@ export function filterFromSearchParams(p: URLSearchParams): ListingFilter {
     sellerHasReviews: p.get('rated') === '1',
     hasPregrade: p.get('pregrade') === '1',
     language: p.get('lang') || null,
+    saleType:
+      p.get('type') === 'fixed' || p.get('type') === 'auction'
+        ? (p.get('type') as 'fixed' | 'auction')
+        : 'all',
     sort:
-      sortRaw === 'price_asc' || sortRaw === 'price_desc' || sortRaw === 'most_watched'
+      sortRaw === 'price_asc' ||
+      sortRaw === 'price_desc' ||
+      sortRaw === 'most_watched' ||
+      sortRaw === 'ending_soon'
         ? sortRaw
         : 'newest',
   };

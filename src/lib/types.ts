@@ -4,6 +4,9 @@ export type Game = 'pokemon' | 'magic' | 'yugioh' | 'onepiece' | 'lorcana' | 'ot
 export type Condition = 'NM' | 'LP' | 'MP' | 'HP' | 'DMG';
 export type Finish = 'normal' | 'holo' | 'reverse' | 'foil' | 'etched' | 'other';
 export type ListingStatus = 'active' | 'reserved' | 'sold' | 'removed';
+/** Chosen once at creation, immutable for the life of the listing. */
+export type SaleType = 'fixed' | 'auction';
+export type AuctionStatus = 'live' | 'closed' | 'cancelled';
 export type ReportTargetType = 'listing' | 'user' | 'message';
 export type ReportReason =
   | 'scam'
@@ -95,11 +98,63 @@ export interface Listing {
   quantity: number;
   description: string;
   status: ListingStatus;
+  saleType: SaleType;
   reservedForConversationId: string | null;
   createdAt: string;
   updatedAt: string;
   images: ListingImage[];
 }
+
+/** A live auction attached to exactly one auction-type listing. Bids
+    are public, non-binding signals — no money moves on the platform. */
+export interface Auction {
+  id: string;
+  listingId: string;
+  sellerId: string;
+  startingPrice: number;
+  reservePrice: number | null;
+  currency: string;
+  endsAt: string;
+  status: AuctionStatus;
+  winnerId: string | null;
+  winningBid: number | null;
+  cancelReason: string | null;
+  createdAt: string;
+}
+
+export interface Bid {
+  id: string;
+  auctionId: string;
+  bidderId: string;
+  /** Display handle resolved at fetch time ("@maya" or a display name). */
+  bidderName: string;
+  amount: number;
+  /** This bid landed in the final minute and pushed the close out 60s. */
+  extended: boolean;
+  createdAt: string;
+}
+
+export interface AuctionDetail {
+  auction: Auction;
+  /** Newest first. */
+  bids: Bid[];
+}
+
+/** Auction parameters chosen at listing creation. */
+export interface AuctionInput {
+  startingPrice: number;
+  /** "If bidding doesn't reach this, nobody wins" — optional. */
+  reservePrice: number | null;
+  durationHours: number;
+}
+
+export const AUCTION_DURATIONS: Array<{ hours: number; label: string }> = [
+  { hours: 1, label: '1 hour' },
+  { hours: 6, label: '6 hours' },
+  { hours: 24, label: '24 hours' },
+  { hours: 72, label: '3 days' },
+  { hours: 168, label: '7 days' },
+];
 
 /** Listing plus its seller, as needed by cards and the detail page. */
 export interface ListingWithSeller extends Listing {
@@ -107,6 +162,9 @@ export interface ListingWithSeller extends Listing {
   sellerActiveListingCount: number;
   /** How many collectors watch (favorite) this listing. */
   likes: number;
+  /** Present on auction-type listings so cards can show the live pill,
+      countdown and current bid. */
+  auction?: Auction | null;
   /** Published pre-grade pill, e.g. "EST. 9–10" — null when none.
       Deliberately subordinate to a real slab badge. */
   pregradePill?: string | null;
@@ -127,7 +185,10 @@ export interface ListingFilter {
       turn an estimate into a de-facto grade. */
   hasPregrade?: boolean;
   language: string | null;
-  sort: 'newest' | 'price_asc' | 'price_desc' | 'most_watched';
+  /** All listings, buy-now only, or live auctions only. */
+  saleType?: 'all' | 'fixed' | 'auction';
+  /** ending_soon applies to auctions only. */
+  sort: 'newest' | 'price_asc' | 'price_desc' | 'most_watched' | 'ending_soon';
 }
 
 export interface ListingPage {

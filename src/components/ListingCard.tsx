@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ListingWithSeller } from '../lib/types';
 import { GAME_LABELS } from '../lib/types';
 import { formatPrice, relativeTime } from '../lib/format';
+import { auctionPillLabel, isEffectivelyOver } from '../lib/auction';
 import { sellerDotBackground } from '../lib/face';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
@@ -43,6 +44,10 @@ export const ListingCard = memo(function ListingCard({
     ? `@${listing.seller.username}`
     : listing.seller.displayName;
 
+  const auction = listing.auction ?? null;
+  const live = Boolean(auction && !isEffectivelyOver(auction));
+  const livePill = auction ? auctionPillLabel(auction) : null;
+
   const open = () => navigate(`/listing/${listing.id}`);
 
   const watch = async (e: React.MouseEvent) => {
@@ -73,8 +78,8 @@ export const ListingCard = memo(function ListingCard({
     <article
       role="button"
       tabIndex={0}
-      aria-label={`${listing.title}, asking ${formatPrice(listing.price, listing.currency)}`}
-      className={`lcard card-raised ${pinned ? 'is-acid' : ''}`}
+      aria-label={`${listing.title}, ${live ? 'current bid' : 'asking'} ${formatPrice(listing.price, listing.currency)}`}
+      className={`lcard card-raised ${pinned || live ? 'is-acid' : ''}`}
       onClick={open}
       onKeyDown={(e) => {
         if (e.key === 'Enter' && e.target === e.currentTarget) open();
@@ -95,6 +100,7 @@ export const ListingCard = memo(function ListingCard({
         {listing.status !== 'active' && (
           <div className="lcard-status mono-label">{listing.status}</div>
         )}
+        {live && livePill && <div className="lcard-live mono-label">{livePill}</div>}
         <button
           type="button"
           aria-label={watched ? 'Remove from watchlist' : 'Watch this card'}
@@ -119,7 +125,7 @@ export const ListingCard = memo(function ListingCard({
         <div className="lcard-oneliner">{oneLinerOf(listing)}</div>
         <div className="lcard-stats">
           <div>
-            <div className="mono-label lcard-stat-k">Asking</div>
+            <div className="mono-label lcard-stat-k">{live ? 'Current bid' : 'Asking'}</div>
             <div className="mono-value lcard-stat-v">
               {formatPrice(listing.price, listing.currency)}
               {listing.quantity > 1 ? ` ×${listing.quantity}` : ''}
@@ -130,7 +136,18 @@ export const ListingCard = memo(function ListingCard({
             <div className="mono-value lcard-stat-v">{relativeTime(listing.createdAt)}</div>
           </div>
         </div>
-        {!isOwner ? (
+        {!isOwner && live ? (
+          <button
+            type="button"
+            className="lcard-cta"
+            onClick={(e) => {
+              e.stopPropagation();
+              open();
+            }}
+          >
+            Place a bid
+          </button>
+        ) : !isOwner ? (
           <button type="button" className="lcard-cta" onClick={(e) => void message(e)}>
             Message seller
           </button>

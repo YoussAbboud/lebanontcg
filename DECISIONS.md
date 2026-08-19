@@ -716,3 +716,29 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
 - Cards: a live auction card is always-acid with a "LIVE · 2h 14m"
   pill, prices labelled "Current bid", CTA "Place a bid" (chat stays
   one click away on the detail page as "Ask a question").
+
+## A2 — Realtime auction UI
+
+- The auction panel is compute-from-target everywhere: the countdown
+  derives from ends_at and a ticking clock (useNow re-reads on
+  visibilitychange), so a backgrounded tab wakes up correct instead of
+  having decremented a stale number. Under five minutes it goes acid
+  and gains seconds; an anti-snipe extension pulses the timer and
+  posts a "+60s — bid in the final minute." row in the history.
+- Bids are optimistic with a loud rejected state — the client refetches
+  and says "Someone bid first. New minimum is X." — but the client
+  never validates for real; place_bid (or the mock engine) is the rule.
+- Mock realtime is the BroadcastChannel world; live is postgres_changes
+  on bids (INSERT, filtered by auction) + auctions (UPDATE). Both feed
+  one AuctionEvent shape so the panel has a single code path.
+- The scripted MOCK=1 auction (seeded a-1): four fake bidders on
+  timers, a sniper inside the final 30s for anti-snipe, and a sweep
+  that closes with the winner conversation + system message.
+  ?case=reserve_not_met and ?case=cancelled play the other endings;
+  any ?case compresses the clock to ~40s so the whole story fits in a
+  test run. localStorage claims the script so a second tab watches
+  rather than double-bidding.
+- Browse: All / Buy now / Auctions at the top of the rail; "Ending
+  soon" sort appears only under Auctions (ordering comes from the
+  auctions table, so live paging happens there first). Home's fan gains
+  a Fresh drops / Ending soon toggle.

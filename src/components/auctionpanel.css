@@ -1,0 +1,59 @@
+/* Live auction panel — countdown, bid form, history. */
+
+.aucpanel { display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+.aucpanel-head { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.aucpanel-price { font-size: 34px; line-height: 1.1; }
+.aucpanel-count { color: var(--muted); margin-top: 4px; }
+.aucpanel-reserve { color: var(--muted); }
+.aucpanel-clock { text-align: right; }
+.aucpanel-countdown { font-size: 26px; line-height: 1.2; transition: color var(--t-fast); }
+.aucpanel-countdown.is-acid-text { color: var(--acid); }
+.aucpanel-countdown.is-extended { animation: aucpanel-pulse 0.8s ease-out 2; }
+@keyframes aucpanel-pulse {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.12); color: var(--acid); }
+  100% { transform: scale(1); }
+}
+
+.aucpanel-bidrow { display: flex; gap: 10px; }
+.aucpanel-input { flex: 1; max-width: 220px; }
+.aucpanel-signin { color: var(--muted); }
+.aucpanel-sellernote { color: var(--muted); }
+.aucpanel-outcome { margin: 0; }
+.aucpanel-rejected { margin: 0; }
+.aucpanel-disclaimer { color: var(--muted); }
+
+.aucpanel-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.aucpanel-row { animation: aucpanel-fade 0.45s ease-out; }
+@keyframes aucpanel-fade {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
+}
+.aucpanel-extend {
+  color: var(--acid);
+  margin-bottom: 4px;
+}
+.aucpanel-bid {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.aucpanel-bidder { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.aucpanel-when { color: var(--muted); }
+.aucpanel-outbid {
+  color: #10120a;
+  background: var(--danger, #e5484d);
+  border-radius: 999px;
+  padding: 2px 8px;
+}

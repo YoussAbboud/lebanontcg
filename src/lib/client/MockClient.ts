@@ -34,6 +34,7 @@ import { minNextBid } from '../auction';
 import { canTransition, statusChangeSystemMessage } from '../status';
 import {
   buildSeedAuctions,
+  seedBidderProfiles,
   buildSeedConversations,
   buildSeedListings,
   buildStressListings,
@@ -75,7 +76,7 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 export class MockClient implements MarketplaceClient {
   readonly isMock = true;
 
-  private profiles: Profile[] = structuredClone(seedProfiles);
+  private profiles: Profile[] = structuredClone([...seedProfiles, ...seedBidderProfiles]);
   private listings: Listing[] = [
     ...buildSeedListings(),
     ...buildStressListings(Number(import.meta.env.VITE_MOCK_STRESS ?? 0) || 0),
@@ -985,7 +986,98 @@ export class MockClient implements MarketplaceClient {
   subscribeToAuction(auctionId: string, cb: (ev: AuctionEvent) => void): Unsubscribe {
     if (!this.auctionListeners.has(auctionId)) this.auctionListeners.set(auctionId, new Set());
     this.auctionListeners.get(auctionId)!.add(cb);
+    this.maybeStartAuctionScript(auctionId);
     return () => this.auctionListeners.get(auctionId)?.delete(cb);
+  }
+
+  // ---- the scripted demo auction ------------------------------------------
+  // MOCK=1 runs a little drama on the seeded ending-soon auction: four
+  // fake bidders on timers, one landing inside the final 30 seconds to
+  // exercise anti-snipe, and a close that produces a winner + system
+  // message. ?case=reserve_not_met and ?case=cancelled cover the other
+  // endings; ?case=fast compresses the clock for tests.
+  private scriptStarted = new Set<string>();
+
+  private maybeStartAuctionScript(auctionId: string) {
+    if (auctionId !== 'a-1' || this.scriptStarted.has(auctionId)) return;
+    const a = this.auctions.find((x) => x.id === auctionId);
+    if (!a || a.status !== 'live') return;
+    // One tab runs the drama; others just watch it arrive over the
+    // BroadcastChannel (localStorage is shared across same-origin tabs).
+    const claimKey = `lebanontcg.mock.script.${auctionId}`;
+    try {
+      if (localStorage.getItem(claimKey)) {
+        this.scriptStarted.add(auctionId);
+        return;
+      }
+      localStorage.setItem(claimKey, String(Date.now()));
+    } catch {
+      // storage unavailable — run anyway
+    }
+    this.scriptStarted.add(auctionId);
+    const caseHint =
+      typeof location !== 'undefined'
+        ? new URLSearchParams(location.search).get('case')
+        : null;
+    // Any named case compresses the clock so the whole story plays out
+    // inside a couple of minutes.
+    if (caseHint) {
+      a.endsAt = new Date(Date.now() + 40_000).toISOString();
+    }
+    if (caseHint === 'reserve_not_met') {
+      a.reservePrice = 100_000;
+    }
+    if (caseHint) {
+      this.broadcast({ type: 'auction', auction: structuredClone(a) });
+      this.emitAuction(a.id, { type: 'updated', auction: structuredClone(a) });
+    }
+    const bidders = ['u-karim', 'u-lina', 'u-nabil', 'u-rita']
+      .map((id) => this.profiles.find((p) => p.id === id))
+      .filter((p): p is Profile => Boolean(p) && p!.id !== a.sellerId);
+    const scriptedBid = (i: number) => {
+      try {
+        const live = this.auctions.find((x) => x.id === a.id);
+        if (!live || live.status !== 'live') return;
+        const top = this.topBidOf(a.id);
+        const amount = minNextBid(top ? top.amount : null, a.startingPrice);
+        this.placeBidAs(bidders[i % bidders.length], a.id, amount);
+      } catch {
+        // Ended or already outbid — the script never fights the rules.
+      }
+    };
+    const fast = caseHint !== null;
+    window.setTimeout(() => scriptedBid(0), fast ? 2_000 : 5_000);
+    window.setTimeout(() => scriptedBid(1), fast ? 6_000 : 25_000);
+    window.setTimeout(() => scriptedBid(2), fast ? 11_000 : 55_000);
+    if (caseHint === 'cancelled') {
+      window.setTimeout(() => {
+        const seller = this.profiles.find((p) => p.id === a.sellerId);
+        if (seller) {
+          try {
+            this.cancelAuctionAs(seller, a.id, 'Demo: the card sold locally.');
+          } catch {
+            // already ended
+          }
+        }
+      }, fast ? 15_000 : 70_000);
+    } else if (caseHint === null || caseHint === 'fast') {
+      // The sniper: one bid inside the final 30 seconds → anti-snipe.
+      const snipeIn = new Date(a.endsAt).getTime() - Date.now() - 20_000;
+      if (snipeIn > 0) window.setTimeout(() => scriptedBid(3), snipeIn);
+    }
+    // Sweep shortly after the (possibly extended) end so the close and
+    // its system message land even with nobody navigating.
+    const sweep = () => {
+      const live = this.auctions.find((x) => x.id === a.id);
+      if (!live) return;
+      if (live.status !== 'live') return;
+      if (new Date(live.endsAt).getTime() <= Date.now()) {
+        this.lazyCloseAuctions();
+        return;
+      }
+      window.setTimeout(sweep, 3_000);
+    };
+    window.setTimeout(sweep, Math.max(1_000, new Date(a.endsAt).getTime() - Date.now()));
   }
 
   async endAuctionEarly(auctionId: string): Promise<void> {
@@ -1002,10 +1094,14 @@ export class MockClient implements MarketplaceClient {
   async cancelAuction(auctionId: string, reason: string): Promise<void> {
     const me = this.me();
     await sleep(netDelay());
+    this.cancelAuctionAs(me, auctionId, reason);
+  }
+
+  private cancelAuctionAs(actor: Profile, auctionId: string, reason: string): void {
     if (!reason || reason.trim().length < 3) throw new Error('A cancellation reason is required.');
     const a = this.auctions.find((x) => x.id === auctionId);
     if (!a) throw new Error('Auction not found.');
-    if (a.sellerId !== me.id) throw new Error('Only the seller can cancel this auction.');
+    if (a.sellerId !== actor.id) throw new Error('Only the seller can cancel this auction.');
     if (a.status !== 'live') throw new Error('This auction is not live.');
     a.status = 'cancelled';
     a.cancelReason = reason.trim();

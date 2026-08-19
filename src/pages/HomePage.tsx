@@ -18,6 +18,8 @@ export function HomePage() {
   const navigate = useNavigate();
   const [total, setTotal] = useState<number | null>(null);
   const [fanItems, setFanItems] = useState<ListingWithSeller[]>([]);
+  const [fanMode, setFanMode] = useState<'fresh' | 'ending'>('fresh');
+  const [endingItems, setEndingItems] = useState<ListingWithSeller[] | null>(null);
   const [featured, setFeatured] = useState<ListingWithSeller[]>([]);
   const [trending, setTrending] = useState<ListingWithSeller[]>([]);
   const [sellers, setSellers] = useState<SellerStats[]>([]);
@@ -72,6 +74,22 @@ export function HomePage() {
     null as ListingWithSeller | null,
   );
   const mostLikedId = mostLiked && mostLiked.likes > 0 ? mostLiked.id : undefined;
+
+  // "Ending soon": the fan flips to live auctions ordered by the clock.
+  const showEnding = async () => {
+    setFanMode('ending');
+    if (endingItems) return;
+    try {
+      const page = await client.searchListings(
+        { ...DEFAULT_FILTER, saleType: 'auction', sort: 'ending_soon' },
+        0,
+        7,
+      );
+      setEndingItems(page.items);
+    } catch {
+      setEndingItems([]);
+    }
+  };
 
   const scrollStrip = (dir: number) => {
     stripRef.current?.scrollBy({ left: dir * 320, behavior: 'smooth' });
@@ -132,7 +150,32 @@ export function HomePage() {
           <div className="skeleton" />
         </div>
       ) : (
-        <FanCarousel items={fanItems} />
+        <>
+          <div className="home-fanmode" role="radiogroup" aria-label="Carousel mode">
+            <button
+              type="button"
+              className="pill"
+              aria-pressed={fanMode === 'fresh'}
+              onClick={() => setFanMode('fresh')}
+            >
+              Fresh drops
+            </button>
+            <button
+              type="button"
+              className="pill"
+              aria-pressed={fanMode === 'ending'}
+              onClick={() => void showEnding()}
+            >
+              Ending soon
+            </button>
+          </div>
+          <FanCarousel
+            items={fanMode === 'ending' ? (endingItems ?? []) : fanItems}
+          />
+          {fanMode === 'ending' && endingItems !== null && endingItems.length === 0 && (
+            <p className="mono-label home-fanmode-empty">No live auctions right now.</p>
+          )}
+        </>
       )}
 
       {featured.length > 0 && (

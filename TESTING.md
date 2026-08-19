@@ -510,3 +510,16 @@ page with countdown + seller End/Cancel; cancelling with a reason
 flips the page to cancelled; editing an auction shows a locked type
 and no price inputs. r8's idle-acid check now targets non-live cards
 (live cards are deliberately always-acid).
+
+## A2 — Realtime auction UI
+
+a2-smoke.mjs (27 checks, two browser tabs): countdown anchored to the
+clock (mod-60 tolerant of extensions), acid+seconds under five
+minutes, scripted bids arrive, a bid in one tab reaches the other
+within one second, rejection copy carries the new minimum, anti-snipe
+row in both tabs, close produces the winner + handoff message in
+chat, mixed grids render both types at identical card heights, the
+browse three-way fork + gated Ending-soon sort behave, the home fan
+flips to ending soon, and the reserve_not_met / cancelled cases land
+their endings (cancellation notice verified in the bidder's inbox —
+navigated in-app, since a reload resets a single-tab mock world).

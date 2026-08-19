@@ -12,6 +12,7 @@ import { Avatar } from '../components/Avatar';
 import { ReportDialog } from '../components/ReportDialog';
 import { PregradeListingPanel } from '../components/pregrade/PregradeListingPanel';
 import { ImageLightbox } from '../components/ImageLightbox';
+import { AuctionPanel } from '../components/AuctionPanel';
 import './listing.css';
 
 type LoadState = 'loading' | 'ready' | 'error' | 'missing';
@@ -390,6 +391,10 @@ export function ListingPage() {
                 ⚑
               </button>
             </div>
+          )}
+
+          {auction && (
+            <AuctionPanel listing={listing} onAuctionChanged={() => void load()} />
           )}
 
           <table className="ldetail-specs">

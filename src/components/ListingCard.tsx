@@ -4,6 +4,7 @@ import type { ListingWithSeller } from '../lib/types';
 import { GAME_LABELS } from '../lib/types';
 import { formatPrice, relativeTime } from '../lib/format';
 import { auctionPillLabel, isEffectivelyOver } from '../lib/auction';
+import { useNow } from '../lib/useNow';
 import { sellerDotBackground } from '../lib/face';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
@@ -45,8 +46,11 @@ export const ListingCard = memo(function ListingCard({
     : listing.seller.displayName;
 
   const auction = listing.auction ?? null;
-  const live = Boolean(auction && !isEffectivelyOver(auction));
-  const livePill = auction ? auctionPillLabel(auction) : null;
+  // Tick the pill countdown once a minute; compute-from-target keeps it
+  // honest after background throttling.
+  const now = useNow(30_000);
+  const live = Boolean(auction && !isEffectivelyOver(auction, now));
+  const livePill = auction ? auctionPillLabel(auction, now) : null;
 
   const open = () => navigate(`/listing/${listing.id}`);
 

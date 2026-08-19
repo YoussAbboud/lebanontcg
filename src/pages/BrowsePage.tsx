@@ -14,6 +14,13 @@ const SORTS: Array<{ key: ListingFilter['sort']; label: string }> = [
   { key: 'price_asc', label: 'Price ↑' },
   { key: 'price_desc', label: 'Price ↓' },
   { key: 'most_watched', label: 'Most watched' },
+  { key: 'ending_soon', label: 'Ending soon' },
+];
+
+const SALE_TYPES: Array<{ key: 'all' | 'fixed' | 'auction'; label: string }> = [
+  { key: 'all', label: 'All' },
+  { key: 'fixed', label: 'Buy now' },
+  { key: 'auction', label: 'Auctions' },
 ];
 
 type LoadState = 'loading' | 'ready' | 'error';
@@ -98,6 +105,27 @@ export function BrowsePage() {
           <button type="button" className="btn-ghost-mono browse-clear" onClick={clearFilters}>
             Clear
           </button>
+        </div>
+
+        <div className="browse-typerow" role="radiogroup" aria-label="Sale type">
+          {SALE_TYPES.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              className="pill"
+              aria-pressed={(filter.saleType ?? 'all') === t.key}
+              onClick={() =>
+                apply({
+                  ...filter,
+                  saleType: t.key,
+                  // Ending soon only means anything for auctions.
+                  sort: t.key !== 'auction' && filter.sort === 'ending_soon' ? 'newest' : filter.sort,
+                })
+              }
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
         <div className="mono-label browse-facet-label">Game</div>
@@ -256,7 +284,9 @@ export function BrowsePage() {
             />
           </div>
           <div className="browse-sorts">
-            {SORTS.map((s) => (
+            {SORTS.filter(
+              (s) => s.key !== 'ending_soon' || (filter.saleType ?? 'all') === 'auction',
+            ).map((s) => (
               <button
                 key={s.key}
                 type="button"

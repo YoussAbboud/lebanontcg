@@ -103,3 +103,6 @@
   .browse-side { max-width: none; flex-basis: 100%; }
   .browse-sorts { margin-left: 0; }
 }
+
+/* All / Buy now / Auctions — the sale-type fork at the top of the rail. */
+.browse-typerow { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }

@@ -115,6 +115,32 @@ const L: SeedListing[] = [
   { seller: 'u-lina', title: 'Uta OP02 promo', game: 'onepiece', set: 'Film Red promo', num: 'P-014', cond: 'NM', finish: 'foil', price: 26, status: 'sold', desc: 'Film Red promo Uta.', ageDays: 65, imageCount: 1 },
 ];
 
+
+/** Two extra collectors so the scripted mock auction has four distinct
+    bidders (the seed sellers double as the other two). */
+export const seedBidderProfiles: Profile[] = [
+  {
+    id: 'u-nabil',
+    username: 'nabil_pulls',
+    displayName: 'Nabil Aoun',
+    avatarUrl: 'mock-avatar://nabil_pulls',
+    bio: 'One Piece and Pokémon. Mostly buying, occasionally letting go of doubles.',
+    createdAt: days(120),
+    ratingAvg: null,
+    ratingCount: 0,
+  },
+  {
+    id: 'u-rita',
+    username: 'ritacollects',
+    displayName: 'Rita Sfeir',
+    avatarUrl: 'mock-avatar://ritacollects',
+    bio: 'Lorcana first, everything shiny second.',
+    createdAt: days(60),
+    ratingAvg: null,
+    ratingCount: 0,
+  },
+];
+
 export function buildSeedListings(): Listing[] {
   return L.map((s, i) => {
     const id = `l-${String(i + 1).padStart(3, '0')}`;

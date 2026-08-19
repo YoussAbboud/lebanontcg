@@ -6,6 +6,7 @@ import { formatPrice } from '../lib/format';
 import { formatTimeLeft, isEffectivelyOver } from '../lib/auction';
 import { useNow } from '../lib/useNow';
 import { useApp } from '../state/AppContext';
+import { useDragScroll } from '../lib/useDragScroll';
 import './livebids.css';
 
 interface FloatBid {
@@ -99,11 +100,15 @@ function LiveBidCard({ listing }: { listing: ListingWithSeller }) {
 export function LiveBids() {
   const { client } = useApp();
   const [items, setItems] = useState<ListingWithSeller[]>([]);
+  const railRef = useRef<HTMLDivElement>(null);
+  // The rail mounts behind the data load, so the hook only binds once
+  // there is something to scroll.
+  useDragScroll(railRef, items.length > 0);
 
   useEffect(() => {
     let cancelled = false;
     client
-      .searchListings({ ...DEFAULT_FILTER, saleType: 'auction', sort: 'ending_soon' }, 0, 3)
+      .searchListings({ ...DEFAULT_FILTER, saleType: 'auction', sort: 'ending_soon' }, 0, 20)
       .then((page) => {
         if (!cancelled) setItems(page.items);
       })
@@ -126,7 +131,7 @@ export function LiveBids() {
           All auctions →
         </Link>
       </div>
-      <div className="livebids-grid">
+      <div className="scrollx livebids-rail" ref={railRef}>
         {items.map((l) => (
           <LiveBidCard key={l.id} listing={l} />
         ))}

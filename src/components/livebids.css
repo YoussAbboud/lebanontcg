@@ -1,6 +1,12 @@
-/* Home page Live Bids rail — the auction floor, glanceable. */
+/* Home page Live Bids rail — the auction floor, glanceable.
+   Same horizontal padding as the Featured strip (--pad-x). */
 
-.livebids { display: flex; flex-direction: column; gap: 14px; }
+.livebids {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px var(--pad-x) 0;
+}
 .livebids-head { display: flex; align-items: baseline; gap: 14px; }
 .livebids-heading { font-size: var(--fs-28); margin: 0; display: flex; align-items: center; gap: 10px; }
 .livebids-dot {
@@ -17,13 +23,40 @@
 .livebids-all { margin-left: auto; color: var(--muted); text-decoration: none; }
 .livebids-all:hover { color: var(--acid); }
 
-.livebids-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+/* One snapping row. The scrollport bleeds past --pad-x with matching
+   negative margins so the acid border and hover lift aren't clipped,
+   and scroll-padding keeps snapped cards aligned to the text column.
+   Cards are sized so exactly five fit on desktop and two on phones. */
+.livebids-rail {
+  --livebids-gap: 16px;
+  --livebids-per-view: 5;
+  display: flex;
+  gap: var(--livebids-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 14px var(--pad-x);
+  margin: -14px calc(var(--pad-x) * -1);
+  scroll-padding: 0 var(--pad-x);
+}
+.livebids-rail.is-dragscroll {
+  scroll-snap-type: none;
+  user-select: none;
+}
+.livebids-rail img { -webkit-user-drag: none; }
+
+@media (max-width: 1100px) {
+  .livebids-rail { --livebids-per-view: 3; }
+}
+@media (max-width: 720px) {
+  .livebids-rail { --livebids-per-view: 2; }
 }
 
 .livebids-card {
+  flex: none;
+  width: calc(
+    (100% - (var(--livebids-per-view) - 1) * var(--livebids-gap)) / var(--livebids-per-view)
+  );
+  scroll-snap-align: start;
   text-align: left;
   padding: 0;
   border: 1px solid var(--acid);
@@ -79,4 +112,9 @@
   white-space: nowrap;
 }
 .livebids-pricerow { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+/* Two-up cards are narrow — stack the label above the number rather
+   than letting "Current bid" wrap mid-phrase. */
+@media (max-width: 720px) {
+  .livebids-pricerow { flex-direction: column; align-items: flex-start; gap: 2px; }
+}
 .livebids-price { color: var(--acid); font-size: 18px; }

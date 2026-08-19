@@ -372,6 +372,41 @@ export function buildSeedAuctions(): { listings: Listing[]; auctions: Auction[] 
       desc: 'Parallel leader, straight from pack to toploader.',
       starting: 120, reserve: null, endsInMin: 60 * 70,
     },
+    {
+      lid: 'l-auc-4', aid: 'a-4', seller: 'u-karim',
+      title: 'Grief — Modern Horizons 2 Foil', game: 'magic' as Game,
+      set: 'Modern Horizons 2', num: '087', cond: 'NM' as Condition, finish: 'foil' as Finish,
+      desc: 'Foil Grief, sleeved since I pulled it.',
+      starting: 55, reserve: 80, endsInMin: 90,
+    },
+    {
+      lid: 'l-auc-5', aid: 'a-5', seller: 'u-maya',
+      title: 'Mickey Mouse – Brave Little Tailor Enchanted', game: 'lorcana' as Game,
+      set: 'Rise of the Floodborn', num: '204/204', cond: 'NM' as Condition, finish: 'foil' as Finish,
+      desc: 'Enchanted Mickey, straight into a sleeve out of the pack.',
+      starting: 200, reserve: null, endsInMin: 60 * 9,
+    },
+    {
+      lid: 'l-auc-6', aid: 'a-6', seller: 'u-lina',
+      title: 'Red-Eyes B. Dragon LOB 1st Edition', game: 'yugioh' as Game,
+      set: 'Legend of Blue Eyes', num: 'LOB-070', cond: 'MP' as Condition, finish: 'holo' as Finish,
+      desc: 'MP LOB 1st ed Red-Eyes — honest wear, real card.',
+      starting: 300, reserve: 450, endsInMin: 60 * 40,
+    },
+    {
+      lid: 'l-auc-7', aid: 'a-7', seller: 'u-karim',
+      title: 'Trafalgar Law OP02 Secret Rare', game: 'onepiece' as Game,
+      set: 'Paramount War', num: 'OP02-121', cond: 'NM' as Condition, finish: 'foil' as Finish,
+      desc: 'Secret rare Law, centered well, letting the market decide.',
+      starting: 90, reserve: null, endsInMin: 60 * 3,
+    },
+    {
+      lid: 'l-auc-8', aid: 'a-8', seller: 'u-maya',
+      title: 'Venusaur Base Set Shadowless', game: 'pokemon' as Game,
+      set: 'Base Set', num: '15/102', cond: 'LP' as Condition, finish: 'holo' as Finish,
+      desc: 'Shadowless Venusaur, LP with a soft bottom-left corner.',
+      starting: 900, reserve: 1200, endsInMin: 60 * 100,
+    },
   ];
   const listings: Listing[] = defs.map((d) => ({
     id: d.lid,

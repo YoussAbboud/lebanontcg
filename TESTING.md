@@ -564,3 +564,14 @@ reproduce it.
 a2-smoke: no mode toggle remains; the fan holds more than seven cards
 while at most seven are non-transparent at any moment; live fan cards
 carry the LIVE badge and a 2px acid outline (computed style).
+
+## A8 — Live Bids rail
+
+a5-smoke measures the rail in the DOM: one row, mandatory snap, exactly
+five cards fully in view at 1280 with more to scroll, the head's left
+edge equal to the Featured section's text column, and scrollLeft moving
+on a programmatic swipe. Two smoke selectors were tightened alongside:
+live auction cards are permanently acid, so r8's "most-liked pin"
+assertions now exclude them, and a6 identifies auction cards by their
+"Current bid" label rather than title text (seed sets/names overlap
+across types).

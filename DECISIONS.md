@@ -834,3 +834,20 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   events off and tabIndex -1, so they neither paint nor catch clicks or
   tab stops while waiting to rotate in. The dot row still indexes every
   card, so the full set stays reachable.
+
+## A8 — Live Bids as a snapping rail
+
+- Live Bids is one row that snap-scrolls, sized so exactly five cards
+  fit on desktop, three on tablets and two on phones (a CSS variable
+  per breakpoint drives the card width), with the next card peeking to
+  signal the swipe. Touch swipes natively; mouse drags via the same
+  useDragScroll hook the Featured strip uses.
+- It shares the Featured strip's horizontal padding (--pad-x) and uses
+  the same bleed technique — the scrollport pads past the text column
+  with matching negative margins so the acid borders and hover lift
+  aren't clipped, and scroll-padding keeps snapped cards aligned to the
+  same left edge (verified equal to Featured's at every width).
+- The rail fetches 20 live auctions instead of 3, and mock now seeds 8
+  so the swipe is real. Seed titles were deliberately made distinct
+  from the fixed-price seeds — overlapping names made both the demo and
+  the smokes ambiguous.

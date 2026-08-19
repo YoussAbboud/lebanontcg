@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import type { ListingWithSeller } from '../lib/types';
 import { formatPrice, relativeTime } from '../lib/format';
 import { faceBackground, glyphOf } from '../lib/face';
+import { auctionPillLabel, isEffectivelyOver } from '../lib/auction';
+import { useNow } from '../lib/useNow';
 import { Avatar } from './Avatar';
 import './fancarousel.css';
 
@@ -25,6 +27,10 @@ const PARALLAX_PX = 9;
 const DRAG_STEP = 140;
 const DRAG_MIN = 45;
 
+/** At most 7 cards on screen (centre ±3); the rest wait off the edges
+    at zero opacity and slide in as the fan rotates through the list. */
+const WINDOW = 3;
+
 export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
   const navigate = useNavigate();
   const [active, setActive] = useState(Math.min(2, Math.max(0, items.length - 1)));
@@ -39,6 +45,7 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
   // doesn't navigate. Survives pointerup (dragRef is cleared there,
   // before the browser dispatches the click).
   const swallowClickRef = useRef(false);
+  const now = useNow(30_000);
   const [reduced] = useState(
     () =>
       typeof window !== 'undefined' &&
@@ -116,8 +123,13 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
         {items.map((item, i) => {
           let off = (((i - active) % n) + n) % n;
           if (off > (n - 1) / 2) off -= n;
-          const abs = Math.min(Math.abs(off), 3);
+          const trueAbs = Math.abs(off);
+          const outsideWindow = trueAbs > WINDOW;
+          const abs = Math.min(trueAbs, 3);
           const isCentre = off === 0;
+          const auction = item.auction ?? null;
+          const live = Boolean(auction && !isEffectivelyOver(auction, now));
+          const livePill = auction ? auctionPillLabel(auction, now) : null;
           const isHot = hovered === i || (hovered === null && isCentre);
           const isTilting = hovered === i && !reduced && !dragging;
           const scale = (isCentre ? 1 : 1 - abs * 0.1) * (hovered === i ? 1.09 : 1);
@@ -133,10 +145,13 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
             <div
               key={item.id}
               role="button"
-              tabIndex={0}
-              aria-label={`${item.title} — asking ${formatPrice(item.price, item.currency)}`}
-              className={`fan-card ${isCentre ? 'fan-card-centre' : ''}`}
+              aria-label={`${item.title} — ${live ? 'live auction, current bid' : 'asking'} ${formatPrice(item.price, item.currency)}`}
+              aria-hidden={outsideWindow}
+              tabIndex={outsideWindow ? -1 : 0}
+              className={`fan-card ${isCentre ? 'fan-card-centre' : ''} ${live ? 'fan-card-live' : ''}`}
               style={{
+                opacity: outsideWindow ? 0 : undefined,
+                pointerEvents: outsideWindow ? 'none' : undefined,
                 transform:
                   `translate(-50%, -50%) translateX(${dragDx}px) translateX(${sign * X[abs]}%)` +
                   ` translateZ(${-Z[abs] + (hovered === i ? 90 : 0)}px)` +
@@ -201,6 +216,9 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
                   </div>
                 )}
                 <div className="fan-scrim" aria-hidden="true" />
+                {live && livePill && (
+                  <span className="fan-live mono-label">{livePill}</span>
+                )}
                 <div className="fan-caption">
                   <div className="fan-title">{item.title}</div>
                   <div className={`fan-info ${isHot ? 'fan-info-open' : ''}`}>
@@ -209,6 +227,7 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
                       <div className="fan-handle">{handle}</div>
                     </div>
                     <div className="fan-asking-row">
+                      {live && <span className="mono-label fan-bid-label">Current bid</span>}
                       <span className="fan-asking mono-value">
                         {formatPrice(item.price, item.currency)}
                       </span>

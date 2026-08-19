@@ -285,9 +285,6 @@
   opacity: 0.5;
 }
 
-/* Fresh drops / Ending soon toggle above the fan. */
-.home-fanmode { display: flex; gap: 8px; justify-content: center; margin-bottom: 6px; }
-.home-fanmode-empty { text-align: center; color: var(--muted); margin: 10px 0 0; }
 
 /* Seller identity on featured strip cards. */
 .home-strip-seller { display: flex; align-items: center; gap: 8px; margin: 4px 0 6px; }

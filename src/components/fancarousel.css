@@ -205,3 +205,22 @@
   .fan-caption { padding: 14px; }
   .fan-title { font-size: 15px; }
 }
+
+/* Live auction cards in the fan: acid outline + LIVE badge. */
+.fan-card-live .fan-face {
+  outline: 2px solid var(--acid);
+  outline-offset: -2px;
+  box-shadow: 0 0 22px -6px rgba(210, 255, 60, 0.45);
+}
+.fan-live {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--acid);
+  color: #10120a;
+  letter-spacing: 0.08em;
+}
+.fan-bid-label { color: var(--acid); margin-right: 8px; }

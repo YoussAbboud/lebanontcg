@@ -822,3 +822,15 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   storage paths and falls back to the procedural gradient) — the old
   hash-gradient dots looked like missing images once real avatars
   existed.
+
+## A7 — Fan carousel: live cards, one shelf for everything
+
+- A live auction in the hero fan now reads as one: acid outline on the
+  card face with a soft glow, a "LIVE · 2h 14m" badge top-left, and the
+  info panel labelling the price as the Current bid.
+- The Fresh drops / Ending soon toggle is gone. The fan takes the whole
+  newest page and rotates through it, windowed to seven on screen
+  (centre ±3) — cards outside the window sit at opacity 0 with pointer
+  events off and tabIndex -1, so they neither paint nor catch clicks or
+  tab stops while waiting to rotate in. The dot row still indexes every
+  card, so the full set stays reachable.

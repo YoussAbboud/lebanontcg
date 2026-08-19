@@ -558,3 +558,9 @@ but carrying seller avatars, no unpilled auction card on home, browse
 auction cards all pilled, avatars in fan/trending. The PostgREST
 object-vs-array embed fix is code-level (live-only shape) — mock can't
 reproduce it.
+
+## A7 — Fan carousel
+
+a2-smoke: no mode toggle remains; the fan holds more than seven cards
+while at most seven are non-transparent at any moment; live fan cards
+carry the LIVE badge and a 2px acid outline (computed style).

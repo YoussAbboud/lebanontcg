@@ -131,7 +131,7 @@ export function LiveBidPage({
               : 'Auction ended'}
         </span>
         <span className="mono-label livebid-watchers" title="Collectors with this Live Bid open right now">
-          ● {watchers} watching
+          ● {watchers}
         </span>
         <span className="mono-value livebid-clock">
           {over ? '—' : `ends in ${formatTimeLeft(auction.endsAt, now)}`}

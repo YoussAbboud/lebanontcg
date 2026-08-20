@@ -1,7 +1,7 @@
 /* The Live Bid page — an auction is an event, and the page dresses like
    one: pulsing banner, photo beside the bid arena, chart underneath. */
 
-.livebid { display: flex; flex-direction: column; gap: 18px; }
+.livebid { display: flex; flex-direction: column; gap: 18px; padding: 1rem;}
 
 .livebid-banner {
   display: flex;

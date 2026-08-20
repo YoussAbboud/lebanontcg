@@ -66,13 +66,13 @@
   display: flex;
   flex-direction: column;
 }
-.livebids-facewrap { position: relative; aspect-ratio: 16 / 10; overflow: hidden; }
-.livebids-face { width: 100%; height: 100%; object-fit: cover; display: block; }
+.livebids-facewrap { position: relative; aspect-ratio: 12 / 16; overflow: hidden; padding: 0.62rem; padding-bottom: 0 !important;}
+.livebids-face { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0.75rem;}
 .livebids-face-empty { background: var(--input-bg); }
 .livebids-eye {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 13px;
+  left: 13px;
   padding: 3px 9px;
   border-radius: 999px;
   background: rgba(8, 9, 11, 0.75);
@@ -81,8 +81,8 @@
 }
 .livebids-clock {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 13px;
+  right: 13px;
   padding: 3px 9px;
   border-radius: 999px;
   background: var(--acid);
@@ -90,11 +90,11 @@
 }
 
 /* New bids fade up over the art: "@name  $amount". */
-.livebids-floats { position: absolute; left: 12px; bottom: 8px; pointer-events: none; }
+.livebids-floats { position: absolute; left: 15px; bottom: 10px; pointer-events: none; }
 .livebids-float {
   display: block;
-  color: #fff;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+  color: #181818;
+  text-shadow: 0 1px 4px rgb(255, 255, 255);
   animation: livebids-rise 2.5s ease-out forwards;
 }
 @keyframes livebids-rise {

@@ -6,7 +6,8 @@ after M6, with the noted differences.
 
 Unit tests: `npm test` (filter/search query building, listing status
 transition rules, message grouping/timestamp logic, image compression
-sizing math).
+sizing math, and the admin rules — access, suspension, moderation
+overrides and the audit log — driven through the mock client).
 
 ## M1 — Foundation
 
@@ -576,6 +577,49 @@ assertions now exclude them, and a6 identifies auction cards by their
 "Current bid" label rather than title text (seed sets/names overlap
 across types).
 
+## A9 — Admin console
+
+Mock mode signs in as the seeded moderator (`Dev: LebanonTCG Mods`);
+live mode needs one account promoted by hand first (see README).
+
+1. **Gate.** Signed out, `/admin` shows "Admins only" with a sign-in
+   link. Signed in as a normal user (`Dev: Maya`), the same panel says
+   the account has no moderator access. Neither leaks the console's
+   shape. The header avatar menu shows **Admin console** only for
+   admins.
+2. **Overview.** Tiles for reports/accounts/listings/auctions/value.
+   With open reports, the "Waiting on you" bar sits above them and jumps
+   to the queue. Recent moderation lists the last six audit rows.
+3. **Reports.** Filter pills switch status. An open report shows the
+   resolved subject (listing title links to the listing; a reported
+   message shows its text), the reporter and the detail. "I'm on it"
+   moves it to reviewing; Resolve/Dismiss take an optional note and
+   record who closed it; Reopen puts it back.
+4. **Users.** Search by handle. Suspend demands a 3+ character reason,
+   then the row wears a pink SUSPENDED chip and the account cannot
+   list, message or bid (check by switching to that user — the error
+   quotes the reason). Lift restores it. Make admin / Revoke admin
+   work, but the buttons on **your own** row are disabled.
+5. **Listings.** Status pills and search cover every listing, including
+   removed ones. Remove asks for a reason; the listing's conversations
+   get "A moderator removed this listing." (not "Seller removed…").
+   Restore brings it back. Force status can drive a `sold` listing to
+   `removed`, which the seller-facing rules forbid. Delete warns about
+   the cascade and demands a reason.
+6. **Auctions.** Live tab lists running auctions with top bid and time
+   left. Cancel asks for a reason, kills the auction, removes the
+   listing, and every bidder gets "A moderator cancelled this auction."
+7. **Reviews.** Deleting a review re-rolls the reviewee's rating; delete
+   the last one and their profile shows no rating at all.
+8. **Audit log.** Every action above appears with actor, target, reason
+   and timestamp, newest first. A *rejected* action (e.g. removing with
+   an empty reason) leaves no row. There is no delete affordance —
+   there is no API for one either.
+
+Live-mode differences: reads and writes are refused server-side for
+non-admins even if the client is tampered with (the RPCs re-check
+`is_admin`), and an admin can read a private message only when that
+exact message has been reported.
 ## A9 — Grace period, withdrawal, named winner
 
 auction-test.sql grows to 27 assertions: a report inside the grace
@@ -585,3 +629,11 @@ retract errors, and dropping below three strikes unblocks bidding.
 a3-smoke asserts the no-show action is absent right after a close, the
 outcome reads "Won at $N by @handle", and that handle links to the
 winner's profile (which carries no strike from merely winning).
+
+## A10 — Post-merge verification
+
+Migrations 0001–0018 apply on Postgres 16; rls-test back to 22/0 (the
+four offer assertions failed against 0016 alone), auction-test 27/0.
+183 unit tests (Admin's suite included). Browser: a3/a5/a6/r4 green —
+a5's watcher assertion now reads the "● N" chip and its tooltip, which
+is how the chip reads after the UI edits on the branch.

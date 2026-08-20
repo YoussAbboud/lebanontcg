@@ -852,6 +852,58 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   from the fixed-price seeds — overlapping names made both the demo and
   the smokes ambiguous.
 
+## A9 — Admin console
+
+- Admins are a **column, not an env var**: `profiles.is_admin`, with a
+  guard trigger that rejects writes to `is_admin` / `suspended_*` unless
+  an admin RPC set `app.admin_action` for the statement — the same
+  technique 0001/0005 use for the system-maintained rating fields. The
+  profiles update policy is still `auth.uid() = id`, so without the
+  trigger any user could have promoted themselves by PATCHing their own
+  row. An allow-list in the client was never on the table: the browser
+  holds the anon key, so anything it can assert, an attacker can assert.
+- **Every privileged mutation is a security-definer RPC** that asserts
+  `is_admin()` and writes an `admin_actions` row in the same transaction.
+  The alternative — admin UPDATE/DELETE policies on each table — would
+  have made the audit log best-effort, and a log you can forget to write
+  is not a log. `admin_actions` has no insert/update/delete policy at
+  all, so it is append-only even to the admin who wrote a row.
+- The service_role key stays out of the browser. It was the obvious
+  shortcut for "admins can do everything" and it would have meant a key
+  that bypasses all RLS sitting in a bundle.
+- **Reads widen only where moderation needs them.** Admins see every
+  listing (removed included), the report queue and the log. Conversations
+  do *not* open up: an admin can read a message only when that exact
+  message is the target of a report. Moderating a reported message needs
+  the message, not the thread.
+- **Suspension stops creation, not reading** — no new listings, messages
+  or bids; history stays readable so the other party in a past trade
+  keeps their record. It reuses the existing predicate for bidding:
+  `is_bid_banned()` (0015) now returns true for a suspended account too,
+  so auctions needed no second check. Live mode maps the resulting RLS
+  rejection to the suspension reason, because "new row violates
+  row-level security policy" tells a user nothing.
+- Moderation **overrides the seller-facing lifecycle**: `sold` is
+  terminal for sellers, but a fraudulent listing has to come down from
+  it, so `enforce_listing_transitions` skips validation for the admin
+  path. The status-announcement trigger had to learn about it too — a
+  moderated removal that told the buyer "Seller removed this listing"
+  would have been a lie.
+- The report queue gained a lifecycle (open → reviewing → resolved /
+  dismissed) rather than a delete. Reports from 0006 were write-only with
+  no reader; the queue existed but nobody could open it.
+- **Reasons are part of the action, not an afterthought.** One
+  `ReasonPrompt` fronts every destructive action and the DB independently
+  demands 3+ characters for suspensions, removals, deletions and
+  cancellations. A rejected action writes no audit row, so the log never
+  records something that did not happen.
+- The first admin is promoted by hand in SQL, once. There is deliberately
+  no bootstrap path through the app, and no self-demotion — the obvious
+  way to lock everyone out of a single-admin project.
+- Mock mirrors the SQL rules rather than approximating them (same
+  rejections, same wording, same audit rows), so the click-through script
+  is meaningful offline. `src/lib/client/admin.test.ts` drives the mock
+  client through access, suspension, the moderation overrides and the log.
 ## A9 — No-shows need time; the winner gets named
 
 - Offering "Winner didn't follow through" the instant an auction closed
@@ -870,3 +922,16 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   the handle linking to their profile — instead of restating that the
   deal moves to chat (the handoff message already says that in the
   thread it created).
+
+## A10 — Merge with Admin; offers restored
+
+- Migration numbering collided: Admin landed as 0016 while the no-show
+  grace period was also numbered 0016. The no-show migration moved to
+  0017 so ordering stays unambiguous, and its incremental script became
+  apply-updates-0017-0018.sql (applied after Admin's 0016).
+- 0016 rewrote "participants send messages" to add the suspension
+  check but narrowed the allowed kinds to 'user', which silently
+  disabled OFFERS — 0008 had allowed kind in ('user','offer') with
+  offer_status forced to 'proposed'. The RLS suite caught it (22/0 →
+  18/4). 0018 restores 0008's kinds and guard while keeping the
+  suspension rule.

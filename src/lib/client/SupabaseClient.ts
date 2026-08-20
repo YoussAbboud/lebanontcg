@@ -1,5 +1,12 @@
 import { createClient as createSupabase, type SupabaseClient } from '@supabase/supabase-js';
 import type {
+  AdminAction,
+  AdminActionKind,
+  AdminAuction,
+  AdminListingFilter,
+  AdminReview,
+  AdminStats,
+  AdminUser,
   Auction,
   AuctionDetail,
   AuctionInput,
@@ -20,7 +27,11 @@ import type {
   Message,
   PendingReview,
   Profile,
+  Report,
   ReportInput,
+  ReportStatus,
+  ReportSubject,
+  ReportTargetType,
   Review,
   SellerStats,
 } from '../types';
@@ -59,6 +70,10 @@ interface ProfileRow {
   rating_avg: number | string | null;
   rating_count: number;
   created_at: string;
+  /** Added in 0016 — absent from older cached shapes, so treated as false. */
+  is_admin?: boolean;
+  suspended_at?: string | null;
+  suspended_reason?: string | null;
 }
 
 interface ListingImageRow {
@@ -153,6 +168,31 @@ interface ReviewRow {
   reviewer?: ProfileRow;
 }
 
+interface ReportRow {
+  id: string;
+  reporter_id: string;
+  target_type: ReportTargetType;
+  target_id: string;
+  reason: ReportInput['reason'];
+  detail: string;
+  status: ReportStatus;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  resolution_note: string | null;
+  created_at: string;
+}
+
+interface AdminActionRow {
+  id: string;
+  actor_id: string;
+  kind: AdminActionKind;
+  target_type: string;
+  target_id: string;
+  reason: string;
+  detail: unknown;
+  created_at: string;
+}
+
 interface PregradeCaptureRow {
   id: string;
   report_id: string;
@@ -232,6 +272,9 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       createdAt: row.created_at,
       ratingAvg: row.rating_avg === null ? null : Number(row.rating_avg),
       ratingCount: row.rating_count,
+      isAdmin: row.is_admin ?? false,
+      suspendedAt: row.suspended_at ?? null,
+      suspendedReason: row.suspended_reason ?? null,
     };
   }
 
@@ -349,6 +392,9 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
             createdAt: row.created_at,
             ratingAvg: null,
             ratingCount: 0,
+            isAdmin: false,
+            suspendedAt: null,
+            suspendedReason: null,
           },
     };
   }
@@ -356,6 +402,20 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   private uid(): string {
     if (!this.auth.user) throw new Error('Not signed in');
     return this.auth.user.id;
+  }
+
+  /**
+   * Suspension is enforced by RLS (0016), which rejects with a bare
+   * "violates row-level security policy". Every create path routes its
+   * 42501 through here so a suspended user reads the actual reason
+   * instead of a policy error.
+   */
+  private suspensionMessage(): string | null {
+    const me = this.auth.user;
+    if (!me?.suspendedAt) return null;
+    return me.suspendedReason
+      ? `Your account is suspended: ${me.suspendedReason}`
+      : 'Your account is suspended.';
   }
 
   private async refreshAuthProfile(): Promise<void> {
@@ -908,7 +968,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .insert({ ...this.listingInputToRow(input), seller_id: uid })
       .select()
       .single();
-    if (error) throw new Error(error.message);
+    if (error) throw new Error((error.code === '42501' && this.suspensionMessage()) || error.message);
     const row = data as ListingRow;
     await this.syncImages(row.id, images, []);
     return (await this.getListing(row.id))!;
@@ -965,7 +1025,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       p_reserve_price: auction.reservePrice,
       p_duration_hours: auction.durationHours,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(this.suspensionMessage() ?? error.message);
     const listingId = data as string;
     await this.syncImages(listingId, images, []);
     return (await this.getListing(listingId))!;
@@ -1016,7 +1076,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       p_auction_id: auctionId,
       p_amount: amount,
     });
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(this.suspensionMessage() ?? error.message);
     const out = data as { amount: number | string; ends_at: string; extended: boolean };
     return { amount: Number(out.amount), endsAt: out.ends_at, extended: out.extended };
   }
@@ -1301,7 +1361,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .single();
     if (error) {
       if (error.code === '42501') {
-        throw new Error('You cannot message this user.');
+        throw new Error(this.suspensionMessage() ?? 'You cannot message this user.');
       }
       throw new Error(error.message);
     }
@@ -1328,7 +1388,9 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .select()
       .single();
     if (error) {
-      if (error.code === '42501') throw new Error('You cannot message this user.');
+      if (error.code === '42501') {
+        throw new Error(this.suspensionMessage() ?? 'You cannot message this user.');
+      }
       throw new Error(error.message);
     }
     return { ...this.mapMessage(data as MessageRow), clientId };
@@ -1814,6 +1876,356 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       cert_number: certNumber ?? null,
     });
     if (error) throw new Error(error.message);
+  }
+
+  // ---- Admin --------------------------------------------------------------
+  // Reads go through PostgREST (0016 adds the admin SELECT policies);
+  // every WRITE is an RPC that re-checks is_admin server-side and writes
+  // the audit row. Nothing here trusts the client's idea of who's an admin.
+
+  private adminError(error: { message: string }): Error {
+    // Postgres raises are already user-facing sentences ("a reason is
+    // required to remove a listing"); strip the driver's prefix noise.
+    return new Error(error.message.replace(/^.*?:\s*/, '') || 'That action was rejected.');
+  }
+
+  async getAdminStats(): Promise<AdminStats> {
+    const { data, error } = await this.sb.rpc('admin_stats');
+    if (error) throw this.adminError(error);
+    const raw = (data ?? {}) as Record<string, number | string>;
+    const n = (k: string) => Number(raw[k] ?? 0);
+    return {
+      users: n('users'),
+      usersNew7d: n('usersNew7d'),
+      suspended: n('suspended'),
+      admins: n('admins'),
+      listingsActive: n('listingsActive'),
+      listingsReserved: n('listingsReserved'),
+      listingsSold: n('listingsSold'),
+      listingsRemoved: n('listingsRemoved'),
+      listingsNew7d: n('listingsNew7d'),
+      auctionsLive: n('auctionsLive'),
+      bids24h: n('bids24h'),
+      reportsOpen: n('reportsOpen'),
+      reportsReviewing: n('reportsReviewing'),
+      reviews: n('reviews'),
+      messages24h: n('messages24h'),
+      gmvListedActive: n('gmvListedActive'),
+      valueSold: n('valueSold'),
+    };
+  }
+
+  async adminListUsers(query: string, limit: number): Promise<AdminUser[]> {
+    const { data, error } = await this.sb.rpc('admin_users', {
+      p_query: query,
+      p_limit: limit,
+    });
+    if (error) throw this.adminError(error);
+    const rows = (data ?? []) as Array<ProfileRow & Record<string, number | boolean>>;
+    return rows.map((row) => ({
+      profile: this.mapProfile(row),
+      listingCount: Number(row.listing_count ?? 0),
+      activeCount: Number(row.active_count ?? 0),
+      soldCount: Number(row.sold_count ?? 0),
+      reviewCount: Number(row.review_count ?? 0),
+      reportsAgainst: Number(row.reports_against ?? 0),
+      noShowCount: Number(row.no_show_count ?? 0),
+      bidBanned: Boolean(row.bid_banned),
+    }));
+  }
+
+  async adminSetSuspended(userId: string, suspended: boolean, reason: string): Promise<Profile> {
+    const { error } = await this.sb.rpc('admin_set_suspended', {
+      p_user: userId,
+      p_suspended: suspended,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+    const profile = await this.getProfile(userId);
+    if (!profile) throw new Error('User not found.');
+    return profile;
+  }
+
+  async adminSetAdmin(userId: string, isAdmin: boolean): Promise<Profile> {
+    const { error } = await this.sb.rpc('admin_set_admin', {
+      p_user: userId,
+      p_is_admin: isAdmin,
+    });
+    if (error) throw this.adminError(error);
+    const profile = await this.getProfile(userId);
+    if (!profile) throw new Error('User not found.');
+    return profile;
+  }
+
+  async adminClearBidBan(userId: string, reason: string): Promise<number> {
+    const { data, error } = await this.sb.rpc('admin_clear_bid_ban', {
+      p_user: userId,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+    return Number(data ?? 0);
+  }
+
+  async adminSearchListings(
+    filter: AdminListingFilter,
+    offset: number,
+    limit: number,
+  ): Promise<ListingPage> {
+    let q = this.sb
+      .from('listings')
+      .select(`${LISTING_SELECT}, seller:profiles!listings_seller_id_fkey(*)`, { count: 'exact' });
+    if (filter.status !== 'all') q = q.eq('status', filter.status);
+    if (filter.saleType !== 'all') q = q.eq('sale_type', filter.saleType);
+    if (filter.sellerId) q = q.eq('seller_id', filter.sellerId);
+    const term = filter.q.trim();
+    if (term) {
+      const like = `%${term.toLowerCase().replaceAll('%', '\\%')}%`;
+      q = q.or(`title.ilike.${like},set_name.ilike.${like}`);
+    }
+    q = q.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+
+    const { data, count, error } = await q;
+    if (error) throw this.adminError(error);
+    const rows = (data ?? []) as (ListingRow & { seller: ProfileRow })[];
+    const likes = await this.likesFor(rows.map((r) => r.id));
+    const items = rows.map((row) => ({
+      ...this.mapListing(row),
+      auction: this.auctionOf(row),
+      seller: this.mapProfile(row.seller),
+      sellerActiveListingCount: 0,
+      likes: likes.get(row.id) ?? 0,
+      pregradePill: null,
+    }));
+    const total = count ?? items.length;
+    return { items, total, hasMore: offset + items.length < total };
+  }
+
+  async adminSetListingStatus(
+    listingId: string,
+    status: ListingStatus,
+    reason: string,
+  ): Promise<Listing> {
+    const { error } = await this.sb.rpc('admin_set_listing_status', {
+      p_listing: listingId,
+      p_status: status,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+    const listing = await this.getListing(listingId);
+    if (!listing) throw new Error('Listing not found.');
+    return listing;
+  }
+
+  async adminDeleteListing(listingId: string, reason: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_delete_listing', {
+      p_listing: listingId,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  async adminListAuctions(status: AuctionStatus | 'all'): Promise<AdminAuction[]> {
+    await this.sb.rpc('close_due_auctions').then(
+      () => undefined,
+      () => undefined,
+    );
+    let q = this.sb
+      .from('auctions')
+      .select('*, listing:listings!auctions_listing_id_fkey(title), bids(amount)')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (status !== 'all') q = q.eq('status', status);
+    const { data, error } = await q;
+    if (error) throw this.adminError(error);
+    const rows = (data ?? []) as Array<
+      AuctionRow & { listing?: { title: string } | null; bids?: { amount: number | string }[] }
+    >;
+    const sellers = await this.profilesByIds([...new Set(rows.map((r) => r.seller_id))]);
+    return rows.map((row) => {
+      const amounts = (row.bids ?? []).map((b) => Number(b.amount));
+      return {
+        auction: this.mapAuction(row),
+        listingTitle: row.listing?.title ?? 'Deleted listing',
+        seller: sellers.get(row.seller_id) ?? null,
+        bidCount: amounts.length,
+        topBid: amounts.length ? Math.max(...amounts) : null,
+      };
+    });
+  }
+
+  async adminCancelAuction(auctionId: string, reason: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_cancel_auction', {
+      p_auction: auctionId,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  async adminListReviews(query: string, limit: number): Promise<AdminReview[]> {
+    let q = this.sb
+      .from('reviews')
+      .select('*, reviewer:profiles!reviews_reviewer_id_fkey(*)')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    const term = query.trim();
+    if (term) q = q.ilike('body', `%${term.replaceAll('%', '\\%')}%`);
+    const { data, error } = await q;
+    if (error) throw this.adminError(error);
+    const rows = (data ?? []) as ReviewRow[];
+    const reviewees = await this.profilesByIds([...new Set(rows.map((r) => r.reviewee_id))]);
+    return rows.map((row) => ({
+      ...this.mapReview(row),
+      reviewee: reviewees.get(row.reviewee_id) ?? null,
+    }));
+  }
+
+  async adminDeleteReview(reviewId: string, reason: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_delete_review', {
+      p_review: reviewId,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  /** Batch profile lookup — used to attach actors/owners to admin rows. */
+  private async profilesByIds(ids: string[]): Promise<Map<string, Profile>> {
+    const out = new Map<string, Profile>();
+    if (ids.length === 0) return out;
+    const { data } = await this.sb.from('profiles').select('*').in('id', ids);
+    for (const row of (data ?? []) as ProfileRow[]) out.set(row.id, this.mapProfile(row));
+    return out;
+  }
+
+  async adminListReports(status: ReportStatus | 'all'): Promise<Report[]> {
+    let q = this.sb
+      .from('reports')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    if (status !== 'all') q = q.eq('status', status);
+    const { data, error } = await q;
+    if (error) throw this.adminError(error);
+    const rows = (data ?? []) as ReportRow[];
+    if (rows.length === 0) return [];
+
+    // Resolve subjects in three batched queries rather than one per row.
+    const idsOf = (t: ReportTargetType) =>
+      [...new Set(rows.filter((r) => r.target_type === t).map((r) => r.target_id))];
+    const listingIds = idsOf('listing');
+    const messageIds = idsOf('message');
+    const [listingRes, messageRes] = await Promise.all([
+      listingIds.length
+        ? this.sb.from('listings').select('id, title, seller_id').in('id', listingIds)
+        : Promise.resolve({ data: [] }),
+      messageIds.length
+        ? this.sb.from('messages').select('id, body, sender_id').in('id', messageIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+    const listings = new Map(
+      ((listingRes.data ?? []) as { id: string; title: string; seller_id: string }[]).map((l) => [
+        l.id,
+        l,
+      ]),
+    );
+    const messages = new Map(
+      ((messageRes.data ?? []) as { id: string; body: string; sender_id: string | null }[]).map(
+        (m) => [m.id, m],
+      ),
+    );
+    const profiles = await this.profilesByIds([
+      ...new Set([
+        ...rows.map((r) => r.reporter_id),
+        ...idsOf('user'),
+        ...[...listings.values()].map((l) => l.seller_id),
+        ...[...messages.values()].map((m) => m.sender_id ?? ''),
+      ]),
+    ]);
+    const handle = (p: Profile | null | undefined) =>
+      p ? (p.username ? `@${p.username}` : p.displayName) : null;
+
+    return rows.map((row) => {
+      let subject: ReportSubject | null = null;
+      if (row.target_type === 'listing') {
+        const l = listings.get(row.target_id);
+        if (l) {
+          subject = {
+            kind: 'listing',
+            label: l.title,
+            href: `/listing/${l.id}`,
+            ownerId: l.seller_id,
+            ownerName: handle(profiles.get(l.seller_id)),
+          };
+        }
+      } else if (row.target_type === 'user') {
+        const u = profiles.get(row.target_id);
+        if (u) {
+          subject = {
+            kind: 'user',
+            label: handle(u) ?? u.displayName,
+            href: u.username ? `/u/${u.username}` : null,
+            ownerId: u.id,
+            ownerName: handle(u),
+          };
+        }
+      } else {
+        const m = messages.get(row.target_id);
+        if (m) {
+          subject = {
+            kind: 'message',
+            label: m.body,
+            href: null,
+            ownerId: m.sender_id,
+            ownerName: m.sender_id ? handle(profiles.get(m.sender_id)) : null,
+          };
+        }
+      }
+      return {
+        id: row.id,
+        reporterId: row.reporter_id,
+        reporter: profiles.get(row.reporter_id) ?? null,
+        targetType: row.target_type,
+        targetId: row.target_id,
+        reason: row.reason,
+        detail: row.detail,
+        status: row.status,
+        resolvedBy: row.resolved_by,
+        resolvedAt: row.resolved_at,
+        resolutionNote: row.resolution_note,
+        createdAt: row.created_at,
+        subject,
+      };
+    });
+  }
+
+  async adminResolveReport(reportId: string, status: ReportStatus, note: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_resolve_report', {
+      p_report: reportId,
+      p_status: status,
+      p_note: note,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  async adminListActions(limit: number): Promise<AdminAction[]> {
+    const { data, error } = await this.sb
+      .from('admin_actions')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) throw this.adminError(error);
+    const rows = (data ?? []) as AdminActionRow[];
+    const actors = await this.profilesByIds([...new Set(rows.map((r) => r.actor_id))]);
+    return rows.map((row) => ({
+      id: row.id,
+      actorId: row.actor_id,
+      actor: actors.get(row.actor_id) ?? null,
+      kind: row.kind,
+      targetType: row.target_type,
+      targetId: row.target_id,
+      reason: row.reason,
+      detail: (row.detail ?? {}) as Record<string, unknown>,
+      createdAt: row.created_at,
+    }));
   }
 
   // ---- Storage ------------------------------------------------------------

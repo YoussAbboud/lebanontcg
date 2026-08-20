@@ -13,7 +13,7 @@
   vector-effect: non-scaling-stroke;
 }
 .aucchart-crosshair { stroke: var(--muted); stroke-width: 1; opacity: 0.7; }
-.aucchart-dot { fill: var(--acid); stroke: var(--panel, #14161c); stroke-width: 2; }
+.aucchart-dot { fill: var(--acid); stroke: var(--panel, #14161c); stroke-width: 2; aspect-ratio: square; }
 .aucchart-dot.is-hover { fill: #fff; }
 .aucchart-tip {
   position: absolute;

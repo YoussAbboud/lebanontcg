@@ -1,7 +1,15 @@
 import type {
+  AdminAction,
+  AdminActionKind,
+  AdminAuction,
+  AdminListingFilter,
+  AdminReview,
+  AdminStats,
+  AdminUser,
   Auction,
   AuctionDetail,
   AuctionInput,
+  AuctionStatus,
   Bid,
   Conversation,
   ConversationSummary,
@@ -16,7 +24,11 @@ import type {
   PendingReview,
   OfferStatus,
   Profile,
+  Report,
   ReportInput,
+  ReportStatus,
+  ReportSubject,
+  ReportTargetType,
   Review,
   SellerStats,
 } from '../types';
@@ -34,12 +46,14 @@ import { minNextBid } from '../auction';
 import { canTransition, statusChangeSystemMessage } from '../status';
 import {
   buildSeedAuctions,
+  seedAdminProfiles,
   seedBidderProfiles,
   buildSeedConversations,
   buildSeedListings,
   buildStressListings,
   seedFavorites,
   seedProfiles,
+  seedReports,
   seedReviews,
 } from '../../mock/seed';
 import { avatarDataUrl, cardImageUrl } from '../../mock/cardImage';
@@ -79,7 +93,11 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 export class MockClient implements MarketplaceClient {
   readonly isMock = true;
 
-  private profiles: Profile[] = structuredClone([...seedProfiles, ...seedBidderProfiles]);
+  private profiles: Profile[] = structuredClone([
+    ...seedProfiles,
+    ...seedBidderProfiles,
+    ...seedAdminProfiles,
+  ]);
   private listings: Listing[] = [
     ...buildSeedListings(),
     ...buildStressListings(Number(import.meta.env.VITE_MOCK_STRESS ?? 0) || 0),
@@ -98,7 +116,9 @@ export class MockClient implements MarketplaceClient {
   private favorites = new Map<string, Set<string>>();
   private reviews: Review[];
   private blocks = new Map<string, Set<string>>();
-  private reports: ReportInput[] = [];
+  private reports: StoredReport[] = structuredClone(seedReports) as StoredReport[];
+  /** Append-only in mock too — nothing here ever deletes a row. */
+  private adminActions: StoredAdminAction[] = [];
   /** Pre-grade reports live per-tab in mock mode (captures = object URLs). */
   private pregradeReports: PregradeReport[] = [];
 
@@ -178,6 +198,7 @@ export class MockClient implements MarketplaceClient {
         this.noShows = s.noShows ?? this.noShows;
         this.reviews = s.reviews;
         this.reports = s.reports;
+        this.adminActions = s.adminActions ?? this.adminActions;
         this.favorites = new Map(s.favorites.map(([k, v]) => [k, new Set(v)]));
         this.blocks = new Map(s.blocks.map(([k, v]) => [k, new Set(v)]));
         this.credentials = new Map(s.credentials ?? []);
@@ -279,7 +300,15 @@ export class MockClient implements MarketplaceClient {
         break;
       }
       case 'report': {
-        this.reports.push(patch.report);
+        const i = this.reports.findIndex((r) => r.id === patch.report.id);
+        if (i >= 0) this.reports[i] = patch.report;
+        else this.reports.push(patch.report);
+        break;
+      }
+      case 'adminaction': {
+        if (!this.adminActions.some((a) => a.id === patch.action.id)) {
+          this.adminActions.unshift(patch.action);
+        }
         break;
       }
       case 'credential': {
@@ -334,6 +363,7 @@ export class MockClient implements MarketplaceClient {
       case 'profile': {
         const i = this.profiles.findIndex((p) => p.id === patch.profile.id);
         if (i >= 0) this.profiles[i] = patch.profile;
+        else this.profiles.push(patch.profile);
         // If it's the signed-in user in this tab, refresh auth state too.
         if (this.auth.user?.id === patch.profile.id) {
           this.setAuth({ ...this.auth, user: structuredClone(patch.profile), loading: false });
@@ -354,6 +384,7 @@ export class MockClient implements MarketplaceClient {
       noShows: this.noShows,
       reviews: this.reviews,
       reports: this.reports,
+      adminActions: this.adminActions,
       favorites: [...this.favorites.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
       blocks: [...this.blocks.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
       credentials: [...this.credentials.entries()],
@@ -427,6 +458,23 @@ export class MockClient implements MarketplaceClient {
     return this.auth.user;
   }
 
+  /**
+   * The mock equivalent of the RLS `not is_suspended()` clauses in 0016:
+   * a suspended account can read and be read, but creates nothing new.
+   */
+  private meActive(): Profile {
+    const me = this.me();
+    const live = this.profiles.find((p) => p.id === me.id) ?? me;
+    if (live.suspendedAt) {
+      throw new Error(
+        live.suspendedReason
+          ? `Your account is suspended: ${live.suspendedReason}`
+          : 'Your account is suspended.',
+      );
+    }
+    return me;
+  }
+
   // ---- Auth ---------------------------------------------------------------
 
   getAuthState(): AuthState {
@@ -461,6 +509,9 @@ export class MockClient implements MarketplaceClient {
       createdAt: new Date().toISOString(),
       ratingAvg: null,
       ratingCount: 0,
+      isAdmin: false,
+      suspendedAt: null,
+      suspendedReason: null,
     };
     this.profiles.push(profile);
     this.credentials.set(this.credKey(email), { userId: profile.id, password });
@@ -748,7 +799,7 @@ export class MockClient implements MarketplaceClient {
   // ---- Listings (write) ---------------------------------------------------
 
   async createListing(input: ListingInput, images: ImageDraft[]): Promise<Listing> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     const id = nextId('l');
     const nowIso = new Date().toISOString();
@@ -945,7 +996,7 @@ export class MockClient implements MarketplaceClient {
     images: ImageDraft[],
     auction: AuctionInput,
   ): Promise<Listing> {
-    const me = this.me();
+    const me = this.meActive();
     if (!(auction.startingPrice > 0)) throw new Error('Starting price must be above zero.');
     if (auction.reservePrice !== null && auction.reservePrice < auction.startingPrice) {
       throw new Error('The reserve cannot be below the starting price.');
@@ -1014,7 +1065,12 @@ export class MockClient implements MarketplaceClient {
       throw new Error('You cannot bid on this auction.');
     }
     if (this.isBidBanned(bidder.id)) {
-      throw new Error('Bidding is blocked on this account after repeated no-shows.');
+      const suspended = this.profiles.find((p) => p.id === bidder.id)?.suspendedAt;
+      throw new Error(
+        suspended
+          ? 'Bidding is blocked while this account is suspended.'
+          : 'Bidding is blocked on this account after repeated no-shows.',
+      );
     }
     const top = this.topBidOf(a.id);
     const min = minNextBid(top ? top.amount : null, a.startingPrice);
@@ -1217,11 +1273,18 @@ export class MockClient implements MarketplaceClient {
     this.cancelAuctionAs(me, auctionId, reason);
   }
 
-  private cancelAuctionAs(actor: Profile, auctionId: string, reason: string): void {
+  private cancelAuctionAs(
+    actor: Profile,
+    auctionId: string,
+    reason: string,
+    opts: { byModerator?: boolean } = {},
+  ): void {
     if (!reason || reason.trim().length < 3) throw new Error('A cancellation reason is required.');
     const a = this.auctions.find((x) => x.id === auctionId);
     if (!a) throw new Error('Auction not found.');
-    if (a.sellerId !== actor.id) throw new Error('Only the seller can cancel this auction.');
+    if (!opts.byModerator && a.sellerId !== actor.id) {
+      throw new Error('Only the seller can cancel this auction.');
+    }
     if (a.status !== 'live') throw new Error('This auction is not live.');
     a.status = 'cancelled';
     a.cancelReason = reason.trim();
@@ -1256,7 +1319,7 @@ export class MockClient implements MarketplaceClient {
         conversationId: conv.id,
         senderId: '',
         kind: 'system',
-        body: `The seller cancelled this auction. Reason: ${a.cancelReason}`,
+        body: `${opts.byModerator ? 'A moderator' : 'The seller'} cancelled this auction. Reason: ${a.cancelReason}`,
         amount: null,
         offerStatus: null,
         createdAt: nowIso,
@@ -1272,8 +1335,10 @@ export class MockClient implements MarketplaceClient {
     this.emitAuction(a.id, { type: 'updated', auction: structuredClone(a) });
   }
 
-  /** Mirrors is_bid_banned (0015): three winner-role no-shows in 90 days. */
+  /** Mirrors is_bid_banned (0015, widened in 0016): a suspended account,
+      or three winner-role no-shows in 90 days. */
   private isBidBanned(userId: string): boolean {
+    if (this.profiles.find((p) => p.id === userId)?.suspendedAt) return true;
     const cutoff = Date.now() - 90 * 86400_000;
     return (
       this.noShows.filter(
@@ -1320,11 +1385,20 @@ export class MockClient implements MarketplaceClient {
       createdAt: new Date().toISOString(),
     };
     this.noShows.push(noShow);
-    const report: ReportInput = {
+    // Mirrors 0015: every no-show also lands in the moderation queue so
+    // the pattern is visible to admins.
+    const report: StoredReport = {
+      id: nextId('r'),
+      reporterId: me.id,
       targetType: 'user',
       targetId: reportedId,
       reason: 'other',
       detail: `Auction no-show (${role}) on auction ${auctionId}`,
+      status: 'open',
+      resolvedBy: null,
+      resolvedAt: null,
+      resolutionNote: null,
+      createdAt: new Date().toISOString(),
     };
     this.reports.push(report);
     this.broadcast({ type: 'noshow', noShow: structuredClone(noShow) });
@@ -1474,7 +1548,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async sendMessage(conversationId: string, body: string, clientId: string): Promise<Message> {
-    const me = this.me();
+    const me = this.meActive();
     const conv = this.conversations.find((c) => c.id === conversationId);
     if (!conv || (conv.buyerId !== me.id && conv.sellerId !== me.id)) {
       throw new Error('Conversation not found');
@@ -1515,7 +1589,7 @@ export class MockClient implements MarketplaceClient {
     note: string,
     clientId: string,
   ): Promise<Message> {
-    const me = this.me();
+    const me = this.meActive();
     const conv = this.conversations.find((c) => c.id === conversationId);
     if (!conv || (conv.buyerId !== me.id && conv.sellerId !== me.id)) {
       throw new Error('Conversation not found');
@@ -1720,10 +1794,23 @@ export class MockClient implements MarketplaceClient {
   }
 
   async submitReport(input: ReportInput): Promise<void> {
-    this.me();
+    const me = this.me();
     await sleep(netDelay());
-    this.reports.push(structuredClone(input));
-    this.broadcast({ type: 'report', report: structuredClone(input) });
+    const report: StoredReport = {
+      id: nextId('r'),
+      reporterId: me.id,
+      targetType: input.targetType,
+      targetId: input.targetId,
+      reason: input.reason,
+      detail: input.detail,
+      status: 'open',
+      resolvedBy: null,
+      resolvedAt: null,
+      resolutionNote: null,
+      createdAt: new Date().toISOString(),
+    };
+    this.reports.push(report);
+    this.broadcast({ type: 'report', report: structuredClone(report) });
   }
 
   async getBlockedIds(): Promise<Set<string>> {
@@ -1866,6 +1953,445 @@ export class MockClient implements MarketplaceClient {
     };
   }
 
+  // ---- Admin --------------------------------------------------------------
+  // Mirrors 0016: the same rules the security-definer RPCs enforce, and the
+  // same audit trail. Rejections read exactly as the SQL ones do, so a
+  // moderator sees the same copy in mock and live.
+
+  private requireAdmin(): Profile {
+    const me = this.me();
+    const live = this.profiles.find((p) => p.id === me.id);
+    if (!live?.isAdmin) throw new Error('This action is restricted to admins.');
+    return live;
+  }
+
+  private logAdmin(
+    actor: Profile,
+    kind: AdminActionKind,
+    targetType: string,
+    targetId: string,
+    reason: string,
+    detail: Record<string, unknown> = {},
+  ): void {
+    const action: StoredAdminAction = {
+      id: nextId('aa'),
+      actorId: actor.id,
+      kind,
+      targetType,
+      targetId,
+      reason: reason.trim(),
+      detail,
+      createdAt: new Date().toISOString(),
+    };
+    this.adminActions.unshift(action);
+    this.broadcast({ type: 'adminaction', action: structuredClone(action) });
+  }
+
+  private profileById(id: string): Profile | null {
+    const p = this.profiles.find((x) => x.id === id);
+    return p ? this.withRating(p) : null;
+  }
+
+  /** Resolve what a report points at so the queue row reads on its own. */
+  private reportSubject(r: StoredReport): ReportSubject | null {
+    if (r.targetType === 'listing') {
+      const l = this.listings.find((x) => x.id === r.targetId);
+      if (!l) return null;
+      const owner = this.profiles.find((p) => p.id === l.sellerId) ?? null;
+      return {
+        kind: 'listing',
+        label: l.title,
+        href: `/listing/${l.id}`,
+        ownerId: l.sellerId,
+        ownerName: owner ? this.handleOf(owner) : null,
+      };
+    }
+    if (r.targetType === 'user') {
+      const u = this.profiles.find((x) => x.id === r.targetId);
+      if (!u) return null;
+      return {
+        kind: 'user',
+        label: this.handleOf(u),
+        href: u.username ? `/u/${u.username}` : null,
+        ownerId: u.id,
+        ownerName: this.handleOf(u),
+      };
+    }
+    const m = this.messages.find((x) => x.id === r.targetId);
+    if (!m) return null;
+    const sender = this.profiles.find((p) => p.id === m.senderId) ?? null;
+    return {
+      kind: 'message',
+      label: m.body,
+      // Moderators read the reported message, not the thread around it.
+      href: null,
+      ownerId: m.senderId || null,
+      ownerName: sender ? this.handleOf(sender) : null,
+    };
+  }
+
+  private toReport(r: StoredReport): Report {
+    return {
+      id: r.id,
+      reporterId: r.reporterId,
+      reporter: this.profileById(r.reporterId),
+      targetType: r.targetType,
+      targetId: r.targetId,
+      reason: r.reason,
+      detail: r.detail,
+      status: r.status,
+      resolvedBy: r.resolvedBy,
+      resolvedAt: r.resolvedAt,
+      resolutionNote: r.resolutionNote,
+      createdAt: r.createdAt,
+      subject: this.reportSubject(r),
+    };
+  }
+
+  async getAdminStats(): Promise<AdminStats> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    this.lazyCloseAuctions();
+    const since = (days: number) => Date.now() - days * 86400_000;
+    const byStatus = (s: ListingStatus) => this.listings.filter((l) => l.status === s);
+    const sum = (rows: Listing[]) => rows.reduce((n, l) => n + l.price, 0);
+    return {
+      users: this.profiles.length,
+      usersNew7d: this.profiles.filter((p) => new Date(p.createdAt).getTime() > since(7)).length,
+      suspended: this.profiles.filter((p) => p.suspendedAt).length,
+      admins: this.profiles.filter((p) => p.isAdmin).length,
+      listingsActive: byStatus('active').length,
+      listingsReserved: byStatus('reserved').length,
+      listingsSold: byStatus('sold').length,
+      listingsRemoved: byStatus('removed').length,
+      listingsNew7d: this.listings.filter((l) => new Date(l.createdAt).getTime() > since(7)).length,
+      auctionsLive: this.auctions.filter((a) => a.status === 'live').length,
+      bids24h: this.bids.filter((b) => new Date(b.createdAt).getTime() > since(1)).length,
+      reportsOpen: this.reports.filter((r) => r.status === 'open').length,
+      reportsReviewing: this.reports.filter((r) => r.status === 'reviewing').length,
+      reviews: this.reviews.length,
+      messages24h: this.messages.filter((m) => new Date(m.createdAt).getTime() > since(1)).length,
+      gmvListedActive: sum(byStatus('active')),
+      valueSold: sum(byStatus('sold')),
+    };
+  }
+
+  async adminListUsers(query: string, limit: number): Promise<AdminUser[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    const q = query.trim().toLowerCase();
+    const cutoff = Date.now() - 90 * 86400_000;
+    return this.profiles
+      .filter(
+        (p) =>
+          !q ||
+          p.id.toLowerCase().includes(q) ||
+          (p.username ?? '').toLowerCase().includes(q) ||
+          p.displayName.toLowerCase().includes(q),
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit)
+      .map((p) => {
+        const theirs = this.listings.filter((l) => l.sellerId === p.id);
+        return {
+          profile: this.withRating(p),
+          listingCount: theirs.length,
+          activeCount: theirs.filter((l) => l.status === 'active').length,
+          soldCount: theirs.filter((l) => l.status === 'sold').length,
+          reviewCount: this.reviews.filter((r) => r.revieweeId === p.id).length,
+          reportsAgainst: this.reports.filter((r) => this.reportSubject(r)?.ownerId === p.id).length,
+          noShowCount: this.noShows.filter(
+            (n) =>
+              n.reportedId === p.id &&
+              n.role === 'winner' &&
+              new Date(n.createdAt).getTime() > cutoff,
+          ).length,
+          bidBanned: this.isBidBanned(p.id),
+        };
+      });
+  }
+
+  async adminSetSuspended(userId: string, suspended: boolean, reason: string): Promise<Profile> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    if (userId === actor.id) throw new Error('You cannot suspend your own account.');
+    const target = this.profiles.find((p) => p.id === userId);
+    if (!target) throw new Error('User not found.');
+    if (suspended && reason.trim().length < 3) throw new Error('A suspension reason is required.');
+    if (suspended && target.isAdmin) {
+      throw new Error('Demote this admin before suspending the account.');
+    }
+    target.suspendedAt = suspended ? new Date().toISOString() : null;
+    target.suspendedReason = suspended ? reason.trim() : null;
+    this.broadcast({ type: 'profile', profile: structuredClone(target) });
+    this.logAdmin(
+      actor,
+      suspended ? 'user_suspend' : 'user_unsuspend',
+      'user',
+      userId,
+      reason,
+    );
+    return structuredClone(this.withRating(target));
+  }
+
+  async adminSetAdmin(userId: string, isAdmin: boolean): Promise<Profile> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    if (userId === actor.id && !isAdmin) {
+      throw new Error('Another admin has to remove your own admin access.');
+    }
+    const target = this.profiles.find((p) => p.id === userId);
+    if (!target) throw new Error('User not found.');
+    if (isAdmin && target.suspendedAt) {
+      throw new Error('Lift the suspension before granting admin access.');
+    }
+    target.isAdmin = isAdmin;
+    this.broadcast({ type: 'profile', profile: structuredClone(target) });
+    this.logAdmin(actor, isAdmin ? 'user_promote' : 'user_demote', 'user', userId, '');
+    return structuredClone(this.withRating(target));
+  }
+
+  async adminClearBidBan(userId: string, reason: string): Promise<number> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    const before = this.noShows.length;
+    this.noShows = this.noShows.filter(
+      (n) => !(n.reportedId === userId && n.role === 'winner'),
+    );
+    const cleared = before - this.noShows.length;
+    this.logAdmin(actor, 'user_clear_bid_ban', 'user', userId, reason, { cleared });
+    return cleared;
+  }
+
+  async adminSearchListings(
+    filter: AdminListingFilter,
+    offset: number,
+    limit: number,
+  ): Promise<ListingPage> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    this.lazyCloseAuctions();
+    const q = filter.q.trim().toLowerCase();
+    const matches = this.listings
+      .filter((l) => filter.status === 'all' || l.status === filter.status)
+      .filter((l) => filter.saleType === 'all' || l.saleType === filter.saleType)
+      .filter((l) => !filter.sellerId || l.sellerId === filter.sellerId)
+      .filter(
+        (l) =>
+          !q ||
+          l.title.toLowerCase().includes(q) ||
+          l.setName.toLowerCase().includes(q) ||
+          l.id.toLowerCase().includes(q),
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return {
+      items: matches.slice(offset, offset + limit).map((l) => this.hydrate(l)),
+      total: matches.length,
+      hasMore: offset + limit < matches.length,
+    };
+  }
+
+  async adminSetListingStatus(
+    listingId: string,
+    status: ListingStatus,
+    reason: string,
+  ): Promise<Listing> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    const listing = this.listings.find((l) => l.id === listingId);
+    if (!listing) throw new Error('Listing not found.');
+    if (listing.status === status) return structuredClone(listing);
+    if (status === 'removed' && reason.trim().length < 3) {
+      throw new Error('A reason is required to remove a listing.');
+    }
+    const from = listing.status;
+    // Moderation deliberately bypasses canTransition — a fraudulent
+    // listing comes down even from `sold`.
+    listing.status = status;
+    listing.reservedForConversationId = null;
+    listing.updatedAt = new Date().toISOString();
+
+    const body =
+      status === 'removed'
+        ? 'A moderator removed this listing.'
+        : status === 'active'
+          ? 'A moderator restored this listing.'
+          : statusChangeSystemMessage(status, false);
+    for (const conv of this.conversations.filter((c) => c.listingId === listingId)) {
+      const sys: Message = {
+        id: nextId('m'),
+        conversationId: conv.id,
+        senderId: '',
+        kind: 'system',
+        body,
+        amount: null,
+        offerStatus: null,
+        createdAt: new Date().toISOString(),
+        readAt: null,
+      };
+      this.messages.push(sys);
+      conv.lastMessageAt = sys.createdAt;
+      this.emitConversation(conv.id, { type: 'message', conversationId: conv.id, message: sys });
+      this.emitConversation(conv.id, {
+        type: 'listing_updated',
+        conversationId: conv.id,
+        listing: this.publicListing(listing),
+      });
+      this.broadcast({ type: 'message', message: structuredClone(sys) });
+    }
+    this.emitListing(listing);
+    this.emitInbox();
+    this.broadcast({ type: 'listing', listing: structuredClone(listing) });
+    this.logAdmin(actor, 'listing_status', 'listing', listingId, reason, { from, to: status });
+    return structuredClone(listing);
+  }
+
+  async adminDeleteListing(listingId: string, reason: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    if (reason.trim().length < 3) throw new Error('A reason is required to delete a listing.');
+    const listing = this.listings.find((l) => l.id === listingId);
+    if (!listing) throw new Error('Listing not found.');
+
+    // Mirrors the DB's cascade: images live on the row, and conversations,
+    // messages, reviews, favorites, auctions and bids all hang off it.
+    const convIds = new Set(
+      this.conversations.filter((c) => c.listingId === listingId).map((c) => c.id),
+    );
+    const auctionIds = new Set(
+      this.auctions.filter((a) => a.listingId === listingId).map((a) => a.id),
+    );
+    this.listings = this.listings.filter((l) => l.id !== listingId);
+    this.conversations = this.conversations.filter((c) => !convIds.has(c.id));
+    this.messages = this.messages.filter((m) => !convIds.has(m.conversationId));
+    this.reviews = this.reviews.filter((r) => r.listingId !== listingId);
+    this.auctions = this.auctions.filter((a) => a.listingId !== listingId);
+    this.bids = this.bids.filter((b) => !auctionIds.has(b.auctionId));
+    this.noShows = this.noShows.filter((n) => !auctionIds.has(n.auctionId));
+    for (const set of this.favorites.values()) set.delete(listingId);
+
+    this.emitInbox();
+    this.logAdmin(actor, 'listing_delete', 'listing', listingId, reason, {
+      title: listing.title,
+      sellerId: listing.sellerId,
+    });
+  }
+
+  async adminListAuctions(status: AuctionStatus | 'all'): Promise<AdminAuction[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    this.lazyCloseAuctions();
+    return this.auctions
+      .filter((a) => status === 'all' || a.status === status)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((a) => {
+        const theirBids = this.bids.filter((b) => b.auctionId === a.id);
+        const top = this.topBidOf(a.id);
+        return {
+          auction: structuredClone(a),
+          listingTitle: this.listings.find((l) => l.id === a.listingId)?.title ?? 'Deleted listing',
+          seller: this.profileById(a.sellerId),
+          bidCount: theirBids.length,
+          topBid: top ? top.amount : null,
+        };
+      });
+  }
+
+  async adminCancelAuction(auctionId: string, reason: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    const a = this.auctions.find((x) => x.id === auctionId);
+    this.cancelAuctionAs(actor, auctionId, reason, { byModerator: true });
+    this.logAdmin(actor, 'auction_cancel', 'auction', auctionId, reason, {
+      listingId: a?.listingId ?? null,
+    });
+  }
+
+  async adminListReviews(query: string, limit: number): Promise<AdminReview[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    const q = query.trim().toLowerCase();
+    return this.reviews
+      .filter((r) => {
+        if (!q) return true;
+        const reviewee = this.profiles.find((p) => p.id === r.revieweeId);
+        return (
+          r.body.toLowerCase().includes(q) ||
+          (r.reviewer.username ?? '').toLowerCase().includes(q) ||
+          (reviewee?.username ?? '').toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit)
+      .map((r) => ({
+        ...structuredClone(r),
+        reviewee: this.profileById(r.revieweeId),
+      }));
+  }
+
+  async adminDeleteReview(reviewId: string, reason: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    if (reason.trim().length < 3) throw new Error('A reason is required to delete a review.');
+    const review = this.reviews.find((r) => r.id === reviewId);
+    if (!review) throw new Error('Review not found.');
+    this.reviews = this.reviews.filter((r) => r.id !== reviewId);
+
+    // Re-roll the denormalized rating, blanking it when the last review goes.
+    const remaining = this.reviews.filter((r) => r.revieweeId === review.revieweeId);
+    const reviewee = this.profiles.find((p) => p.id === review.revieweeId);
+    if (reviewee) {
+      reviewee.ratingCount = remaining.length;
+      reviewee.ratingAvg = remaining.length
+        ? remaining.reduce((s, r) => s + r.rating, 0) / remaining.length
+        : null;
+      this.broadcast({ type: 'profile', profile: structuredClone(reviewee) });
+    }
+    this.logAdmin(actor, 'review_delete', 'review', reviewId, reason, {
+      revieweeId: review.revieweeId,
+      rating: review.rating,
+    });
+  }
+
+  async adminListReports(status: ReportStatus | 'all'): Promise<Report[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    return this.reports
+      .filter((r) => status === 'all' || r.status === status)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((r) => this.toReport(r));
+  }
+
+  async adminResolveReport(reportId: string, status: ReportStatus, note: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    const r = this.reports.find((x) => x.id === reportId);
+    if (!r) throw new Error('Report not found.');
+    const settled = status === 'resolved' || status === 'dismissed';
+    r.status = status;
+    r.resolutionNote = note.trim() || null;
+    r.resolvedBy = settled ? actor.id : null;
+    r.resolvedAt = settled ? new Date().toISOString() : null;
+    this.broadcast({ type: 'report', report: structuredClone(r) });
+    this.logAdmin(actor, 'report_resolve', 'report', reportId, note, { status });
+  }
+
+  async adminListActions(limit: number): Promise<AdminAction[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    return this.adminActions.slice(0, limit).map((a) => ({
+      id: a.id,
+      actorId: a.actorId,
+      actor: this.profileById(a.actorId),
+      kind: a.kind,
+      targetType: a.targetType,
+      targetId: a.targetId,
+      reason: a.reason,
+      detail: a.detail,
+      createdAt: a.createdAt,
+    }));
+  }
+
   // ---- Storage ------------------------------------------------------------
 
   resolveImageUrl(storagePath: string): string {
@@ -1888,6 +2414,33 @@ export class MockClient implements MarketplaceClient {
   }
 }
 
+/** A report as the mock world stores it — the DB row, not the user's input. */
+interface StoredReport {
+  id: string;
+  reporterId: string;
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: ReportInput['reason'];
+  detail: string;
+  status: ReportStatus;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
+  createdAt: string;
+}
+
+/** One audit row (mirrors public.admin_actions). */
+interface StoredAdminAction {
+  id: string;
+  actorId: string;
+  kind: AdminActionKind;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  detail: Record<string, unknown>;
+  createdAt: string;
+}
+
 interface SnapshotState {
   profiles: Profile[];
   listings: Listing[];
@@ -1903,7 +2456,8 @@ interface SnapshotState {
     createdAt: string;
   }>;
   reviews: Review[];
-  reports: ReportInput[];
+  reports: StoredReport[];
+  adminActions?: StoredAdminAction[];
   favorites: Array<[string, string[]]>;
   blocks: Array<[string, string[]]>;
   credentials: Array<[string, { userId: string; password: string | null }]>;
@@ -1921,7 +2475,8 @@ type RemotePatch =
   | { type: 'favorite'; userId: string; listingId: string; on: boolean }
   | { type: 'block'; blockerId: string; blockedId: string; on: boolean }
   | { type: 'review'; review: Review }
-  | { type: 'report'; report: ReportInput }
+  | { type: 'report'; report: StoredReport }
+  | { type: 'adminaction'; action: StoredAdminAction }
   | { type: 'profile'; profile: Profile }
   | { type: 'credential'; email: string; userId: string; password: string | null }
   | { type: 'auction'; auction: Auction }

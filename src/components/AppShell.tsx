@@ -178,6 +178,18 @@ export function AppShell() {
                   >
                     Settings
                   </button>
+                  {user.isAdmin && (
+                    <button
+                      role="menuitem"
+                      className="shell-menu-item shell-menu-item-admin"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        navigate('/admin');
+                      }}
+                    >
+                      Admin console
+                    </button>
+                  )}
                   <button
                     role="menuitem"
                     className="shell-menu-item shell-menu-item-danger"

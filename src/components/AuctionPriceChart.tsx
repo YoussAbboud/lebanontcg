@@ -126,7 +126,7 @@ export function AuctionPriceChart({
               className="aucchart-dot is-hover"
               cx={hover.x}
               cy={y(hover.bid.amount)}
-              r="4"
+              r="3"
             />
           )}
         </svg>

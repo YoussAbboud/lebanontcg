@@ -109,3 +109,42 @@ estimates can never touch the listings table's real-slab columns
   env (`PREGRADE_DAILY_LIMIT` optional, default 10/user/day). Mock mode
   (`VITE_MOCK=1`) runs the whole flow with canned cases — `?case=indent`
   on `/pregrade` for UI work.
+
+## Admin console
+
+`/admin` is the moderation surface: a queue for reports, account
+suspensions, listing and auction takedowns, review deletion, and an
+append-only audit log. Schema and rules live in
+`supabase/migrations/0016_admin.sql`.
+
+Two things are worth knowing before using it:
+
+- **Nothing privileged is a plain table write.** Every action is a
+  security-definer RPC that re-checks `is_admin()` server-side and writes
+  an `admin_actions` row in the same transaction. The client-side route
+  guard is convenience; the enforcement is in Postgres. The audit log has
+  no insert/update/delete policy at all, so an admin cannot erase their
+  own trail through the API.
+- **Suspension stops creation, not reading.** A suspended account keeps
+  its history and can still browse and read its threads, but cannot list,
+  message or bid. Nothing is deleted, so the other party in a past trade
+  keeps their record.
+
+Private conversations stay private: an admin can read a message only when
+that exact message is the target of a report.
+
+**Mock mode** seeds a moderator — pick **Dev: LebanonTCG Mods** in the
+switcher and open `/admin`.
+
+**Live mode** has no way to become the first admin through the app. Promote
+one account by hand in the SQL editor, once:
+
+```sql
+select set_config('app.admin_action', '1', true);
+update public.profiles set is_admin = true
+  where id = (select id from auth.users where email = 'you@example.com');
+```
+
+After that, admins promote each other from `/admin` → Users. Nobody can
+revoke their own admin access (that would lock everyone out of a
+single-admin project) — another admin has to do it.

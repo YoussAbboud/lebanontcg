@@ -1,0 +1,422 @@
+/* Admin console (Sleeved). The console quotes the same surfaces as the
+   rest of the app — framed panels, mono label pairs, pills — so it reads
+   as LebanonTCG rather than a bolted-on dashboard. Acid still means
+   "act"; pink is the only tone destructive actions get. */
+
+.admin {
+  position: relative;
+  padding: 32px var(--pad-x) 72px;
+}
+
+.admin-head .mono-label { margin-left: auto; }
+
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-bottom: 22px;
+}
+.admin-tabs::-webkit-scrollbar { display: none; }
+
+/* Open-report count riding the Reports pill. */
+.admin-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--danger);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.pill[aria-pressed='true'] .admin-tab-badge { background: var(--ink); color: var(--acid); }
+
+/* ---- Overview ------------------------------------------------------------- */
+
+.aoverview {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* The one thing a moderator opens the console for. */
+.aqueue-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  text-align: left;
+  padding: 18px 22px;
+  border-radius: var(--r-panel);
+  border: 1px solid var(--danger);
+  background: var(--surface);
+  transition: transform var(--t-fast);
+}
+.aqueue-cta:hover { transform: translateY(-2px); }
+.aqueue-n { font-size: var(--fs-28); color: var(--danger); }
+.aqueue-go { margin-left: auto; color: var(--acid); }
+
+.astats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.astat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.astat-alert { border-color: var(--danger); }
+.astat-k { color: var(--muted); }
+.astat-v {
+  font-size: var(--fs-28);
+  color: var(--text-1);
+  line-height: 1.1;
+}
+.astat-alert .astat-v { color: var(--danger); }
+.astat-note {
+  font-size: var(--fs-12);
+  color: var(--muted);
+  min-height: 18px;
+}
+
+.apanel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 18px;
+}
+
+.apanel-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+.apanel-head h2 { font-size: var(--fs-18); }
+.apanel-head .btn-ghost-mono { margin-left: auto; }
+
+.afeed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.afeed-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: var(--fs-13);
+}
+.afeed-kind { color: var(--text-2); }
+.afeed-who { color: var(--text-1); }
+.afeed-reason {
+  color: var(--muted);
+  flex: 1;
+  min-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.afeed-when { margin-left: auto; }
+
+.aempty { color: var(--muted); font-size: var(--fs-13); }
+
+/* ---- Section scaffolding --------------------------------------------------- */
+
+.asection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.afilters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.asearch {
+  width: min(320px, 100%);
+  min-height: 40px;
+}
+
+.acount { margin-top: -4px; }
+
+.aexplain {
+  color: var(--muted);
+  font-size: var(--fs-13);
+  max-width: 62ch;
+}
+
+.amore {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+/* ---- Row cards -------------------------------------------------------------- */
+
+.acards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.acard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* Suspended accounts and removed listings carry the danger hairline. */
+.acard-flagged { border-color: var(--danger); }
+
+.acard-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.acard-flags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.acard-when { color: var(--muted); }
+
+.acard-subject {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.acard-link {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-15);
+  letter-spacing: var(--track-display);
+  color: var(--text-1);
+}
+.acard-link:hover { color: var(--acid); }
+
+.acard-quote {
+  font-size: var(--fs-14);
+  color: var(--text-1);
+  font-style: italic;
+}
+
+.acard-owner { color: var(--muted); }
+
+.acard-detail {
+  font-size: var(--fs-13);
+  color: var(--text-2);
+  max-width: 78ch;
+}
+
+.acard-meta { color: var(--muted); }
+
+.acard-note {
+  font-size: var(--fs-12);
+  color: var(--muted);
+  border-left: 2px solid var(--border);
+  padding-left: 10px;
+}
+
+.acard-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding-top: 4px;
+}
+.acard-actions .btn-acid,
+.acard-actions .btn-outline {
+  padding: 9px 14px;
+  min-height: 38px;
+}
+
+/* ---- Chips ------------------------------------------------------------------ */
+
+.achip {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-11);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.achip-acid { border-color: var(--acid); color: var(--acid); }
+.achip-danger { border-color: var(--danger); color: var(--danger); }
+.achip-warn { border-color: var(--warn); color: var(--warn); }
+
+/* ---- People ----------------------------------------------------------------- */
+
+.aperson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.aperson-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.aperson-id strong {
+  font-size: var(--fs-14);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aperson:hover .aperson-id strong { color: var(--acid); }
+.aperson-handle {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--muted);
+}
+.aperson-missing { color: var(--muted); }
+
+/* Definition list of per-row stats. */
+.ameta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 18px;
+  margin: 0;
+}
+.ameta dt { margin-bottom: 2px; }
+.ameta dd {
+  margin: 0;
+  font-size: var(--fs-13);
+  color: var(--text-2);
+}
+
+/* ---- Listing rows ----------------------------------------------------------- */
+
+.alisting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.alisting-thumb {
+  width: 44px;
+  height: 56px;
+  flex: none;
+  border-radius: var(--r-thumb);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--glyph-ink-strong);
+}
+.alisting-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.alisting-id strong {
+  font-size: var(--fs-14);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.alisting:hover .alisting-id strong { color: var(--acid); }
+
+.asetstatus {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.asetstatus select { min-height: 38px; width: 150px; padding-top: 8px; padding-bottom: 8px; }
+
+/* ---- Reviews ----------------------------------------------------------------- */
+
+.astars {
+  font-size: var(--fs-15);
+  color: var(--acid);
+  letter-spacing: 2px;
+}
+.astars-off { color: var(--border); }
+
+/* ---- Audit log ---------------------------------------------------------------- */
+
+.alog {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.alog-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.alog-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.alog-actor { font-size: var(--fs-13); color: var(--text-1); }
+.alog-when { margin-left: auto; color: var(--muted); }
+.alog-target {
+  color: var(--muted);
+  word-break: break-all;
+}
+
+/* ---- Reason dialog extras ------------------------------------------------------- */
+
+.adlg { width: min(520px, 100%); }
+.adlg-hint { color: var(--muted); }
+
+@media (max-width: 640px) {
+  .admin-head .mono-label { margin-left: 0; flex-basis: 100%; }
+  .acard-flags { margin-left: 0; }
+  .afeed-when { margin-left: 0; }
+  .asetstatus select { width: 100%; }
+}

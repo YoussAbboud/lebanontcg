@@ -16,6 +16,7 @@ import { SignInPage } from './pages/SignInPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SetPasswordPage } from './pages/SetPasswordPage';
 import { PregradePage } from './pages/PregradePage';
+import { AdminPage } from './pages/AdminPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/welcome" element={<OnboardingPage />} />
           <Route path="/set-password" element={<SetPasswordPage />} />
           <Route path="/pregrade" element={<PregradePage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

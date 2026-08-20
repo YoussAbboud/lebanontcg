@@ -186,6 +186,8 @@
 }
 .shell-menu-item:hover { background: var(--hover-row); }
 .shell-menu-item-danger { color: var(--danger); }
+/* Only admins ever see this row, and it should read as a mode switch. */
+.shell-menu-item-admin { color: var(--acid); }
 
 .shell-menu-badge {
   float: right;

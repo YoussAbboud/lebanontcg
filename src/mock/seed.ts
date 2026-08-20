@@ -27,6 +27,9 @@ export const seedProfiles: Profile[] = [
     createdAt: days(412),
     ratingAvg: 4.8,
     ratingCount: 26,
+    isAdmin: false,
+    suspendedAt: null,
+    suspendedReason: null,
   },
   {
     id: 'u-karim',
@@ -37,6 +40,9 @@ export const seedProfiles: Profile[] = [
     createdAt: days(230),
     ratingAvg: 4.5,
     ratingCount: 11,
+    isAdmin: false,
+    suspendedAt: null,
+    suspendedReason: null,
   },
   {
     id: 'u-lina',
@@ -47,6 +53,9 @@ export const seedProfiles: Profile[] = [
     createdAt: days(98),
     ratingAvg: 5.0,
     ratingCount: 4,
+    isAdmin: false,
+    suspendedAt: null,
+    suspendedReason: null,
   },
 ];
 
@@ -128,6 +137,9 @@ export const seedBidderProfiles: Profile[] = [
     createdAt: days(120),
     ratingAvg: null,
     ratingCount: 0,
+    isAdmin: false,
+    suspendedAt: null,
+    suspendedReason: null,
   },
   {
     id: 'u-rita',
@@ -138,6 +150,83 @@ export const seedBidderProfiles: Profile[] = [
     createdAt: days(60),
     ratingAvg: null,
     ratingCount: 0,
+    isAdmin: false,
+    suspendedAt: null,
+    suspendedReason: null,
+  },
+];
+
+/** One seeded moderator so /admin is reachable from the dev switcher.
+    In live mode the first admin is promoted by hand in SQL (0016). */
+export const seedAdminProfiles: Profile[] = [
+  {
+    id: 'u-admin',
+    username: 'mods',
+    displayName: 'LebanonTCG Mods',
+    avatarUrl: 'mock-avatar://mods',
+    bio: 'The moderation account. We keep the venue honest; the deals are yours.',
+    createdAt: days(500),
+    ratingAvg: null,
+    ratingCount: 0,
+    isAdmin: true,
+    suspendedAt: null,
+    suspendedReason: null,
+  },
+];
+
+/** A queue with something in it — one of each target type, and one
+    already settled so the resolved state is visible without clicking. */
+export const seedReports: Array<{
+  id: string;
+  reporterId: string;
+  targetType: 'listing' | 'user' | 'message';
+  targetId: string;
+  reason: 'scam' | 'counterfeit' | 'inappropriate' | 'spam' | 'harassment' | 'other';
+  detail: string;
+  status: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
+  createdAt: string;
+}> = [
+  {
+    id: 'r-001',
+    reporterId: 'u-karim',
+    targetType: 'listing',
+    targetId: 'l-004',
+    reason: 'counterfeit',
+    detail: 'Holo pattern looks wrong in the second photo and the font on the HP is off.',
+    status: 'open',
+    resolvedBy: null,
+    resolvedAt: null,
+    resolutionNote: null,
+    createdAt: mins(140),
+  },
+  {
+    id: 'r-002',
+    reporterId: 'u-lina',
+    targetType: 'user',
+    targetId: 'u-rita',
+    reason: 'spam',
+    detail: 'Sent me the same copy-pasted trade pitch on four different listings.',
+    status: 'reviewing',
+    resolvedBy: null,
+    resolvedAt: null,
+    resolutionNote: null,
+    createdAt: mins(60 * 20),
+  },
+  {
+    id: 'r-003',
+    reporterId: 'u-maya',
+    targetType: 'message',
+    targetId: 'm-005',
+    reason: 'harassment',
+    detail: 'Kept pushing after I said the price was firm.',
+    status: 'dismissed',
+    resolvedBy: 'u-admin',
+    resolvedAt: mins(60 * 30),
+    resolutionNote: 'Read the thread — firm haggling, nothing abusive. No action.',
+    createdAt: mins(60 * 34),
   },
 ];
 

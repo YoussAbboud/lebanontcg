@@ -71,6 +71,12 @@ export interface Profile {
   createdAt: string;
   ratingAvg: number | null;
   ratingCount: number;
+  /** Console access. Only another admin can grant it (DB-enforced). */
+  isAdmin: boolean;
+  /** Set while the account is suspended: no new listings, messages or
+      bids. History stays readable — the other party keeps their record. */
+  suspendedAt: string | null;
+  suspendedReason: string | null;
 }
 
 export interface ListingImage {
@@ -300,4 +306,146 @@ export interface SellerStats {
   soldCount: number;
   /** Games this seller currently lists, most frequent first. */
   games: Game[];
+}
+
+// ---------------------------------------------------------------------------
+// Admin console (see supabase/migrations/0016_admin.sql)
+// ---------------------------------------------------------------------------
+
+export type ReportStatus = 'open' | 'reviewing' | 'resolved' | 'dismissed';
+
+export const REPORT_STATUSES: ReportStatus[] = ['open', 'reviewing', 'resolved', 'dismissed'];
+export const REPORT_STATUS_LABELS: Record<ReportStatus, string> = {
+  open: 'Open',
+  reviewing: 'Reviewing',
+  resolved: 'Resolved',
+  dismissed: 'Dismissed',
+};
+
+/** What a report points at, resolved so the queue row reads on its own. */
+export interface ReportSubject {
+  kind: ReportTargetType;
+  /** Listing title, @handle, or the reported message body. */
+  label: string;
+  /** In-app link to see it in context — null when there's nowhere to go. */
+  href: string | null;
+  /** Who is accountable: the seller, the user, or the message sender. */
+  ownerId: string | null;
+  ownerName: string | null;
+}
+
+/** A filed report as moderators see it (users only ever write these). */
+export interface Report {
+  id: string;
+  reporterId: string;
+  reporter: Profile | null;
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: ReportReason;
+  detail: string;
+  status: ReportStatus;
+  resolvedBy: string | null;
+  resolvedAt: string | null;
+  resolutionNote: string | null;
+  createdAt: string;
+  /** Null when the subject has since been deleted. */
+  subject: ReportSubject | null;
+}
+
+/** One account with the numbers a moderator decides on. */
+export interface AdminUser {
+  profile: Profile;
+  listingCount: number;
+  activeCount: number;
+  soldCount: number;
+  reviewCount: number;
+  /** Reports filed against this user, their listings or their messages. */
+  reportsAgainst: number;
+  /** Winner-role auction no-shows in the last 90 days (0015). */
+  noShowCount: number;
+  /** Blocked from bidding — by no-shows or by the suspension itself. */
+  bidBanned: boolean;
+}
+
+/** A live/closed auction with the context needed to judge it. */
+export interface AdminAuction {
+  auction: Auction;
+  listingTitle: string;
+  seller: Profile | null;
+  bidCount: number;
+  topBid: number | null;
+}
+
+/** A review plus both parties — the reviewee is who the rating hits. */
+export interface AdminReview extends Review {
+  reviewee: Profile | null;
+}
+
+export type AdminActionKind =
+  | 'user_suspend'
+  | 'user_unsuspend'
+  | 'user_promote'
+  | 'user_demote'
+  | 'user_clear_bid_ban'
+  | 'listing_status'
+  | 'listing_delete'
+  | 'auction_cancel'
+  | 'review_delete'
+  | 'report_resolve';
+
+export const ADMIN_ACTION_LABELS: Record<AdminActionKind, string> = {
+  user_suspend: 'Suspended user',
+  user_unsuspend: 'Lifted suspension',
+  user_promote: 'Granted admin',
+  user_demote: 'Revoked admin',
+  user_clear_bid_ban: 'Cleared bid ban',
+  listing_status: 'Changed listing status',
+  listing_delete: 'Deleted listing',
+  auction_cancel: 'Cancelled auction',
+  review_delete: 'Deleted review',
+  report_resolve: 'Actioned report',
+};
+
+/** One append-only audit row. Nothing in the app can delete these. */
+export interface AdminAction {
+  id: string;
+  actorId: string;
+  actor: Profile | null;
+  kind: AdminActionKind;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  detail: Record<string, unknown>;
+  createdAt: string;
+}
+
+/** Dashboard counters (one round trip — admin_stats() in Postgres). */
+export interface AdminStats {
+  users: number;
+  usersNew7d: number;
+  suspended: number;
+  admins: number;
+  listingsActive: number;
+  listingsReserved: number;
+  listingsSold: number;
+  listingsRemoved: number;
+  listingsNew7d: number;
+  auctionsLive: number;
+  bids24h: number;
+  reportsOpen: number;
+  reportsReviewing: number;
+  reviews: number;
+  messages24h: number;
+  /** Sum of asking prices, live inventory. Not revenue — nothing is paid
+      through LebanonTCG; it's the size of the shop window. */
+  gmvListedActive: number;
+  valueSold: number;
+}
+
+/** Server-side filter for the admin listings table. */
+export interface AdminListingFilter {
+  q: string;
+  status: ListingStatus | 'all';
+  saleType: SaleType | 'all';
+  sellerId?: string | null;
 }

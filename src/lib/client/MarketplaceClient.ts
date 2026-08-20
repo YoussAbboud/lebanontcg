@@ -1,7 +1,14 @@
 import type {
+  AdminAction,
+  AdminAuction,
+  AdminListingFilter,
+  AdminReview,
+  AdminStats,
+  AdminUser,
   Auction,
   AuctionDetail,
   AuctionInput,
+  AuctionStatus,
   Bid,
   Conversation,
   ConversationSummary,
@@ -15,7 +22,9 @@ import type {
   Message,
   PendingReview,
   Profile,
+  Report,
   ReportInput,
+  ReportStatus,
   Review,
   SellerStats,
 } from '../types';
@@ -238,6 +247,48 @@ export interface MarketplaceClient {
   unpublishPregradeReport(reportId: string): Promise<PregradeReport>;
   /** "It came back as a…" — the calibration loop's raw material. */
   recordPregradeOutcome(reportId: string, actualGrade: number, certNumber?: string): Promise<void>;
+
+  // ---- Admin --------------------------------------------------------------
+  /**
+   * Every method below is admin-only and enforced SERVER-side (the
+   * security-definer RPCs in 0016 assert the caller's is_admin and write
+   * an audit row). The client-side route guard is convenience, not
+   * security — a non-admin calling these gets a rejection, not data.
+   */
+  getAdminStats(): Promise<AdminStats>;
+  /** Accounts with their moderation-relevant counts. `query` matches
+      handle, display name or id; empty returns the newest accounts. */
+  adminListUsers(query: string, limit: number): Promise<AdminUser[]>;
+  /** Suspend (reason required) or lift. Returns the updated profile. */
+  adminSetSuspended(userId: string, suspended: boolean, reason: string): Promise<Profile>;
+  /** Grant or revoke console access. Nobody can revoke their own. */
+  adminSetAdmin(userId: string, isAdmin: boolean): Promise<Profile>;
+  /** Clear the winner-role no-shows behind a bidding block; returns how
+      many were cleared. For when a no-show report was retaliation. */
+  adminClearBidBan(userId: string, reason: string): Promise<number>;
+  /** Listings unfiltered by visibility — removed rows included. */
+  adminSearchListings(
+    filter: AdminListingFilter,
+    offset: number,
+    limit: number,
+  ): Promise<ListingPage>;
+  /** Force a status, bypassing the seller-facing transition rules (a
+      fraudulent listing has to come down even from `sold`). */
+  adminSetListingStatus(listingId: string, status: ListingStatus, reason: string): Promise<Listing>;
+  /** Hard delete — cascades to images, conversations and reviews. Last
+      resort; removal is the everyday tool. */
+  adminDeleteListing(listingId: string, reason: string): Promise<void>;
+  adminListAuctions(status: AuctionStatus | 'all'): Promise<AdminAuction[]>;
+  /** Kill a live auction: no winner, every bidder told a moderator did it. */
+  adminCancelAuction(auctionId: string, reason: string): Promise<void>;
+  adminListReviews(query: string, limit: number): Promise<AdminReview[]>;
+  /** Delete a review and re-roll the reviewee's denormalized rating. */
+  adminDeleteReview(reviewId: string, reason: string): Promise<void>;
+  /** The moderation queue, resolved subjects attached. */
+  adminListReports(status: ReportStatus | 'all'): Promise<Report[]>;
+  adminResolveReport(reportId: string, status: ReportStatus, note: string): Promise<void>;
+  /** The append-only audit log, newest first. */
+  adminListActions(limit: number): Promise<AdminAction[]>;
 
   // ---- Storage -----------------------------------------------------------
   /** Resolve a storage path to a displayable URL. */

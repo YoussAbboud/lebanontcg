@@ -998,7 +998,17 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
         .eq('reporter_id', uid);
       myNoShowReported = (count ?? 0) > 0;
     }
-    return { auction: this.mapAuction(row), bids, myNoShowReported };
+    let winner: AuctionDetail['winner'] = null;
+    if (row.winner_id) {
+      const { data: w } = await this.sb
+        .from('profiles')
+        .select('id, username, display_name')
+        .eq('id', row.winner_id)
+        .maybeSingle();
+      const p = w as { id: string; username: string | null; display_name: string } | null;
+      if (p) winner = { id: p.id, username: p.username, displayName: p.display_name };
+    }
+    return { auction: this.mapAuction(row), bids, winner, myNoShowReported };
   }
 
   async placeBid(auctionId: string, amount: number): Promise<PlacedBid> {
@@ -1120,6 +1130,13 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
     return (data as AuctionRow[]).map((row) => this.mapAuction(row));
+  }
+
+  async retractAuctionNoShow(auctionId: string): Promise<void> {
+    const { error } = await this.sb.rpc('retract_auction_no_show', {
+      p_auction_id: auctionId,
+    });
+    if (error) throw new Error(error.message);
   }
 
   async getAuctionNoShowCount(userId: string): Promise<number> {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { AuctionDetail, Bid, ListingWithSeller } from '../lib/types';
 import {
   BID_DISCLAIMER,
@@ -12,6 +13,9 @@ import { useNow } from '../lib/useNow';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import './auctionpanel.css';
+
+/** Matches migration 0016 — a no-show can't be reported before this. */
+const NO_SHOW_GRACE_MS = 24 * 60 * 60 * 1000;
 
 /**
  * The live auction panel on a listing page: current bid in large mono,
@@ -98,18 +102,34 @@ export function AuctionPanel({
     auction.reservePrice !== null && (top === null || top.amount < auction.reservePrice);
 
   const shown = input === '' || !inputTouched.current ? String(minNext) : input;
+  const winnerHandle = detail.winner
+    ? detail.winner.username
+      ? `@${detail.winner.username}`
+      : detail.winner.displayName
+    : null;
 
   // Accountability: after a close with a winner, the seller can mark the
   // winner a no-show; the winner mirrors it for an unresponsive seller.
   const closedWithWinner = auction.status === 'closed' && auction.winnerId !== null;
+  const isParty =
+    user !== null && (user.id === auction.sellerId || user.id === auction.winnerId);
+  // Nobody fails to follow through in the first day — the action only
+  // appears once the grace period is up (mirrors migration 0016), so it
+  // never reads as an accusation the moment an auction closes.
+  const pastGrace = now > new Date(auction.endsAt).getTime() + NO_SHOW_GRACE_MS;
   const canReportNoShow =
-    closedWithWinner &&
-    user !== null &&
-    (user.id === auction.sellerId || user.id === auction.winnerId) &&
-    !detail.myNoShowReported;
+    closedWithWinner && isParty && pastGrace && !detail.myNoShowReported;
 
   const reportNoShow = async () => {
     if (reportingNoShow) return;
+    const who = user?.id === auction.sellerId ? 'the winner' : 'the seller';
+    if (
+      !window.confirm(
+        `Report that ${who} never followed through? This goes on their record and is reviewed by moderators. You can withdraw it afterwards.`,
+      )
+    ) {
+      return;
+    }
     setReportingNoShow(true);
     try {
       await client.reportAuctionNoShow(auction.id);
@@ -117,6 +137,20 @@ export function AuctionPanel({
       await load();
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Could not record the no-show.');
+    } finally {
+      setReportingNoShow(false);
+    }
+  };
+
+  const retractNoShow = async () => {
+    if (reportingNoShow) return;
+    setReportingNoShow(true);
+    try {
+      await client.retractAuctionNoShow(auction.id);
+      toast('Report withdrawn — nothing is left on their record.');
+      await load();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Could not withdraw the report.');
     } finally {
       setReportingNoShow(false);
     }
@@ -181,13 +215,28 @@ export function AuctionPanel({
 
       {over ? (
         <p className="aucpanel-outcome">
-          {auction.status === 'cancelled'
-            ? `The seller cancelled this auction${auction.cancelReason ? ` — ${auction.cancelReason}` : '.'}`
-            : auction.winnerId
-              ? `Won at ${formatPrice(auction.winningBid ?? 0, auction.currency)} — the deal moves to chat between the winner and the seller.`
-              : top
-                ? 'Reserve not met — nobody wins, the card stays with the seller.'
-                : 'Ended without a bid.'}
+          {auction.status === 'cancelled' ? (
+            `The seller cancelled this auction${auction.cancelReason ? ` — ${auction.cancelReason}` : '.'}`
+          ) : auction.winnerId ? (
+            <>
+              Won at {formatPrice(auction.winningBid ?? 0, auction.currency)} by{' '}
+              {winnerHandle ? (
+                detail.winner?.username ? (
+                  <Link to={`/u/${detail.winner.username}`} className="aucpanel-winner">
+                    {winnerHandle}
+                  </Link>
+                ) : (
+                  <span className="aucpanel-winner">{winnerHandle}</span>
+                )
+              ) : (
+                'the top bidder'
+              )}
+            </>
+          ) : top ? (
+            'Reserve not met — nobody wins, the card stays with the seller.'
+          ) : (
+            'Ended without a bid.'
+          )}
         </p>
       ) : isSeller ? (
         <p className="aucpanel-sellernote mono-label">
@@ -239,8 +288,18 @@ export function AuctionPanel({
             : "Seller didn't follow through"}
         </button>
       )}
-      {closedWithWinner && detail.myNoShowReported && (
-        <p className="mono-label aucpanel-noshow-done">No-show recorded — it feeds the report queue.</p>
+      {closedWithWinner && isParty && detail.myNoShowReported && (
+        <p className="mono-label aucpanel-noshow-done">
+          You reported a no-show here.{' '}
+          <button
+            type="button"
+            className="aucpanel-noshow-undo"
+            disabled={reportingNoShow}
+            onClick={() => void retractNoShow()}
+          >
+            Withdraw
+          </button>
+        </p>
       )}
 
       {bids.length > 0 && (

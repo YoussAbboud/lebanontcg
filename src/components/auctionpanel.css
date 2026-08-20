@@ -60,3 +60,16 @@
 
 .aucpanel-noshow { align-self: flex-start; }
 .aucpanel-noshow-done { color: var(--muted); }
+
+.aucpanel-winner { color: var(--acid); text-decoration: none; }
+.aucpanel-winner:hover { text-decoration: underline; }
+.aucpanel-noshow-undo {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: var(--cursor-hand, pointer);
+  font: inherit;
+}
+.aucpanel-noshow-undo:hover { color: var(--text-1); }

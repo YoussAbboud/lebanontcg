@@ -575,3 +575,13 @@ live auction cards are permanently acid, so r8's "most-liked pin"
 assertions now exclude them, and a6 identifies auction cards by their
 "Current bid" label rather than title text (seed sets/names overlap
 across types).
+
+## A9 — Grace period, withdrawal, named winner
+
+auction-test.sql grows to 27 assertions: a report inside the grace
+period is rejected, aged closes let the rest of the accountability
+rules run, retract removes both the strike and its queue row, a second
+retract errors, and dropping below three strikes unblocks bidding.
+a3-smoke asserts the no-show action is absent right after a close, the
+outcome reads "Won at $N by @handle", and that handle links to the
+winner's profile (which carries no strike from merely winning).

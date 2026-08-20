@@ -216,7 +216,15 @@ select public.create_auction_listing(
 select 'A33 (expect error above: invalid duration)';
 reset role;
 
--- 0015: no-show accountability.
+-- 0015/0016: no-show accountability, behind a 24h grace period.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select public.report_auction_no_show('30000000-0000-0000-0000-000000000001');
+select 'A33b (expect error above: inside the 24h grace period)';
+-- Age the close so the rest of the accountability rules are reachable.
+reset role;
+update public.auctions set ends_at = now() - interval '2 days'
+  where id = '30000000-0000-0000-0000-000000000001';
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a3';
 select public.report_auction_no_show('30000000-0000-0000-0000-000000000001');
@@ -264,6 +272,11 @@ select public.place_bid('30000000-0000-0000-0000-000000000005', 10);
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
 select public.end_auction_early('30000000-0000-0000-0000-000000000004');
 select public.end_auction_early('30000000-0000-0000-0000-000000000005');
+reset role;
+update public.auctions set ends_at = now() - interval '2 days'
+  where id in ('30000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000005');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
 select public.report_auction_no_show('30000000-0000-0000-0000-000000000004');
 select public.report_auction_no_show('30000000-0000-0000-0000-000000000005');
 select 'A39 three strikes recorded: ' || (count(*) = 3)::text
@@ -282,4 +295,26 @@ select 'A40 (expect error above: repeated no-shows block bidding)';
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a3';
 select 'A41 other bidders unaffected: '
   || ((public.place_bid('30000000-0000-0000-0000-000000000006', 10)->>'amount')::numeric = 10)::text;
+reset role;
+
+-- 0016: a misfiled report can be withdrawn, leaving no trace.
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select public.retract_auction_no_show('30000000-0000-0000-0000-000000000004');
+select 'A42 retract removes the strike: ' || (count(*) = 0)::text
+  from public.auction_no_shows
+  where auction_id = '30000000-0000-0000-0000-000000000004'
+    and reporter_id = '00000000-0000-0000-0000-0000000000a1';
+reset role;
+select 'A43 retract removes the queue entry: ' || (count(*) = 0)::text
+  from public.reports
+  where detail = 'Auction no-show (winner) on auction 30000000-0000-0000-0000-000000000004';
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
+select public.retract_auction_no_show('30000000-0000-0000-0000-000000000004');
+select 'A44 (expect error above: nothing to retract)';
+-- Down to two strikes, so bidding works again.
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a2';
+select 'A45 bidding unblocked below three strikes: '
+  || ((public.place_bid('30000000-0000-0000-0000-000000000006', 12)->>'amount')::numeric = 12)::text;
 reset role;

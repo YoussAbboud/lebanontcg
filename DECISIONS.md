@@ -851,3 +851,22 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   so the swipe is real. Seed titles were deliberately made distinct
   from the fixed-price seeds — overlapping names made both the demo and
   the smokes ambiguous.
+
+## A9 — No-shows need time; the winner gets named
+
+- Offering "Winner didn't follow through" the instant an auction closed
+  was wrong — nobody has failed to follow through in the first minute,
+  and putting the accusation on screen immediately invited misfiling.
+  A no-show now requires a 24-hour grace period from the close,
+  enforced in report_auction_no_show (0016) and mirrored in the mock;
+  the UI only renders the action once that period has passed, behind a
+  confirm dialog that says what filing does.
+- A misfiled report can be withdrawn: retract_auction_no_show deletes
+  both the strike and its moderation-queue entry, so an accusation made
+  by accident leaves nothing on the other person's record. The recorded
+  state reads "You reported a no-show here. Withdraw" rather than the
+  older queue-jargon line.
+- The outcome line now names the winner — "Won at $206 by @handle" with
+  the handle linking to their profile — instead of restating that the
+  deal moves to chat (the handoff message already says that in the
+  thread it created).

@@ -138,6 +138,8 @@ export interface AuctionDetail {
   auction: Auction;
   /** Newest first. */
   bids: Bid[];
+  /** Who won, for the outcome line — null while live or unsold. */
+  winner?: { id: string; username: string | null; displayName: string } | null;
   /** The signed-in user already filed their no-show report here. */
   myNoShowReported?: boolean;
 }

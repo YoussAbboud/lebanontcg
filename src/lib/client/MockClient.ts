@@ -53,6 +53,9 @@ import { capturesMatchCover } from '../pregrade/phashGate';
 
 const AUTH_KEY = 'lebanontcg.mock.currentUser';
 
+/** No-show grace period — mirrors migration 0016. */
+const NO_SHOW_GRACE_MS = 24 * 60 * 60 * 1000;
+
 // IDs must be unique across tabs (each tab runs its own MockClient over a
 // shared BroadcastChannel world), so a per-tab counter would collide.
 let idCounter = 0;
@@ -296,6 +299,12 @@ export class MockClient implements MarketplaceClient {
         if (i >= 0) this.auctions[i] = patch.auction;
         else this.auctions.push(patch.auction);
         this.emitAuction(patch.auction.id, { type: 'updated', auction: structuredClone(patch.auction) });
+        break;
+      }
+      case 'noshow-retract': {
+        this.noShows = this.noShows.filter(
+          (n) => !(n.auctionId === patch.auctionId && n.reporterId === patch.reporterId),
+        );
         break;
       }
       case 'noshow': {
@@ -984,7 +993,11 @@ export class MockClient implements MarketplaceClient {
           (n) => n.auctionId === auction.id && n.reporterId === this.auth.user!.id,
         ),
     );
-    return structuredClone({ auction, bids, myNoShowReported });
+    const w = auction.winnerId
+      ? this.profiles.find((p) => p.id === auction.winnerId)
+      : undefined;
+    const winner = w ? { id: w.id, username: w.username, displayName: w.displayName } : null;
+    return structuredClone({ auction, bids, winner, myNoShowReported });
   }
 
   /** The rules, mirrored from place_bid — used by the signed-in user
@@ -1280,6 +1293,11 @@ export class MockClient implements MarketplaceClient {
     if (a.status !== 'closed' || !a.winnerId) {
       throw new Error('No-shows can only be reported on a closed auction with a winner.');
     }
+    // Mirrors report_auction_no_show (0016): nobody fails to follow
+    // through within a day of winning.
+    if (Date.now() < new Date(a.endsAt).getTime() + NO_SHOW_GRACE_MS) {
+      throw new Error('Give them a day — no-shows can be reported 24 hours after the close.');
+    }
     let reportedId: string;
     let role: 'winner' | 'seller';
     if (me.id === a.sellerId) {
@@ -1321,6 +1339,20 @@ export class MockClient implements MarketplaceClient {
         .filter((a) => a.sellerId === sellerId)
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     );
+  }
+
+  async retractAuctionNoShow(auctionId: string): Promise<void> {
+    const me = this.me();
+    await sleep(netDelay());
+    const i = this.noShows.findIndex(
+      (n) => n.auctionId === auctionId && n.reporterId === me.id,
+    );
+    if (i < 0) throw new Error('Nothing to retract.');
+    const [gone] = this.noShows.splice(i, 1);
+    const detail = `Auction no-show (${gone.role}) on auction ${auctionId}`;
+    const r = this.reports.findIndex((x) => x.detail === detail);
+    if (r >= 0) this.reports.splice(r, 1);
+    this.broadcast({ type: 'noshow-retract', auctionId, reporterId: me.id });
   }
 
   async getAuctionNoShowCount(userId: string): Promise<number> {
@@ -1895,6 +1927,7 @@ type RemotePatch =
   | { type: 'auction'; auction: Auction }
   | { type: 'bid'; bid: Bid }
   | { type: 'presence'; auctionId: string; tabId: string; at: number; leaving?: boolean }
+  | { type: 'noshow-retract'; auctionId: string; reporterId: string }
   | {
       type: 'noshow';
       noShow: {

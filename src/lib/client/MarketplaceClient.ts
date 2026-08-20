@@ -162,11 +162,15 @@ export interface MarketplaceClient {
   cancelAuction(auctionId: string, reason: string): Promise<void>;
   /**
    * After a closed auction: the seller marks the winner a no-show, or
-   * the winner mirrors it for an unresponsive seller. Three winner
-   * no-shows in 90 days block bidding (listings and chat unaffected);
-   * every report also feeds the moderation queue.
+   * the winner mirrors it for an unresponsive seller. Only once the
+   * grace period has passed (24h from the close — nobody fails to
+   * follow through in an hour). Three winner no-shows in 90 days block
+   * bidding (listings and chat unaffected); reports feed the queue.
    */
   reportAuctionNoShow(auctionId: string): Promise<void>;
+  /** Undo your own no-show report — the strike and its queue entry both
+      go, so a misfiled accusation leaves no trace. */
+  retractAuctionNoShow(auctionId: string): Promise<void>;
   /** Winner-role no-shows recorded against a user in the last 90 days. */
   getAuctionNoShowCount(userId: string): Promise<number>;
   /** Every auction this seller has run — live and finished. Powers the

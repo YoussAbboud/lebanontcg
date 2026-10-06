@@ -162,8 +162,8 @@ export function PlansPage() {
             <>
               <h2>Request sent — {chosen.label}</h2>
               <p>
-                Send {formatPrice(chosen.priceUsd, 'USD')} by OMT, Whish or bank transfer, then
-                we'll switch it on. You'll see it live here the moment we confirm it.
+                We'll contact you to arrange the {formatPrice(chosen.priceUsd, 'USD')} by Whish
+                or crypto transfer. You'll see it live here the moment we confirm it.
               </p>
               <button type="button" className="btn-outline" onClick={() => setChosen(null)}>
                 Done
@@ -174,7 +174,8 @@ export function PlansPage() {
               <h2>{chosen.label} — {formatPrice(chosen.priceUsd, 'USD')}</h2>
               <p className="plans-howto">
                 We don't take card payments yet: money moves the way it actually moves here —
-                OMT, Whish or a bank transfer. Tell us what you sent and we'll turn it on.
+                Whish or crypto transfer. Tell us what you want to send and use and we will
+                contact you.
               </p>
               {!user ? (
                 <Link to="/signin" className="btn-acid">
@@ -183,14 +184,14 @@ export function PlansPage() {
               ) : (
                 <>
                   <label className="plans-note-label" htmlFor="plans-note">
-                    Payment reference or how you'd like to pay
+                    How you'd like to pay, and anything we need to reach you
                   </label>
                   <input
                     id="plans-note"
                     className="input"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="OMT ref 123456, or: I'll transfer today"
+                    placeholder="Whish, or USDT — and the best way to reach me"
                     maxLength={200}
                   />
                   {error && <p className="plans-error">{error}</p>}

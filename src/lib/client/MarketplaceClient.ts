@@ -269,9 +269,10 @@ export interface MarketplaceClient {
   getEntitlements(): Promise<Entitlements | null>;
   /**
    * Ask for a plan. Nothing is charged here: money moves out of band
-   * (bank transfer, OMT, Whish) and an admin — or, later, a payment
-   * webhook calling the same activation function — turns the request on.
-   * `note` is how the buyer tells us what they paid with.
+   * (Whish, crypto transfer) and an admin — or, later, a payment webhook
+   * calling the same activation function — turns the request on. `note`
+   * is how the buyer says what they want to pay with and how to reach
+   * them.
    */
   requestPurchase(planCode: string, note: string): Promise<void>;
 

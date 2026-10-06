@@ -9,10 +9,10 @@ import { Chip } from './shared';
 const STATUSES: PurchaseStatus[] = ['pending', 'active', 'rejected', 'expired', 'cancelled'];
 
 /**
- * The billing queue. Nothing is charged in the app: someone pays by OMT,
- * Whish or bank transfer and a moderator confirms it here, which is the
- * same function a payment webhook would call later. Every approval and
- * grant writes an audit row.
+ * The billing queue. Nothing is charged in the app: someone asks, we
+ * reach out, they pay by Whish or crypto transfer, and a moderator
+ * confirms it here — the same function a payment webhook would call
+ * later. Every approval and grant writes an audit row.
  */
 export function AdminBilling({ onChanged }: { onChanged(): void }) {
   const { client } = useApp();
@@ -66,8 +66,9 @@ export function AdminBilling({ onChanged }: { onChanged(): void }) {
       </div>
 
       <p className="abilling-note">
-        Money moves outside the app. Approve once the transfer has landed — approving a
-        subscription opens its period from now, approving a listing pack hands the listings over.
+        Money moves outside the app: contact the buyer, then approve once the transfer has
+        landed — approving a subscription opens its period from now, approving a listing pack
+        hands the listings over.
       </p>
 
       {state === 'error' ? (
@@ -156,7 +157,7 @@ export function AdminBilling({ onChanged }: { onChanged(): void }) {
           requireReason={!deciding.approve}
           reasonLabel={deciding.approve ? 'Payment reference' : 'Reason'}
           placeholder={
-            deciding.approve ? 'OMT ref, transfer id, who confirmed it…' : 'No payment received…'
+            deciding.approve ? 'Whish ref, tx hash, who confirmed it…' : 'No payment received…'
           }
           destructive={!deciding.approve}
           onConfirm={async (reason) => {

@@ -966,9 +966,8 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   Pre-Grade analysis — and LebanonTCG still takes no cut of any sale.
 - **Payment capture is deliberately not a card processor.** A purchase is
   *requested* in-app and *switched on* by an admin (Admin → Billing)
-  once the money lands. Money here moves by OMT, Whish and bank
-  transfer, so modelling a processor first would have been the wrong
-  shape. `admin_activate_subscription` is the seam: a webhook can call
+  once the money lands. Money here moves by Whish and crypto transfer,
+  so modelling a card processor first would have been the wrong shape. `admin_activate_subscription` is the seam: a webhook can call
   exactly that function later without changing the entitlement rules.
 - A pending request grants nothing. `my_entitlements()` reports it so the
   UI can say "waiting on us to confirm your payment" instead of looking

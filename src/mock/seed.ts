@@ -633,7 +633,7 @@ export const seedSubscriptions: MockSubscription[] = [
     status: 'active',
     periodStart: days(12),
     periodEnd: new Date(now + 18 * 86_400_000).toISOString(),
-    note: 'OMT',
+    note: 'Whish',
     createdAt: days(12),
   },
 ];
@@ -646,7 +646,7 @@ export const seedCreditPacks: MockCreditPack[] = [
     credits: 5,
     used: 2,
     status: 'active',
-    note: 'Whish',
+    note: 'USDT',
     createdAt: days(20),
   },
   {
@@ -656,7 +656,7 @@ export const seedCreditPacks: MockCreditPack[] = [
     credits: 5,
     used: 0,
     status: 'pending',
-    note: 'Bank transfer, ref 88120',
+    note: 'Whish, ref 88120',
     createdAt: days(1),
   },
 ];

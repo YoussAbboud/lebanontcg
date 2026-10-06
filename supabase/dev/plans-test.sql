@@ -58,7 +58,7 @@ select 'P09 deleting does not refund the allowance: '
 -- Buying listings: request, approve, spend
 -- ---------------------------------------------------------------------------
 select 'P10 a request is recorded: '
-  || (public.request_purchase('credits_5', 'OMT ref 12345') is not null)::text;
+  || (public.request_purchase('credits_5', 'Whish ref 12345') is not null)::text;
 select 'P11 a pending request grants nothing yet: '
   || (public.can_create_listing() = false and public.listing_credits_remaining() = 0)::text;
 select 'P12 entitlements count the pending request: '

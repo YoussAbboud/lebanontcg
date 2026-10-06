@@ -7,8 +7,8 @@
 --
 -- Nothing here charges a card: a purchase is REQUESTED by the user and
 -- switched on by an admin (Admin → Billing), which is the same function a
--- payment webhook would call later. That keeps bank transfer / OMT /
--- Whish first-class.
+-- payment webhook would call later. That keeps Whish and crypto
+-- transfer first-class.
 --
 -- Apply after 0018. Run it ONCE.
 --
@@ -30,8 +30,8 @@
 -- Payment capture is deliberately NOT modelled as a card processor
 -- here: a purchase is REQUESTED by the user and ACTIVATED by an admin
 -- (or by a future webhook calling the same activation function). That
--- keeps bank transfer / OMT / Whish — how money actually moves in
--- Lebanon — first-class, and leaves one seam for a processor later.
+-- keeps Whish / crypto transfer — how money actually moves here —
+-- first-class, and leaves one seam for a processor later.
 
 create type public.plan_tier as enum ('free', 'monthly', 'yearly');
 create type public.purchase_kind as enum ('subscription', 'credits');

@@ -8,8 +8,8 @@
 -- Payment capture is deliberately NOT modelled as a card processor
 -- here: a purchase is REQUESTED by the user and ACTIVATED by an admin
 -- (or by a future webhook calling the same activation function). That
--- keeps bank transfer / OMT / Whish — how money actually moves in
--- Lebanon — first-class, and leaves one seam for a processor later.
+-- keeps Whish / crypto transfer — how money actually moves here —
+-- first-class, and leaves one seam for a processor later.
 
 create type public.plan_tier as enum ('free', 'monthly', 'yearly');
 create type public.purchase_kind as enum ('subscription', 'credits');

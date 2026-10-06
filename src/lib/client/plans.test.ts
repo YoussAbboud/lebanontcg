@@ -127,7 +127,7 @@ describe('bought listings', () => {
     for (const n of [1, 2, 3]) await client.createListing(listingInput(`Card ${n}`), []);
     const me = client.getAuthState().user!.id;
 
-    await client.requestPurchase('credits_5', 'OMT 12345');
+    await client.requestPurchase('credits_5', 'Whish 12345');
     const pending = await client.getEntitlements();
     expect(pending?.pendingRequests).toBe(1);
     // A request on its own grants nothing.
@@ -138,7 +138,7 @@ describe('bought listings', () => {
     const queue = await client.adminListPurchases('pending');
     const mine = queue.find((r) => r.userId === me && r.kind === 'credits');
     expect(mine).toBeTruthy();
-    expect(mine?.note).toBe('OMT 12345');
+    expect(mine?.note).toBe('Whish 12345');
     expect(mine?.priceUsd).toBe(5);
     await client.adminReviewPurchase('credits', mine!.id, true, 'payment confirmed');
 

@@ -472,3 +472,28 @@
   z-index: 3;
 }
 .pin-rect-switch { margin-right: auto; font-size: var(--fs-12); }
+
+/* The subscription gate (0019) — shown instead of the wizard. */
+.pregrade-gate {
+  max-width: 560px;
+  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+.pregrade-gate-title { font-size: var(--fs-22); }
+.pregrade-gate p { color: var(--text-2); font-size: var(--fs-13); }
+.pregrade-gate-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: var(--fs-13);
+  color: var(--text-2);
+}
+.pregrade-gate-list li { display: flex; gap: 8px; }
+.pregrade-gate-list li::before { content: '→'; color: var(--acid); }
+.pregrade-gate-foot { color: var(--muted); font-size: var(--fs-11); }

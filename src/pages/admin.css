@@ -420,3 +420,7 @@
   .afeed-when { margin-left: 0; }
   .asetstatus select { width: 100%; }
 }
+
+/* Billing queue (0019). */
+.abilling-note { color: var(--muted); font-size: var(--fs-12); margin-bottom: 10px; }
+.abilling-paynote { color: var(--text-2); font-style: italic; }

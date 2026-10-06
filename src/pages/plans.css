@@ -1,0 +1,124 @@
+/* Plans and the listing paywall (Sleeved). */
+
+.plans {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 40px var(--pad-x) 72px;
+}
+
+.plans-hero { text-align: center; padding-top: 12px; }
+.plans-title { font-size: clamp(var(--fs-28), 4.5vw, 44px); }
+.plans-lede {
+  margin: 14px auto 0;
+  max-width: 560px;
+  color: var(--muted);
+  font-size: var(--fs-14);
+}
+
+.plans-standing { font-size: var(--fs-13); color: var(--text-2); }
+.plans-standing strong { color: var(--text); }
+.plans-pending { margin-top: 8px; color: var(--acid); }
+
+.plans-group-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-13);
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+.plans-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.plans-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.plans-card.is-featured { border-color: var(--acid); }
+
+.plans-flag {
+  position: absolute;
+  top: -9px;
+  right: 14px;
+  background: var(--acid);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.plans-card h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-15);
+}
+
+.plans-price {
+  font-size: var(--fs-28);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.plans-period {
+  font-family: var(--font-mono);
+  font-size: var(--fs-11);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.plans-blurb { color: var(--text-2); font-size: var(--fs-13); }
+
+.plans-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: var(--fs-13);
+  color: var(--text-2);
+}
+.plans-features li { display: flex; gap: 8px; }
+.plans-features li::before { content: '→'; color: var(--acid); }
+
+.plans-pick { margin-top: auto; align-self: flex-start; }
+
+.plans-request { display: flex; flex-direction: column; gap: 10px; }
+.plans-request h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+  font-size: var(--fs-15);
+}
+.plans-request p, .plans-howto { color: var(--text-2); font-size: var(--fs-13); }
+.plans-note-label { font-size: var(--fs-12); color: var(--muted); }
+.plans-error { color: var(--danger); font-size: var(--fs-13); }
+.plans-actions { display: flex; gap: 10px; }
+.plans-loading { color: var(--muted); font-size: var(--fs-13); }
+
+.plans-footer { color: var(--muted); font-size: var(--fs-12); text-align: center; }
+.plans-footer a { color: var(--acid); }
+
+@media (max-width: 720px) {
+  .plans-grid { grid-template-columns: minmax(0, 1fr); }
+}

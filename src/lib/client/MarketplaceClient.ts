@@ -12,6 +12,7 @@ import type {
   Bid,
   Conversation,
   ConversationSummary,
+  Entitlements,
   ImageDraft,
   Listing,
   ListingFilter,
@@ -21,10 +22,14 @@ import type {
   ListingWithSeller,
   Message,
   PendingReview,
+  Plan,
   Profile,
+  PurchaseRequest,
   Report,
   ReportInput,
   ReportStatus,
+  PurchaseKind,
+  PurchaseStatus,
   Review,
   SellerStats,
 } from '../types';
@@ -252,6 +257,24 @@ export interface MarketplaceClient {
   /** "It came back as a…" — the calibration loop's raw material. */
   recordPregradeOutcome(reportId: string, actualGrade: number, certNumber?: string): Promise<void>;
 
+  // ---- Plans and entitlements ---------------------------------------------
+  /** The price list, cheapest-first by sort order. Public. */
+  listPlans(): Promise<Plan[]>;
+  /**
+   * Where the signed-in account stands against the listing quota and the
+   * Pre-Grade gate. Null when nobody is signed in. The numbers come from
+   * the database (my_entitlements()); the client only renders them —
+   * every limit is also enforced in Postgres.
+   */
+  getEntitlements(): Promise<Entitlements | null>;
+  /**
+   * Ask for a plan. Nothing is charged here: money moves out of band
+   * (bank transfer, OMT, Whish) and an admin — or, later, a payment
+   * webhook calling the same activation function — turns the request on.
+   * `note` is how the buyer tells us what they paid with.
+   */
+  requestPurchase(planCode: string, note: string): Promise<void>;
+
   // ---- Admin --------------------------------------------------------------
   /**
    * Every method below is admin-only and enforced SERVER-side (the
@@ -293,6 +316,21 @@ export interface MarketplaceClient {
   adminResolveReport(reportId: string, status: ReportStatus, note: string): Promise<void>;
   /** The append-only audit log, newest first. */
   adminListActions(limit: number): Promise<AdminAction[]>;
+  /** The billing queue. 'pending' is the one that needs a human. */
+  adminListPurchases(status: PurchaseStatus): Promise<PurchaseRequest[]>;
+  /** Approve (payment landed) or reject a request. Approving a
+      subscription opens its period from now. */
+  adminReviewPurchase(
+    kind: PurchaseKind,
+    id: string,
+    approve: boolean,
+    reason: string,
+  ): Promise<void>;
+  /** Start or replace someone's subscription without a request —
+      comps, support fixes, and the seam a processor webhook would use. */
+  adminActivateSubscription(userId: string, planCode: string, reason: string): Promise<void>;
+  adminEndSubscription(userId: string, reason: string): Promise<void>;
+  adminGrantCredits(userId: string, credits: number, reason: string): Promise<void>;
 
   // ---- Storage -----------------------------------------------------------
   /** Resolve a storage path to a displayable URL. */

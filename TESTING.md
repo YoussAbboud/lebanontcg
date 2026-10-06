@@ -637,3 +637,32 @@ four offer assertions failed against 0016 alone), auction-test 27/0.
 183 unit tests (Admin's suite included). Browser: a3/a5/a6/r4 green —
 a5's watcher assertion now reads the "● N" chip and its tooltip, which
 is how the chip reads after the UI edits on the branch.
+
+## A11 — Plans, quota and the Pre-Grade gate
+
+`supabase/dev/plans-test.sql` (37 assertions, all green on Postgres 16)
+covers the paywall from the database side, which is the side that
+matters: three free listings then a refusal, a deleted listing that
+does not refund the allowance, a pending request granting nothing,
+self-granted credits refused by RLS, the oldest pack draining first,
+subscribers and admins unlimited, a free user's pregrade insert refused
+and a subscriber's accepted, request → admin approval → activation,
+rejection closing a request, a lapsed period granting nothing before
+the sweep runs, and re-subscribing leaving exactly one active row.
+
+rls-test.sql and auction-test.sql now seed a large credit pack for
+their actors: the quota is not what those suites are about, and without
+it a quota refusal would masquerade as a policy or bidding bug.
+
+`src/lib/client/plans.test.ts` (14 tests) asserts the mock mirrors all
+of it, including the error copy — the mock is the offline reference, so
+a rule that only exists in SQL would be invisible in `VITE_MOCK=1`.
+
+Browser (p1-smoke, 18 checks): the price list renders four plans with
+the operations line and no claimed plan when signed out; a free seller
+sees "free listings are used", a pending request acknowledged, the
+Pre-Grade gate with its reason and its link, and "See plans" in the
+Sell wizard; a moderator sees the request in Admin → Billing with the
+buyer's payment note, switches it on, and the queue empties; the buyer
+then reads "5 bought listings in hand"; a subscriber sees none of the
+gates.

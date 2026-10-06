@@ -8,6 +8,7 @@ import { AdminUsers } from '../components/admin/AdminUsers';
 import { AdminListings } from '../components/admin/AdminListings';
 import { AdminAuctions } from '../components/admin/AdminAuctions';
 import { AdminReviews } from '../components/admin/AdminReviews';
+import { AdminBilling } from '../components/admin/AdminBilling';
 import { AdminAudit } from '../components/admin/AdminAudit';
 import './admin.css';
 
@@ -18,6 +19,7 @@ const TABS = [
   { key: 'listings', label: 'Listings' },
   { key: 'auctions', label: 'Auctions' },
   { key: 'reviews', label: 'Reviews' },
+  { key: 'billing', label: 'Billing' },
   { key: 'audit', label: 'Audit log' },
 ] as const;
 
@@ -117,6 +119,7 @@ export function AdminPage() {
       {tab === 'listings' && <AdminListings onChanged={refresh} />}
       {tab === 'auctions' && <AdminAuctions onChanged={refresh} />}
       {tab === 'reviews' && <AdminReviews onChanged={refresh} />}
+      {tab === 'billing' && <AdminBilling onChanged={refresh} />}
       {tab === 'audit' && <AdminAudit />}
     </main>
   );

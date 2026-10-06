@@ -13,6 +13,7 @@ import type {
   Bid,
   Conversation,
   ConversationSummary,
+  Entitlements,
   ImageDraft,
   Listing,
   ListingFilter,
@@ -23,7 +24,11 @@ import type {
   Message,
   PendingReview,
   OfferStatus,
+  Plan,
   Profile,
+  PurchaseKind,
+  PurchaseRequest,
+  PurchaseStatus,
   Report,
   ReportInput,
   ReportStatus,
@@ -51,11 +56,15 @@ import {
   buildSeedConversations,
   buildSeedListings,
   buildStressListings,
+  seedCreditPacks,
   seedFavorites,
+  seedPlans,
   seedProfiles,
   seedReports,
   seedReviews,
+  seedSubscriptions,
 } from '../../mock/seed';
+import type { MockCreditPack, MockSubscription } from '../../mock/seed';
 import { avatarDataUrl, cardImageUrl } from '../../mock/cardImage';
 import type { Condition, Finish, Game } from '../types';
 import type { DefectAssessment, PregradeReport, PregradeReportInput } from '../pregrade/types';
@@ -66,6 +75,9 @@ import { PHASH_MISMATCH_COPY } from '../pregrade/phash';
 import { capturesMatchCover } from '../pregrade/phashGate';
 
 const AUTH_KEY = 'lebanontcg.mock.currentUser';
+
+/** Listings a new account gets before paying — free_listing_allowance() in 0019. */
+const FREE_LISTING_ALLOWANCE = 3;
 
 /** No-show grace period — mirrors migration 0016. */
 const NO_SHOW_GRACE_MS = 24 * 60 * 60 * 1000;
@@ -122,6 +134,17 @@ export class MockClient implements MarketplaceClient {
   /** Pre-grade reports live per-tab in mock mode (captures = object URLs). */
   private pregradeReports: PregradeReport[] = [];
 
+  // ---- Paywall (mirrors migration 0019) ----------------------------------
+  private plans: Plan[] = structuredClone(seedPlans);
+  private subscriptions: MockSubscription[] = structuredClone(seedSubscriptions);
+  private creditPacks: MockCreditPack[] = structuredClone(seedCreditPacks);
+  /**
+   * Listings created, ever, per seller. Deleting a listing does not hand
+   * the free slot back, so this cannot be a count of live rows — same
+   * reason listing_counters exists in the database.
+   */
+  private listingCounts = new Map<string, number>();
+
   /**
    * Mock credential store, keyed by lowercased email. `password: null`
    * models an account created by magic link that hasn't set one yet — the
@@ -155,6 +178,9 @@ export class MockClient implements MarketplaceClient {
       ...r,
       reviewer: this.profiles.find((p) => p.id === r.reviewerId)!,
     }));
+    for (const l of this.listings) {
+      this.listingCounts.set(l.sellerId, (this.listingCounts.get(l.sellerId) ?? 0) + 1);
+    }
     for (const f of seedFavorites) {
       if (!this.favorites.has(f.userId)) this.favorites.set(f.userId, new Set());
       this.favorites.get(f.userId)!.add(f.listingId);
@@ -199,6 +225,9 @@ export class MockClient implements MarketplaceClient {
         this.reviews = s.reviews;
         this.reports = s.reports;
         this.adminActions = s.adminActions ?? this.adminActions;
+        this.subscriptions = s.subscriptions ?? this.subscriptions;
+        this.creditPacks = s.creditPacks ?? this.creditPacks;
+        this.listingCounts = new Map(s.listingCounts ?? [...this.listingCounts.entries()]);
         this.favorites = new Map(s.favorites.map(([k, v]) => [k, new Set(v)]));
         this.blocks = new Map(s.blocks.map(([k, v]) => [k, new Set(v)]));
         this.credentials = new Map(s.credentials ?? []);
@@ -330,6 +359,12 @@ export class MockClient implements MarketplaceClient {
         this.emitAuction(patch.auction.id, { type: 'updated', auction: structuredClone(patch.auction) });
         break;
       }
+      case 'billing': {
+        this.subscriptions = patch.subscriptions;
+        this.creditPacks = patch.creditPacks;
+        this.listingCounts = new Map(patch.listingCounts);
+        break;
+      }
       case 'noshow-retract': {
         this.noShows = this.noShows.filter(
           (n) => !(n.auctionId === patch.auctionId && n.reporterId === patch.reporterId),
@@ -385,6 +420,9 @@ export class MockClient implements MarketplaceClient {
       reviews: this.reviews,
       reports: this.reports,
       adminActions: this.adminActions,
+      subscriptions: this.subscriptions,
+      creditPacks: this.creditPacks,
+      listingCounts: [...this.listingCounts.entries()],
       favorites: [...this.favorites.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
       blocks: [...this.blocks.entries()].map(([k, v]) => [k, [...v]] as [string, string[]]),
       credentials: [...this.credentials.entries()],
@@ -801,6 +839,7 @@ export class MockClient implements MarketplaceClient {
   async createListing(input: ListingInput, images: ImageDraft[]): Promise<Listing> {
     const me = this.meActive();
     await sleep(netDelay());
+    this.chargeListingQuota(me.id);
     const id = nextId('l');
     const nowIso = new Date().toISOString();
     const listing: Listing = {
@@ -1833,7 +1872,11 @@ export class MockClient implements MarketplaceClient {
     hasRake: boolean;
     caseHint?: string;
   }): Promise<DefectAssessment> {
-    this.me();
+    const me = this.me();
+    // Vision-model calls cost money: subscribers and admins only (0019).
+    if (!this.canUsePregradeFor(me.id)) {
+      throw new Error('Pre-Grade is part of a subscription — subscribe to run it.');
+    }
     await sleep(600 + netDelay());
     const assessment = MOCK_ASSESSMENTS[mockCaseFrom(input.caseHint)]();
     // Honesty guard, same as the live endpoint: no raking shots means
@@ -1851,6 +1894,9 @@ export class MockClient implements MarketplaceClient {
 
   async savePregradeReport(input: PregradeReportInput): Promise<PregradeReport> {
     const me = this.me();
+    if (!this.canUsePregradeFor(me.id)) {
+      throw new Error('Pre-Grade is part of a subscription — subscribe to run it.');
+    }
     await sleep(netDelay());
     const captures: PregradeReport['captures'] = {};
     for (const c of input.captures) captures[c.slot] = URL.createObjectURL(c.blob);
@@ -1951,6 +1997,144 @@ export class MockClient implements MarketplaceClient {
       certNumber: certNumber ?? null,
       reportedAt: new Date().toISOString(),
     };
+  }
+
+  // ---- Plans and entitlements --------------------------------------------
+  // Mirrors 0019: the same free allowance, the same credit spending order,
+  // the same Pre-Grade gate, and the same rejection copy — so the paywall
+  // can be walked end to end offline.
+
+  private isAdminId(userId: string): boolean {
+    return Boolean(this.profiles.find((p) => p.id === userId)?.isAdmin);
+  }
+
+  private activeSubscription(userId: string): MockSubscription | null {
+    const now = Date.now();
+    return (
+      this.subscriptions.find(
+        (sub) =>
+          sub.userId === userId &&
+          sub.status === 'active' &&
+          (!sub.periodEnd || Date.parse(sub.periodEnd) > now),
+      ) ?? null
+    );
+  }
+
+  private creditsRemaining(userId: string): number {
+    return this.creditPacks
+      .filter((pk) => pk.userId === userId && pk.status === 'active')
+      .reduce((sum, pk) => sum + (pk.credits - pk.used), 0);
+  }
+
+  private listingsCreated(userId: string): number {
+    return this.listingCounts.get(userId) ?? 0;
+  }
+
+  private canCreateListingFor(userId: string): boolean {
+    return (
+      this.isAdminId(userId) ||
+      Boolean(this.activeSubscription(userId)) ||
+      this.listingsCreated(userId) < FREE_LISTING_ALLOWANCE ||
+      this.creditsRemaining(userId) > 0
+    );
+  }
+
+  private canUsePregradeFor(userId: string): boolean {
+    return this.isAdminId(userId) || Boolean(this.activeSubscription(userId));
+  }
+
+  /** The quota, charged where listings are born. Throws the same message
+      the database trigger raises. */
+  private chargeListingQuota(userId: string): void {
+    if (this.isAdminId(userId) || this.activeSubscription(userId)) {
+      this.listingCounts.set(userId, this.listingsCreated(userId) + 1);
+      return;
+    }
+    if (this.listingsCreated(userId) >= FREE_LISTING_ALLOWANCE) {
+      // Spend the oldest pack with room left.
+      const pack = this.creditPacks
+        .filter((pk) => pk.userId === userId && pk.status === 'active' && pk.used < pk.credits)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+      if (!pack) {
+        throw new Error(
+          `Listing limit reached: your ${FREE_LISTING_ALLOWANCE} free listings are used — buy listings or subscribe.`,
+        );
+      }
+      pack.used += 1;
+    }
+    this.listingCounts.set(userId, this.listingsCreated(userId) + 1);
+  }
+
+  private broadcastBilling(): void {
+    this.broadcast({
+      type: 'billing',
+      subscriptions: structuredClone(this.subscriptions),
+      creditPacks: structuredClone(this.creditPacks),
+      listingCounts: [...this.listingCounts.entries()],
+    });
+  }
+
+  async listPlans(): Promise<Plan[]> {
+    await sleep(netDelay());
+    return structuredClone(this.plans).sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  async getEntitlements(): Promise<Entitlements | null> {
+    if (!this.auth.user) return null;
+    await sleep(netDelay());
+    const id = this.auth.user.id;
+    const sub = this.activeSubscription(id);
+    return {
+      isAdmin: this.isAdminId(id),
+      subscribed: Boolean(sub),
+      tier: sub?.tier ?? null,
+      periodEnd: sub?.periodEnd ?? null,
+      freeAllowance: FREE_LISTING_ALLOWANCE,
+      listingsCreated: this.listingsCreated(id),
+      creditsRemaining: this.creditsRemaining(id),
+      canCreateListing: this.canCreateListingFor(id),
+      canUsePregrade: this.canUsePregradeFor(id),
+      pendingRequests:
+        this.subscriptions.filter((sub2) => sub2.userId === id && sub2.status === 'pending')
+          .length +
+        this.creditPacks.filter((pk) => pk.userId === id && pk.status === 'pending').length,
+    };
+  }
+
+  async requestPurchase(planCode: string, note: string): Promise<void> {
+    const me = this.meActive();
+    await sleep(netDelay());
+    const plan = this.plans.find((pl) => pl.code === planCode);
+    if (!plan) throw new Error('Unknown plan.');
+    const createdAt = new Date().toISOString();
+    if (plan.kind === 'subscription') {
+      if (this.subscriptions.some((sub) => sub.userId === me.id && sub.status === 'pending')) {
+        throw new Error('You already have a subscription request waiting.');
+      }
+      this.subscriptions.push({
+        id: nextId('sub'),
+        userId: me.id,
+        planCode: plan.code,
+        tier: plan.tier ?? 'monthly',
+        status: 'pending',
+        periodStart: null,
+        periodEnd: null,
+        note,
+        createdAt,
+      });
+    } else {
+      this.creditPacks.push({
+        id: nextId('pack'),
+        userId: me.id,
+        planCode: plan.code,
+        credits: plan.credits ?? 0,
+        used: 0,
+        status: 'pending',
+        note,
+        createdAt,
+      });
+    }
+    this.broadcastBilling();
   }
 
   // ---- Admin --------------------------------------------------------------
@@ -2392,6 +2576,153 @@ export class MockClient implements MarketplaceClient {
     }));
   }
 
+  // ---- Admin: billing ----------------------------------------------------
+
+  async adminListPurchases(status: PurchaseStatus): Promise<PurchaseRequest[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    const named = (userId: string) => {
+      const prof = this.profiles.find((pr) => pr.id === userId);
+      return {
+        username: prof?.username ?? '',
+        displayName: prof?.displayName ?? 'Someone',
+      };
+    };
+    const priceOf = (code: string | null) =>
+      code ? (this.plans.find((pl) => pl.code === code)?.priceUsd ?? null) : null;
+    const rows: PurchaseRequest[] = [
+      ...this.subscriptions
+        .filter((sub) => sub.status === status)
+        .map((sub) => ({
+          kind: 'subscription' as PurchaseKind,
+          id: sub.id,
+          userId: sub.userId,
+          ...named(sub.userId),
+          planCode: sub.planCode,
+          credits: null,
+          priceUsd: priceOf(sub.planCode),
+          status: sub.status,
+          note: sub.note,
+          createdAt: sub.createdAt,
+        })),
+      ...this.creditPacks
+        .filter((pk) => pk.status === status)
+        .map((pk) => ({
+          kind: 'credits' as PurchaseKind,
+          id: pk.id,
+          userId: pk.userId,
+          ...named(pk.userId),
+          planCode: pk.planCode,
+          credits: pk.credits,
+          priceUsd: priceOf(pk.planCode),
+          status: pk.status,
+          note: pk.note,
+          createdAt: pk.createdAt,
+        })),
+    ];
+    return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async adminReviewPurchase(
+    kind: PurchaseKind,
+    id: string,
+    approve: boolean,
+    reason: string,
+  ): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    if (kind === 'subscription') {
+      const req = this.subscriptions.find((sub) => sub.id === id && sub.status === 'pending');
+      if (!req) throw new Error('No pending subscription request with that id.');
+      if (approve) {
+        this.activateSubscription(req.userId, req.planCode, reason);
+      } else {
+        req.status = 'rejected';
+      }
+    } else {
+      const pack = this.creditPacks.find((pk) => pk.id === id && pk.status === 'pending');
+      if (!pack) throw new Error('No pending credit request with that id.');
+      pack.status = approve ? 'active' : 'rejected';
+    }
+    this.logAdmin(
+      actor,
+      'report_resolve',
+      'user',
+      kind === 'subscription'
+        ? (this.subscriptions.find((sub) => sub.id === id)?.userId ?? id)
+        : (this.creditPacks.find((pk) => pk.id === id)?.userId ?? id),
+      `${approve ? 'Approved' : 'Rejected'} ${kind} purchase${reason ? ` — ${reason}` : ''}`,
+    );
+    this.broadcastBilling();
+  }
+
+  /** Shared by the request-approval path and the direct admin action. */
+  private activateSubscription(userId: string, planCode: string, note: string): void {
+    const plan = this.plans.find((pl) => pl.code === planCode && pl.kind === 'subscription');
+    if (!plan) throw new Error('Unknown subscription plan.');
+    for (const sub of this.subscriptions) {
+      if (sub.userId === userId && (sub.status === 'active' || sub.status === 'pending')) {
+        sub.status = 'cancelled';
+      }
+    }
+    const start = new Date();
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + (plan.periodMonths ?? 1));
+    this.subscriptions.push({
+      id: nextId('sub'),
+      userId,
+      planCode: plan.code,
+      tier: plan.tier ?? 'monthly',
+      status: 'active',
+      periodStart: start.toISOString(),
+      periodEnd: end.toISOString(),
+      note,
+      createdAt: start.toISOString(),
+    });
+  }
+
+  async adminActivateSubscription(
+    userId: string,
+    planCode: string,
+    reason: string,
+  ): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    this.activateSubscription(userId, planCode, reason);
+    this.logAdmin(actor, 'user_promote', 'user', userId, `Subscription activated: ${planCode}`);
+    this.broadcastBilling();
+  }
+
+  async adminEndSubscription(userId: string, reason: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    for (const sub of this.subscriptions) {
+      if (sub.userId === userId && (sub.status === 'active' || sub.status === 'pending')) {
+        sub.status = 'cancelled';
+      }
+    }
+    this.logAdmin(actor, 'user_demote', 'user', userId, `Subscription ended${reason ? ` — ${reason}` : ''}`);
+    this.broadcastBilling();
+  }
+
+  async adminGrantCredits(userId: string, credits: number, reason: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    if (!(credits > 0)) throw new Error('Credits must be positive.');
+    this.creditPacks.push({
+      id: nextId('pack'),
+      userId,
+      planCode: null,
+      credits,
+      used: 0,
+      status: 'active',
+      note: reason,
+      createdAt: new Date().toISOString(),
+    });
+    this.logAdmin(actor, 'user_promote', 'user', userId, `${credits} listing credits granted`);
+    this.broadcastBilling();
+  }
+
   // ---- Storage ------------------------------------------------------------
 
   resolveImageUrl(storagePath: string): string {
@@ -2458,6 +2789,9 @@ interface SnapshotState {
   reviews: Review[];
   reports: StoredReport[];
   adminActions?: StoredAdminAction[];
+  subscriptions?: MockSubscription[];
+  creditPacks?: MockCreditPack[];
+  listingCounts?: Array<[string, number]>;
   favorites: Array<[string, string[]]>;
   blocks: Array<[string, string[]]>;
   credentials: Array<[string, { userId: string; password: string | null }]>;
@@ -2483,6 +2817,12 @@ type RemotePatch =
   | { type: 'bid'; bid: Bid }
   | { type: 'presence'; auctionId: string; tabId: string; at: number; leaving?: boolean }
   | { type: 'noshow-retract'; auctionId: string; reporterId: string }
+  | {
+      type: 'billing';
+      subscriptions: MockSubscription[];
+      creditPacks: MockCreditPack[];
+      listingCounts: Array<[string, number]>;
+    }
   | {
       type: 'noshow';
       noShow: {

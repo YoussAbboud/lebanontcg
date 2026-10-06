@@ -11,6 +11,11 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000a3', 'bidder2@auc.dev'),
   ('00000000-0000-0000-0000-0000000000a4', 'blocked@auc.dev');
 
+-- The listing quota from 0019 is not what this suite is about: give each
+-- actor room so a quota rejection can never masquerade as a bidding bug.
+insert into public.listing_credit_packs (user_id, credits, status)
+  select id, 1000, 'active' from auth.users where email like '%@auc.dev';
+
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000a1';
 

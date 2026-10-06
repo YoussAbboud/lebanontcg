@@ -177,3 +177,25 @@
   font-size: var(--fs-13);
   margin: 14px 0 0;
 }
+
+/* The listing wall (0019): shown on Review, where publishing would fail. */
+.sell-wall {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--acid);
+  border-radius: var(--r-panel);
+  background: var(--acid-tint);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.sell-wall strong { font-size: var(--fs-15); }
+.sell-wall p { color: var(--text-2); font-size: var(--fs-13); }
+
+.sell-quota {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: var(--fs-12);
+}
+.sell-quota a { color: var(--acid); }

@@ -15,6 +15,7 @@ import type {
   Condition,
   Conversation,
   ConversationSummary,
+  Entitlements,
   Finish,
   Game,
   ImageDraft,
@@ -26,10 +27,15 @@ import type {
   ListingWithSeller,
   Message,
   PendingReview,
+  Plan,
+  PlanTier,
   Profile,
   Report,
   ReportInput,
   ReportStatus,
+  PurchaseKind,
+  PurchaseRequest,
+  PurchaseStatus,
   ReportSubject,
   ReportTargetType,
   Review,
@@ -190,6 +196,32 @@ interface AdminActionRow {
   target_id: string;
   reason: string;
   detail: unknown;
+  created_at: string;
+}
+
+interface PlanRow {
+  code: string;
+  kind: PurchaseKind;
+  tier: PlanTier | null;
+  credits: number | null;
+  period_months: number | null;
+  price_usd: number | string;
+  label: string;
+  blurb: string | null;
+  sort_order: number | null;
+}
+
+interface PurchaseRow {
+  kind: PurchaseKind;
+  id: string;
+  user_id: string;
+  username: string | null;
+  display_name: string | null;
+  plan_code: string | null;
+  credits: number | null;
+  price_usd: number | string | null;
+  status: PurchaseStatus;
+  note: string | null;
   created_at: string;
 }
 
@@ -968,7 +1000,13 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .insert({ ...this.listingInputToRow(input), seller_id: uid })
       .select()
       .single();
-    if (error) throw new Error((error.code === '42501' && this.suspensionMessage()) || error.message);
+    if (error) {
+      throw new Error(
+        (error.code === '42501' && this.suspensionMessage()) ||
+          this.quotaMessage(error) ||
+          error.message,
+      );
+    }
     const row = data as ListingRow;
     await this.syncImages(row.id, images, []);
     return (await this.getListing(row.id))!;
@@ -1025,7 +1063,9 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       p_reserve_price: auction.reservePrice,
       p_duration_hours: auction.durationHours,
     });
-    if (error) throw new Error(this.suspensionMessage() ?? error.message);
+    if (error) {
+      throw new Error(this.suspensionMessage() ?? this.quotaMessage(error) ?? error.message);
+    }
     const listingId = data as string;
     await this.syncImages(listingId, images, []);
     return (await this.getListing(listingId))!;
@@ -2226,6 +2266,128 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       detail: (row.detail ?? {}) as Record<string, unknown>,
       createdAt: row.created_at,
     }));
+  }
+
+  // ---- Plans and entitlements --------------------------------------------
+
+  /** The listing-quota trigger raises a sentence meant for the seller;
+      recognise it so it isn't buried in driver noise. */
+  private quotaMessage(error: { message?: string }): string | null {
+    const msg = error.message ?? '';
+    if (!msg.toLowerCase().includes('listing limit reached')) return null;
+    return msg.replace(/^.*?listing limit reached:\s*/i, 'Listing limit reached: ');
+  }
+
+  async listPlans(): Promise<Plan[]> {
+    const { data, error } = await this.sb
+      .from('plans')
+      .select('*')
+      .eq('active', true)
+      .order('sort_order', { ascending: true });
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as PlanRow[]).map((r) => ({
+      code: r.code,
+      kind: r.kind,
+      tier: r.tier ?? null,
+      credits: r.credits ?? null,
+      periodMonths: r.period_months ?? null,
+      priceUsd: Number(r.price_usd),
+      label: r.label,
+      blurb: r.blurb ?? '',
+      sortOrder: r.sort_order ?? 0,
+    }));
+  }
+
+  async getEntitlements(): Promise<Entitlements | null> {
+    if (!this.auth.user) return null;
+    const { data, error } = await this.sb.rpc('my_entitlements');
+    if (error) throw new Error(error.message);
+    const raw = (data ?? {}) as Record<string, unknown>;
+    return {
+      isAdmin: Boolean(raw.is_admin),
+      subscribed: Boolean(raw.subscribed),
+      tier: (raw.tier as Entitlements['tier']) ?? null,
+      periodEnd: (raw.period_end as string | null) ?? null,
+      freeAllowance: Number(raw.free_allowance ?? 0),
+      listingsCreated: Number(raw.listings_created ?? 0),
+      creditsRemaining: Number(raw.credits_remaining ?? 0),
+      canCreateListing: Boolean(raw.can_create_listing),
+      canUsePregrade: Boolean(raw.can_use_pregrade),
+      pendingRequests: Number(raw.pending_requests ?? 0),
+    };
+  }
+
+  async requestPurchase(planCode: string, note: string): Promise<void> {
+    const { error } = await this.sb.rpc('request_purchase', {
+      p_plan_code: planCode,
+      p_note: note,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  // ---- Admin: billing ----------------------------------------------------
+
+  async adminListPurchases(status: PurchaseStatus): Promise<PurchaseRequest[]> {
+    const { data, error } = await this.sb.rpc('admin_list_purchases', { p_status: status });
+    if (error) throw this.adminError(error);
+    return ((data ?? []) as PurchaseRow[]).map((r) => ({
+      kind: r.kind,
+      id: r.id,
+      userId: r.user_id,
+      username: r.username ?? '',
+      displayName: r.display_name ?? 'Someone',
+      planCode: r.plan_code ?? null,
+      credits: r.credits ?? null,
+      priceUsd: r.price_usd === null || r.price_usd === undefined ? null : Number(r.price_usd),
+      status: r.status,
+      note: r.note ?? '',
+      createdAt: r.created_at,
+    }));
+  }
+
+  async adminReviewPurchase(
+    kind: PurchaseKind,
+    id: string,
+    approve: boolean,
+    reason: string,
+  ): Promise<void> {
+    const { error } = await this.sb.rpc('admin_review_purchase', {
+      p_kind: kind,
+      p_id: id,
+      p_approve: approve,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  async adminActivateSubscription(
+    userId: string,
+    planCode: string,
+    reason: string,
+  ): Promise<void> {
+    const { error } = await this.sb.rpc('admin_activate_subscription', {
+      p_user: userId,
+      p_plan_code: planCode,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  async adminEndSubscription(userId: string, reason: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_end_subscription', {
+      p_user: userId,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  async adminGrantCredits(userId: string, credits: number, reason: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_grant_credits', {
+      p_user: userId,
+      p_credits: credits,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
   }
 
   // ---- Storage ------------------------------------------------------------

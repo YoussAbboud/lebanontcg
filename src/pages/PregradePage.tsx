@@ -70,7 +70,7 @@ export type Shots = Partial<Record<CaptureSlot, Shot>>;
  * grade, and it says so on every surface.
  */
 export function PregradePage() {
-  const { user, auth } = useApp();
+  const { user, auth, entitlements } = useApp();
   const [shots, setShots] = useState<Shots>({});
   const [skipped, setSkipped] = useState<Set<CaptureSlot>>(new Set());
   const [failures, setFailures] = useState<Partial<Record<CaptureSlot, QualityFailure>>>({});
@@ -100,6 +100,37 @@ export function PregradePage() {
           <h3>Pre-Grade</h3>
           <p>Sign in to check a card&apos;s grade potential before you list it.</p>
           <Link to="/signin" className="btn-acid">Sign in</Link>
+        </div>
+      </main>
+    );
+  }
+
+  // Paid feature (0019): each assessment runs vision-model calls that
+  // cost real money, so free accounts are shown the offer, not the
+  // wizard. The endpoint and the row policy enforce the same thing — this
+  // is the explanation, not the lock.
+  if (entitlements && !entitlements.canUsePregrade) {
+    return (
+      <main className="pregrade">
+        <div className="pregrade-gate panel">
+          <h1 className="display pregrade-gate-title">Pre-Grade is part of a subscription</h1>
+          <p>
+            Every estimate reads your eight photos through an image model and measures the
+            centering — that costs us real money per card, so it sits with the subscription
+            rather than on the house. Subscribing also keeps our operations running smoothly:
+            the servers, the image storage and this analysis.
+          </p>
+          <ul className="pregrade-gate-list">
+            <li>A grade band with the odds, not a guess</li>
+            <li>Photo-backed centering measurements</li>
+            <li>Unlimited listings while you're subscribed</li>
+          </ul>
+          <Link to="/plans" className="btn-acid">
+            See plans →
+          </Link>
+          <p className="pregrade-gate-foot">
+            {PREGRADE_DISCLAIMER}
+          </p>
         </div>
       </main>
     );

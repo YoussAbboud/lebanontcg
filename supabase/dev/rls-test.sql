@@ -7,6 +7,11 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000000001', 'maya@test.dev'),
   ('00000000-0000-0000-0000-000000000002', 'karim@test.dev');
 
+-- The listing quota from 0019 is not what this suite is about: give each
+-- actor room so a quota rejection can never masquerade as a policy bug.
+insert into public.listing_credit_packs (user_id, credits, status)
+  select id, 1000, 'active' from auth.users where email like '%@test.dev';
+
 -- Scoped to this test's own users so the assertion holds whether or not
 -- supabase/seed.sql was loaded into the same database.
 select 'T01 profiles auto-created: ' || (count(*) = 2)::text from public.profiles

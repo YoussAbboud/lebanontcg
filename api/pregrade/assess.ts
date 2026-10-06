@@ -218,6 +218,32 @@ async function verifyUser(authHeader: string | undefined): Promise<string | null
   return u.id ?? null;
 }
 
+/**
+ * Pre-Grade is a paid feature (migration 0019). The row-level policy
+ * stops a free user's report from being SAVED, but the model call costs
+ * money the moment it runs — so the entitlement is checked here, before
+ * anything is spent. Checked as the caller, so can_use_pregrade() reads
+ * their own row.
+ */
+async function canUsePregrade(authHeader: string): Promise<{ ok: boolean; gated: boolean }> {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/can_use_pregrade`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_KEY,
+      authorization: authHeader,
+      'content-type': 'application/json',
+    },
+    body: '{}',
+  });
+  // 404 = the function isn't deployed on this database yet, so there is
+  // no gate to enforce. Anything else that isn't an explicit `true`
+  // fails closed — a broken check must not hand out paid calls.
+  if (r.status === 404) return { ok: true, gated: false };
+  if (!r.ok) return { ok: false, gated: true };
+  const allowed = (await r.json()) === true;
+  return { ok: allowed, gated: true };
+}
+
 async function todayCount(authHeader: string): Promise<number | null> {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -318,6 +344,14 @@ async function handle(req: any, res: any) {
 
   const userId = await verifyUser(req.headers.authorization);
   if (!userId) return json(res, 401, { error: 'Sign in to run an assessment.' });
+
+  const entitled = await canUsePregrade(req.headers.authorization);
+  if (!entitled.ok) {
+    return json(res, 402, {
+      error:
+        'Pre-Grade is part of a subscription — it runs paid image analysis for each card. Subscribe to unlock it.',
+    });
+  }
 
   const limit = Number(process.env.PREGRADE_DAILY_LIMIT || 10);
   const count = await todayCount(req.headers.authorization);

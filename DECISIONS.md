@@ -935,3 +935,45 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   offer_status forced to 'proposed'. The RLS suite caught it (22/0 →
   18/4). 0018 restores 0008's kinds and guard while keeping the
   suspension rule.
+
+## A11 — Plans: three free listings, then pay
+
+- Listing is free for the first **three** cards, lifetime, not three at
+  a time: `listings_created()` reads a counter that only grows
+  (`listing_counters`, 0019), so deleting a listing never hands the free
+  slot back. A count of live rows would have made the allowance a
+  concurrency cap and an easy loop.
+- Past the allowance a seller either buys a pack of listings ($5 for 5,
+  $12 for 15 — they never expire) or subscribes ($5/month, $45/year for
+  unlimited). Prices live in a `plans` table, so they move without a
+  deploy.
+- The quota is charged in a BEFORE INSERT trigger on `listings`, not in
+  the client: admins and active subscribers pass straight through, the
+  free allowance is spent next, then the oldest credit pack with room
+  left. Out of everything, the insert is refused with the sentence the
+  seller reads ("your 3 free listings are used — buy listings or
+  subscribe"). Auction listings go through `create_auction_listing`,
+  which inserts into the same table, so they are charged identically
+  without any extra code.
+- **Pre-Grade is subscription-only** (admins included). It is the one
+  feature that costs money per use — vision-model calls — so it is
+  gated in three places that all have to agree: `can_use_pregrade()` in
+  the row policy on `pregrade_reports`, the serverless endpoint before
+  it spends a model call, and the page, which shows the offer instead of
+  the wizard. Bought listing credits deliberately do NOT unlock it.
+- The paywall says why it exists wherever someone meets it: listing fees
+  keep our operations running smoothly — servers, image storage and the
+  Pre-Grade analysis — and LebanonTCG still takes no cut of any sale.
+- **Payment capture is deliberately not a card processor.** A purchase is
+  *requested* in-app and *switched on* by an admin (Admin → Billing)
+  once the money lands. Money here moves by OMT, Whish and bank
+  transfer, so modelling a processor first would have been the wrong
+  shape. `admin_activate_subscription` is the seam: a webhook can call
+  exactly that function later without changing the entitlement rules.
+- A pending request grants nothing. `my_entitlements()` reports it so the
+  UI can say "waiting on us to confirm your payment" instead of looking
+  broken.
+- Subscriptions carry their own period and are checked against
+  `period_end` on every read, so a late expiry sweep can never extend
+  access; `expire_subscriptions()` (hourly, pg_cron when available) only
+  keeps the status column and the one-active index honest.

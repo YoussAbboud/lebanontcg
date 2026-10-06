@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { MarketplaceClient, AuthState } from '../lib/client/MarketplaceClient';
-import type { Profile } from '../lib/types';
+import type { Entitlements, Profile } from '../lib/types';
 
 interface AppContextValue {
   client: MarketplaceClient;
@@ -24,6 +24,14 @@ interface AppContextValue {
   /** Completed trades still waiting for this user's review. */
   pendingReviewCount: number;
   refreshPendingReviews(): void;
+  /**
+   * Where this account stands against the listing quota and the
+   * Pre-Grade gate (0019). Null while loading or signed out. The UI uses
+   * it to explain and to offer the upgrade — never to grant anything:
+   * every limit is enforced in Postgres.
+   */
+  entitlements: Entitlements | null;
+  refreshEntitlements(): void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -33,6 +41,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingReviewCount, setPendingReviewCount] = useState(0);
+  const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
   const userId = auth.user?.id ?? null;
   const unreadTimer = useRef<number | null>(null);
 
@@ -44,6 +53,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       setFavoriteIds(new Set());
       setUnreadCount(0);
       setPendingReviewCount(0);
+      setEntitlements(null);
       return;
     }
     client.getFavoriteIds().then((ids) => {
@@ -58,6 +68,12 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
         if (!cancelled) setPendingReviewCount(p.length);
       })
       .catch(() => {});
+    client
+      .getEntitlements()
+      .then((e) => {
+        if (!cancelled) setEntitlements(e);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -70,6 +86,17 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       client.getTotalUnreadCount().then(setUnreadCount).catch(() => {});
     }, 80);
   }, [client]);
+
+  const refreshEntitlements = useCallback(() => {
+    if (!userId) {
+      setEntitlements(null);
+      return;
+    }
+    client
+      .getEntitlements()
+      .then(setEntitlements)
+      .catch(() => {});
+  }, [client, userId]);
 
   const refreshPendingReviews = useCallback(() => {
     if (!userId) return;
@@ -125,6 +152,8 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       refreshUnread,
       pendingReviewCount,
       refreshPendingReviews,
+      entitlements,
+      refreshEntitlements,
     }),
     [
       client,
@@ -135,6 +164,8 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       refreshUnread,
       pendingReviewCount,
       refreshPendingReviews,
+      entitlements,
+      refreshEntitlements,
     ],
   );
 

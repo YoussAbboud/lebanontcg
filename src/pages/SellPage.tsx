@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { Condition, Finish, Game, ImageDraft, ListingInput, ListingWithSeller, SaleType } from '../lib/types';
 import { AUCTION_DURATIONS, CONDITIONS, FINISHES, FINISH_LABELS, GAMES, GAME_LABELS } from '../lib/types';
+import { freeListingsLeft } from '../lib/types';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { ImageManager } from '../components/ImageManager';
@@ -120,7 +121,7 @@ export function SellPage() {
   // creates a brand-new listing — the original stays closed.
   const relistId = searchParams.get('relist');
   const editing = Boolean(id);
-  const { client, user } = useApp();
+  const { client, user, entitlements, refreshEntitlements } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
 
@@ -363,6 +364,11 @@ export function SellPage() {
     setStep(target);
   };
 
+  // The wall, as the database sees it (0019). Editing an existing
+  // listing never consumes anything, so it is never blocked.
+  const walled = !editing && entitlements !== null && !entitlements.canCreateListing;
+  const listingsLeft = freeListingsLeft(entitlements);
+
   const publish = async () => {
     for (let s = 1; s <= 3; s++) {
       const errs = validateStep(s, form, images);
@@ -384,6 +390,7 @@ export function SellPage() {
             })
           : await client.createListing(input, images);
       toast(editing ? 'Listing updated' : form.saleType === 'auction' ? 'Auction started' : 'Published');
+      refreshEntitlements();
       navigate(`/listing/${listing.id}`);
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Saving failed — try again.');
@@ -425,10 +432,24 @@ export function SellPage() {
             <p className="sell-panel-sub">1–8 photos. The first is the cover. Drag to reorder.</p>
             <ImageManager images={images} onChange={setImages} error={errors.images} />
             <div className="sell-pregrade-cta">
-              <span>Raw card? Check its grade potential before you list it.</span>
-              <Link to="/pregrade" className="btn-outline sell-pregrade-link">
-                Run a Pre-Grade →
-              </Link>
+              {entitlements && !entitlements.canUsePregrade ? (
+                <>
+                  <span>
+                    Raw card? Pre-Grade estimates its grade before you list — it's part of a
+                    subscription.
+                  </span>
+                  <Link to="/plans" className="btn-outline sell-pregrade-link">
+                    See plans →
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <span>Raw card? Check its grade potential before you list it.</span>
+                  <Link to="/pregrade" className="btn-outline sell-pregrade-link">
+                    Run a Pre-Grade →
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -727,6 +748,29 @@ export function SellPage() {
             <div className="sell-preview">
               <ListingCard listing={preview} />
             </div>
+            {walled ? (
+              <div className="sell-wall">
+                <strong>Your free listings are used.</strong>
+                <p>
+                  Listing fees keep our operations running smoothly — the servers, the image
+                  storage and the Pre-Grade analysis cost real money, and we never take a cut of
+                  your sales. Buy a few listings, or subscribe for unlimited.
+                </p>
+                <Link to="/plans" className="btn-acid">
+                  See plans →
+                </Link>
+              </div>
+            ) : (
+              listingsLeft !== null &&
+              entitlements !== null && (
+                <p className="sell-quota">
+                  {entitlements.creditsRemaining > 0
+                    ? `${listingsLeft + entitlements.creditsRemaining} listings left on your account.`
+                    : `${listingsLeft} free listing${listingsLeft === 1 ? '' : 's'} left, then it's $5 for five or a subscription.`}{' '}
+                  <Link to="/plans">Plans</Link>
+                </p>
+              )
+            )}
             <div className="sell-disclaimer">
               {form.saleType === 'auction'
                 ? "Bids aren't binding and LebanonTCG handles no payment. When the clock runs out, the highest bidder and you get a chat to sort out the deal yourselves."
@@ -735,7 +779,7 @@ export function SellPage() {
             <button
               type="button"
               className="btn-acid sell-publish"
-              disabled={saving}
+              disabled={saving || walled}
               onClick={() => void publish()}
             >
               {saving

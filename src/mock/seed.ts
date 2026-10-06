@@ -6,7 +6,10 @@ import type {
   Game,
   Listing,
   Message,
+  Plan,
+  PlanTier,
   Profile,
+  PurchaseStatus,
 } from '../lib/types';
 
 // Seed data for MockClient: 3 users, ~40 listings across games/conditions/
@@ -542,3 +545,118 @@ export function buildSeedAuctions(): { listings: Listing[]; auctions: Auction[] 
   }));
   return { listings, auctions };
 }
+
+/** The price list, same four rows 0019 seeds into Postgres. */
+export const seedPlans: Plan[] = [
+  {
+    code: 'monthly',
+    kind: 'subscription',
+    tier: 'monthly',
+    credits: null,
+    periodMonths: 1,
+    priceUsd: 5,
+    label: 'Monthly',
+    blurb: 'Unlimited listings and the Pre-Grade estimator, billed monthly.',
+    sortOrder: 1,
+  },
+  {
+    code: 'yearly',
+    kind: 'subscription',
+    tier: 'yearly',
+    credits: null,
+    periodMonths: 12,
+    priceUsd: 45,
+    label: 'Yearly',
+    blurb: 'Unlimited listings and Pre-Grade — two months cheaper than monthly.',
+    sortOrder: 2,
+  },
+  {
+    code: 'credits_5',
+    kind: 'credits',
+    tier: null,
+    credits: 5,
+    periodMonths: null,
+    priceUsd: 5,
+    label: '5 listings',
+    blurb: 'Five extra listings. They never expire.',
+    sortOrder: 3,
+  },
+  {
+    code: 'credits_15',
+    kind: 'credits',
+    tier: null,
+    credits: 15,
+    periodMonths: null,
+    priceUsd: 12,
+    label: '15 listings',
+    blurb: 'Fifteen extra listings. They never expire.',
+    sortOrder: 4,
+  },
+];
+
+/** A mock subscription row — the shape MockClient keeps in memory. */
+export interface MockSubscription {
+  id: string;
+  userId: string;
+  planCode: string;
+  tier: PlanTier;
+  status: PurchaseStatus;
+  periodStart: string | null;
+  periodEnd: string | null;
+  note: string;
+  createdAt: string;
+}
+
+/** A bought (or requested) batch of extra listings. */
+export interface MockCreditPack {
+  id: string;
+  userId: string;
+  planCode: string | null;
+  credits: number;
+  used: number;
+  status: PurchaseStatus;
+  note: string;
+  createdAt: string;
+}
+
+/**
+ * One of each paywall state, so switching accounts in the dev switcher
+ * shows them all: Maya subscribes (and so keeps Pre-Grade), Lina bought a
+ * pack, and Karim is a free seller who has used his three.
+ */
+export const seedSubscriptions: MockSubscription[] = [
+  {
+    id: 'sub-maya',
+    userId: 'u-maya',
+    planCode: 'monthly',
+    tier: 'monthly',
+    status: 'active',
+    periodStart: days(12),
+    periodEnd: new Date(now + 18 * 86_400_000).toISOString(),
+    note: 'OMT',
+    createdAt: days(12),
+  },
+];
+
+export const seedCreditPacks: MockCreditPack[] = [
+  {
+    id: 'pack-lina',
+    userId: 'u-lina',
+    planCode: 'credits_5',
+    credits: 5,
+    used: 2,
+    status: 'active',
+    note: 'Whish',
+    createdAt: days(20),
+  },
+  {
+    id: 'pack-karim-pending',
+    userId: 'u-karim',
+    planCode: 'credits_5',
+    credits: 5,
+    used: 0,
+    status: 'pending',
+    note: 'Bank transfer, ref 88120',
+    createdAt: days(1),
+  },
+];

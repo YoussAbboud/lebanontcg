@@ -451,3 +451,67 @@ export interface AdminListingFilter {
   saleType: SaleType | 'all';
   sellerId?: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// Plans, listing quota and the Pre-Grade gate (0019)
+// ---------------------------------------------------------------------------
+
+export type PlanTier = 'free' | 'monthly' | 'yearly';
+export type PurchaseKind = 'subscription' | 'credits';
+export type PurchaseStatus = 'pending' | 'active' | 'rejected' | 'expired' | 'cancelled';
+
+/** A row of the price list. Prices live in the database so they move
+    without a deploy. */
+export interface Plan {
+  code: string;
+  kind: PurchaseKind;
+  tier: PlanTier | null;
+  /** Listings granted — subscriptions are unlimited and leave this null. */
+  credits: number | null;
+  periodMonths: number | null;
+  priceUsd: number;
+  label: string;
+  blurb: string;
+  sortOrder: number;
+}
+
+/** Where an account stands against the paywall. One round trip
+    (my_entitlements() in Postgres); the UI never recomputes it. */
+export interface Entitlements {
+  isAdmin: boolean;
+  subscribed: boolean;
+  tier: PlanTier | null;
+  /** When the current period lapses, ISO. Null for admin-granted. */
+  periodEnd: string | null;
+  freeAllowance: number;
+  /** Lifetime, not live inventory — deleting a listing gives nothing back. */
+  listingsCreated: number;
+  creditsRemaining: number;
+  canCreateListing: boolean;
+  canUsePregrade: boolean;
+  /** Purchase requests waiting on confirmation. */
+  pendingRequests: number;
+}
+
+/** Free listings left before the wall. Subscribers and admins get null —
+    there is no number to show them. */
+export function freeListingsLeft(e: Entitlements | null): number | null {
+  if (!e || e.subscribed || e.isAdmin) return null;
+  return Math.max(0, e.freeAllowance - e.listingsCreated);
+}
+
+/** One purchase in the admin billing queue. */
+export interface PurchaseRequest {
+  kind: PurchaseKind;
+  id: string;
+  userId: string;
+  username: string;
+  displayName: string;
+  planCode: string | null;
+  credits: number | null;
+  priceUsd: number | null;
+  status: PurchaseStatus;
+  /** What the buyer told us about their payment (method, reference). */
+  note: string;
+  createdAt: string;
+}

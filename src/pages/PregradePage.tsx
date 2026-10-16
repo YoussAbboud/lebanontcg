@@ -17,6 +17,7 @@ import { CornerPinCropper } from '../components/pregrade/CornerPinCropper';
 import { SOFT_FAILURES, SOFT_FAILURE_NOTE } from '../lib/pregrade/quality';
 import './pregrade.css';
 import { looksLikePickedImage } from '../lib/heic';
+import { usePageMeta } from '../lib/usePageMeta';
 
 interface SlotMeta {
   label: string;
@@ -71,6 +72,12 @@ export type Shots = Partial<Record<CaptureSlot, Shot>>;
  */
 export function PregradePage() {
   const { user, auth, entitlements } = useApp();
+  usePageMeta({
+    title: 'Pre-Grade estimator',
+    description:
+      'Photograph a raw card and get an honest estimate of its grading potential — centering, corners, edges and surface — before you submit it or list it.',
+    canonicalPath: '/pregrade',
+  });
   const [shots, setShots] = useState<Shots>({});
   const [skipped, setSkipped] = useState<Set<CaptureSlot>>(new Set());
   const [failures, setFailures] = useState<Partial<Record<CaptureSlot, QualityFailure>>>({});

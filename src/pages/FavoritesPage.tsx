@@ -4,9 +4,11 @@ import type { ListingWithSeller } from '../lib/types';
 import { useApp } from '../state/AppContext';
 import { ListingCard } from '../components/ListingCard';
 import './favorites.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 export function FavoritesPage() {
   const { client, user, favoriteIds } = useApp();
+  usePageMeta({ title: 'Watchlist', noindex: true });
   const [items, setItems] = useState<ListingWithSeller[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
 

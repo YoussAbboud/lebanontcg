@@ -12,6 +12,8 @@ import { Avatar } from '../components/Avatar';
 import { ListingCard } from '../components/ListingCard';
 import { ReportDialog } from '../components/ReportDialog';
 import './profile.css';
+import { usePageMeta } from '../lib/usePageMeta';
+import { profileMeta } from '../lib/pageMeta';
 
 export function ProfilePage() {
   const { username } = useParams<{ username: string }>();
@@ -28,6 +30,7 @@ export function ProfilePage() {
   const [blocked, setBlocked] = useState(false);
   const [noShows, setNoShows] = useState(0);
   const [blockBusy, setBlockBusy] = useState(false);
+  usePageMeta(profileMeta(profile, username));
   const [reportOpen, setReportOpen] = useState(false);
   const [msgBusy, setMsgBusy] = useState(false);
 

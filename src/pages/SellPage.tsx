@@ -8,6 +8,7 @@ import { useToast } from '../state/ToastContext';
 import { ImageManager } from '../components/ImageManager';
 import { ListingCard } from '../components/ListingCard';
 import './sell.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const STEPS = ['Photos', 'The card', 'The deal', 'Review'] as const;
 
@@ -122,6 +123,7 @@ export function SellPage() {
   const relistId = searchParams.get('relist');
   const editing = Boolean(id);
   const { client, user, entitlements, refreshEntitlements } = useApp();
+  usePageMeta({ title: 'List a card', noindex: true });
   const toast = useToast();
   const navigate = useNavigate();
 

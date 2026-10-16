@@ -666,3 +666,34 @@ Sell wizard; a moderator sees the request in Admin → Billing with the
 buyer's payment note, switches it on, and the queue empties; the buyer
 then reads "5 bought listings in hand"; a subscriber sees none of the
 gates.
+
+## A12 — Hardening and SEO
+
+plans-test.sql grows to 43 assertions (0020): the `p_user` helpers and
+the expiry sweep raise `permission denied` for an authenticated caller
+while `my_entitlements()` still answers; a free account cannot reserve
+a Pre-Grade call; a subscriber's window counts exactly the limit, then
+returns -1 and records nothing further; a 501-character note is
+refused and a 500-character one accepted. rls-test 22/0 and
+auction-test 27/0 still hold with 0020 applied, and apply-all
+(0001–0020) applies clean on Postgres 16.
+
+The share and sitemap functions are driven with a fake `fetch`
+(fixtures for PostgREST, the real built `index.html` for the shell —
+21 checks): titles and descriptions escape angle brackets and quotes,
+the cover is the `sort_order`-0 image, exactly one `<title>` and one
+`og:title` survive the rewrite, the module script stays so JS crawlers
+still get the app, a forged `Host` falls back to the canonical host
+while `*.vercel.app` previews use their own shell, malformed ids and
+handles return 404 without touching PostgREST, and the sitemap lists
+only active listings, valid handles and no private route.
+
+Browser (seo-smoke, 33 checks, run against a server that applies the
+production headers including the CSP): every public route sets its own
+title and canonical and is indexable; a listing's head names the card
+and price, says `og:type=product` and carries a Product/Offer JSON-LD;
+a profile carries a Person; nine private routes and the 404 say
+noindex; card photos have alt text; the lazily loaded Pre-Grade route
+renders; and no Content-Security-Policy violation is logged anywhere
+in the crawl. The paywall smoke (p1, 18 checks) runs under the same
+headers.

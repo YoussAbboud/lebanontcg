@@ -5,6 +5,7 @@ import { freeListingsLeft } from '../lib/types';
 import { formatPrice } from '../lib/format';
 import { useApp } from '../state/AppContext';
 import './plans.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 /** Why there's a wall at all. Said once, plainly, where people meet it. */
 export const OPERATIONS_LINE =
@@ -17,6 +18,12 @@ function periodLabel(plan: Plan): string {
 
 export function PlansPage() {
   const { client, user, entitlements, refreshEntitlements } = useApp();
+  usePageMeta({
+    title: 'Plans',
+    description:
+      'Three listings free, then $5 for five more or a subscription from $5/month for unlimited listings and the Pre-Grade estimator.',
+    canonicalPath: '/plans',
+  });
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [chosen, setChosen] = useState<Plan | null>(null);

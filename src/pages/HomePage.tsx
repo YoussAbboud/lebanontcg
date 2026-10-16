@@ -13,9 +13,16 @@ import { listingEyebrow } from '../components/ListingCard';
 import { Avatar } from '../components/Avatar';
 import { useDragScroll } from '../lib/useDragScroll';
 import './home.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 export function HomePage() {
   const { client, pendingReviewCount } = useApp();
+  usePageMeta({
+    title: '',
+    description:
+      "Lebanon's peer-to-peer trading card marketplace. List Pokémon, Magic, Yu-Gi-Oh! and One Piece cards, find deals, and arrange trades directly with other collectors.",
+    canonicalPath: '/',
+  });
   const navigate = useNavigate();
   const [total, setTotal] = useState<number | null>(null);
   const [fanItems, setFanItems] = useState<ListingWithSeller[]>([]);

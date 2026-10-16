@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
 import { HomePage } from './pages/HomePage';
@@ -15,10 +16,23 @@ import { SafeTradingPage } from './pages/SafeTradingPage';
 import { SignInPage } from './pages/SignInPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SetPasswordPage } from './pages/SetPasswordPage';
-import { PregradePage } from './pages/PregradePage';
 import { PlansPage } from './pages/PlansPage';
-import { AdminPage } from './pages/AdminPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+
+// The two heaviest routes (image pipeline, moderation console) load on
+// demand so the first paint of the marketplace isn't paying for them.
+const PregradePage = lazy(() =>
+  import('./pages/PregradePage').then((m) => ({ default: m.PregradePage })),
+);
+const AdminPage = lazy(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })));
+
+function RouteFallback() {
+  return (
+    <div style={{ padding: '40px var(--pad-x)' }}>
+      <div className="skeleton" style={{ height: 320 }} />
+    </div>
+  );
+}
 
 export default function App() {
   return (
@@ -42,9 +56,23 @@ export default function App() {
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/welcome" element={<OnboardingPage />} />
           <Route path="/set-password" element={<SetPasswordPage />} />
-          <Route path="/pregrade" element={<PregradePage />} />
+          <Route
+            path="/pregrade"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <PregradePage />
+              </Suspense>
+            }
+          />
           <Route path="/plans" element={<PlansPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={<RouteFallback />}>
+                <AdminPage />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

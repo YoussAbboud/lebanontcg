@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '../lib/usePageMeta';
 
 export function NotFoundPage() {
+  usePageMeta({ title: 'Page not found', noindex: true });
   return (
     <main style={{ padding: '72px var(--pad-x)', maxWidth: 480, margin: '0 auto' }}>
       <div className="empty-dashed">

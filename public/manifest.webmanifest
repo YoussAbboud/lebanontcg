@@ -1,0 +1,16 @@
+{
+  "name": "LebanonTCG — Trading Card Marketplace",
+  "short_name": "LebanonTCG",
+  "description": "Lebanon's peer-to-peer trading card marketplace. List cards, find deals, and arrange trades directly with other collectors.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#08090b",
+  "theme_color": "#08090b",
+  "lang": "en",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

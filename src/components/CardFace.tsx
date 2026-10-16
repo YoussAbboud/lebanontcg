@@ -25,7 +25,7 @@ export function CardFace({
       style={cover ? undefined : { background: faceBackground(listing.id) }}
     >
       {cover ? (
-        <img src={cover.url} alt="" loading="lazy" decoding="async" />
+        <img src={cover.url} alt={listing.title} loading="lazy" decoding="async" />
       ) : (
         <div
           className={`cardface-glyph ${onAcid ? 'cardface-glyph-acid' : ''}`}

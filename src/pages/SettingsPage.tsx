@@ -8,11 +8,13 @@ import { PasswordField } from '../components/PasswordField';
 import { checkPassword, confirmationError } from '../lib/password';
 import './settings.css';
 import { looksLikePickedImage } from '../lib/heic';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const AVATAR_SIZE = 512;
 
 export function SettingsPage() {
   const { client, user } = useApp();
+  usePageMeta({ title: 'Settings', noindex: true });
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');

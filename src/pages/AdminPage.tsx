@@ -11,6 +11,7 @@ import { AdminReviews } from '../components/admin/AdminReviews';
 import { AdminBilling } from '../components/admin/AdminBilling';
 import { AdminAudit } from '../components/admin/AdminAudit';
 import './admin.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -27,6 +28,7 @@ type TabKey = (typeof TABS)[number]['key'];
 
 export function AdminPage() {
   const { user, auth, client } = useApp();
+  usePageMeta({ title: 'Admin', noindex: true });
   // The tab lives in the URL so one moderator can send another straight
   // to what they were looking at.
   const [params, setParams] = useSearchParams();

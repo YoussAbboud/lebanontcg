@@ -8,12 +8,14 @@ import { thumbBackground, glyphOf } from '../lib/face';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import './mylistings.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const TABS = ['all', 'active', 'reserved', 'sold', 'removed'] as const;
 type Tab = (typeof TABS)[number];
 
 export function MyListingsPage() {
   const { client, user } = useApp();
+  usePageMeta({ title: 'My listings', noindex: true });
   const toast = useToast();
   const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);

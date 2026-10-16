@@ -5,6 +5,7 @@ import { useToast } from '../state/ToastContext';
 import { ImageCropper, type CroppedImage } from '../components/ImageCropper';
 import './onboarding.css';
 import { looksLikePickedImage } from '../lib/heic';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const USERNAME_RE = /^[a-z0-9_]{3,20}$/;
 const AVATAR_SIZE = 512;
@@ -16,6 +17,7 @@ const AVATAR_SIZE = 512;
  */
 export function OnboardingPage() {
   const { client, auth, user } = useApp();
+  usePageMeta({ title: 'Welcome', noindex: true });
   const navigate = useNavigate();
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);

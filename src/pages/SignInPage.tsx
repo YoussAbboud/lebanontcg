@@ -4,6 +4,7 @@ import { useApp } from '../state/AppContext';
 import { PasswordField } from '../components/PasswordField';
 import { checkPassword, confirmationError } from '../lib/password';
 import './signin.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
@@ -17,6 +18,7 @@ type Screen = 'form' | 'confirm-sent' | 'link-sent' | 'reset-sent';
  */
 export function SignInPage() {
   const { client, user } = useApp();
+  usePageMeta({ title: 'Sign in', noindex: true });
   const [mode, setMode] = useState<Mode>('signin');
   const [screen, setScreen] = useState<Screen>('form');
   const [email, setEmail] = useState('');

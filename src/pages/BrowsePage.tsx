@@ -6,6 +6,7 @@ import { DEFAULT_FILTER, filterFromSearchParams, filterToSearchParams } from '..
 import { useApp } from '../state/AppContext';
 import { ListingCard } from '../components/ListingCard';
 import './browse.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const PAGE_SIZE = 24;
 
@@ -27,6 +28,12 @@ type LoadState = 'loading' | 'ready' | 'error';
 
 export function BrowsePage() {
   const { client } = useApp();
+  usePageMeta({
+    title: 'Browse cards',
+    description:
+      'Every card listed in Lebanon right now — Pokémon, Magic, Yu-Gi-Oh! and One Piece, raw and graded, fixed price and live auctions.',
+    canonicalPath: '/browse',
+  });
   const [searchParams, setSearchParams] = useSearchParams();
   const filter = filterFromSearchParams(searchParams);
   const filterKey = filterToSearchParams(filter).toString();

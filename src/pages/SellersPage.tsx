@@ -7,9 +7,15 @@ import { memberSince } from '../lib/format';
 import { useApp } from '../state/AppContext';
 import { Avatar } from '../components/Avatar';
 import './sellers.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 export function SellersPage() {
   const { client } = useApp();
+  usePageMeta({
+    title: 'Sellers',
+    description: 'Collectors selling on LebanonTCG, with their ratings, reviews and live listings.',
+    canonicalPath: '/sellers',
+  });
   const navigate = useNavigate();
   const [sellers, setSellers] = useState<SellerStats[] | null>(null);
   const [error, setError] = useState(false);

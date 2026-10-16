@@ -7,6 +7,7 @@ import { useApp } from '../state/AppContext';
 import { Avatar } from '../components/Avatar';
 import { ReviewPrompt } from '../components/ReviewPrompt';
 import './reviews.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
 
@@ -17,6 +18,7 @@ const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(5 - n);
  */
 export function ReviewsPage() {
   const { client, user, refreshPendingReviews } = useApp();
+  usePageMeta({ title: 'Reviews', noindex: true });
   const navigate = useNavigate();
   const [pending, setPending] = useState<PendingReview[]>([]);
   const [received, setReceived] = useState<Review[]>([]);

@@ -3,16 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="LebanonTCG — Lebanon's peer-to-peer trading card marketplace. List cards, find deals, and arrange trades directly with other collectors." />
-    <meta name="theme-color" content="#08090b" />
-    <meta property="og:title" content="LebanonTCG" />
-    <meta property="og:description" content="Lebanon's peer-to-peer TCG marketplace. Browse, list, and negotiate trades through live chat." />
-    <meta property="og:type" content="website" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>LebanonTCG — Trading Card Marketplace</title>
+    <meta name="description" content="Lebanon's peer-to-peer trading card marketplace. List Pokémon, Magic, Yu-Gi-Oh! and One Piece cards, find deals, and arrange trades directly with other collectors." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.lebanontcg.com/" />
+    <meta name="theme-color" content="#08090b" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta property="og:site_name" content="LebanonTCG" />
+    <meta property="og:locale" content="en_LB" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.lebanontcg.com/" />
+    <meta property="og:title" content="LebanonTCG — Trading Card Marketplace" />
+    <meta property="og:description" content="Lebanon's peer-to-peer TCG marketplace. Browse, list, and negotiate trades through live chat. No checkout, no fees." />
+    <meta property="og:image" content="https://www.lebanontcg.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="LebanonTCG — We connect collectors" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="LebanonTCG — Trading Card Marketplace" />
+    <meta name="twitter:description" content="Lebanon's peer-to-peer TCG marketplace. Browse, list, and negotiate trades through live chat." />
+    <meta name="twitter:image" content="https://www.lebanontcg.com/og.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "LebanonTCG",
+        "url": "https://www.lebanontcg.com/",
+        "description": "Lebanon's peer-to-peer trading card marketplace.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://www.lebanontcg.com/browse?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main style="max-width: 560px; margin: 15vh auto; padding: 2rem; font-family: system-ui, sans-serif; color: #f2f4f7; background: #08090b">
+        <h1>LebanonTCG — Trading Card Marketplace</h1>
+        <p>Lebanon's peer-to-peer trading card marketplace. List Pokémon, Magic, Yu-Gi-Oh! and One Piece cards, find deals, and arrange trades directly with other collectors.</p>
+        <p>LebanonTCG needs JavaScript to run. <a href="/browse" style="color: #d6ff3f">Browse cards</a> · <a href="/sellers" style="color: #d6ff3f">Sellers</a> · <a href="/plans" style="color: #d6ff3f">Plans</a> · <a href="/safety" style="color: #d6ff3f">Trading safely</a></p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

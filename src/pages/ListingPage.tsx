@@ -13,6 +13,8 @@ import { PregradeListingPanel } from '../components/pregrade/PregradeListingPane
 import { ImageLightbox } from '../components/ImageLightbox';
 import { LiveBidPage } from './LiveBidPage';
 import './listing.css';
+import { usePageMeta } from '../lib/usePageMeta';
+import { listingMeta } from '../lib/pageMeta';
 
 type LoadState = 'loading' | 'ready' | 'error' | 'missing';
 
@@ -31,6 +33,7 @@ export function ListingPage() {
   // under the pointer stays put while the photo scales.
   const [hoverZoom, setHoverZoom] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
+  usePageMeta(listingMeta(listing, id));
   const faceRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {

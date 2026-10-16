@@ -1,0 +1,16 @@
+# LebanonTCG — public pages are for everyone; the rest is someone's inbox.
+User-agent: *
+Allow: /
+Disallow: /chat
+Disallow: /settings
+Disallow: /admin
+Disallow: /my-listings
+Disallow: /favorites
+Disallow: /sell
+Disallow: /signin
+Disallow: /welcome
+Disallow: /set-password
+Disallow: /reviews
+Disallow: /api/
+
+Sitemap: https://www.lebanontcg.com/sitemap.xml

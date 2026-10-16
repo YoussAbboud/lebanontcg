@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import './safety.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 const TIPS: Array<{ title: string; body: string }> = [
   {
@@ -37,6 +38,12 @@ const TIPS: Array<{ title: string; body: string }> = [
 ];
 
 export function SafeTradingPage() {
+  usePageMeta({
+    title: 'Trading safely',
+    description:
+      'How to trade cards safely in Lebanon: meeting in public, verifying condition, tracked shipping, checking slabs and keeping the deal in chat.',
+    canonicalPath: '/safety',
+  });
   return (
     <article className="safety">
       <header className="safety-hero">

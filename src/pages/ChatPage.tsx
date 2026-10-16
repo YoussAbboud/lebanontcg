@@ -11,6 +11,7 @@ import { useToast } from '../state/ToastContext';
 import { ReviewPrompt } from '../components/ReviewPrompt';
 import { ReportDialog } from '../components/ReportDialog';
 import './chat.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 let clientIdCounter = 0;
 const nextClientId = () => `cid-${Date.now()}-${++clientIdCounter}`;
@@ -20,6 +21,7 @@ type InboxFilter = 'all' | 'buying' | 'selling' | 'unread';
 export function ChatPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const { client, user, refreshUnread } = useApp();
+  usePageMeta({ title: 'Messages', noindex: true });
   const [conversations, setConversations] = useState<ConversationSummary[] | null>(null);
   const [listError, setListError] = useState(false);
   const [inboxFilter, setInboxFilter] = useState<InboxFilter>('all');

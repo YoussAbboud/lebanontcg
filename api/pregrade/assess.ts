@@ -5,7 +5,9 @@
 //
 // Env (Vercel project settings — never in the repo):
 //   ANTHROPIC_API_KEY   required for live assessments
-//   PREGRADE_DAILY_LIMIT  optional, default 10
+//   PREGRADE_DAILY_LIMIT  optional, default 10 — metered per user in the
+//                         database (consume_pregrade_call), not by saved
+//                         reports
 //
 // SELF-CONTAINED on purpose: this repo is "type": "module" and Vercel's
 // zero-config builder compiles only the entrypoint — a cross-tree import
@@ -219,45 +221,44 @@ async function verifyUser(authHeader: string | undefined): Promise<string | null
 }
 
 /**
- * Pre-Grade is a paid feature (migration 0019). The row-level policy
- * stops a free user's report from being SAVED, but the model call costs
- * money the moment it runs — so the entitlement is checked here, before
- * anything is spent. Checked as the caller, so can_use_pregrade() reads
- * their own row.
+ * Reserve one metered Pre-Grade call for the caller BEFORE anything is
+ * spent (migration 0020). The database answers as the signed-in user:
+ * a subscriber or admin inside their rolling 24-hour window gets a
+ * reservation; a free account is refused; a full window returns -1. A
+ * call that is abandoned before the report is saved still counts, which
+ * is the point — the model has already been paid for by then.
+ *
+ * Fails closed: a broken check must not hand out paid calls. The one
+ * exception is 404 — the function isn't deployed on this database yet,
+ * so there is no meter to enforce.
  */
-async function canUsePregrade(authHeader: string): Promise<{ ok: boolean; gated: boolean }> {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/can_use_pregrade`, {
+async function reservePregradeCall(
+  authHeader: string,
+  limit: number,
+): Promise<{ status: 'ok' | 'limit' | 'denied' | 'unmetered'; remaining: number; message?: string }> {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consume_pregrade_call`, {
     method: 'POST',
     headers: {
       apikey: SUPABASE_KEY,
       authorization: authHeader,
       'content-type': 'application/json',
     },
-    body: '{}',
+    body: JSON.stringify({ p_limit: limit }),
   });
-  // 404 = the function isn't deployed on this database yet, so there is
-  // no gate to enforce. Anything else that isn't an explicit `true`
-  // fails closed — a broken check must not hand out paid calls.
-  if (r.status === 404) return { ok: true, gated: false };
-  if (!r.ok) return { ok: false, gated: true };
-  const allowed = (await r.json()) === true;
-  return { ok: allowed, gated: true };
-}
-
-async function todayCount(authHeader: string): Promise<number | null> {
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const r = await fetch(
-    `${SUPABASE_URL}/rest/v1/pregrade_reports?select=id&created_at=gte.${today.toISOString()}`,
-    {
-      method: 'HEAD',
-      headers: { apikey: SUPABASE_KEY, authorization: authHeader, prefer: 'count=exact' },
-    },
-  );
-  if (!r.ok) return null; // table may not exist yet — don't block on it
-  const range = r.headers.get('content-range');
-  const total = range?.split('/')[1];
-  return total ? Number(total) : null;
+  if (r.status === 404) return { status: 'unmetered', remaining: limit };
+  if (!r.ok) {
+    let message = '';
+    try {
+      message = String(((await r.json()) as { message?: string }).message ?? '');
+    } catch {
+      /* no body */
+    }
+    return { status: 'denied', remaining: 0, message };
+  }
+  const remaining = Number(await r.json());
+  if (!Number.isFinite(remaining)) return { status: 'denied', remaining: 0 };
+  if (remaining < 0) return { status: 'limit', remaining: 0 };
+  return { status: 'ok', remaining };
 }
 
 function parseDataUrl(dataUrl: string): { mediaType: string; b64: string } | null {
@@ -345,18 +346,20 @@ async function handle(req: any, res: any) {
   const userId = await verifyUser(req.headers.authorization);
   if (!userId) return json(res, 401, { error: 'Sign in to run an assessment.' });
 
-  const entitled = await canUsePregrade(req.headers.authorization);
-  if (!entitled.ok) {
-    return json(res, 402, {
-      error:
-        'Pre-Grade is part of a subscription — it runs paid image analysis for each card. Subscribe to unlock it.',
+  const limit = Number(process.env.PREGRADE_DAILY_LIMIT || 10);
+  const reservation = await reservePregradeCall(req.headers.authorization, limit);
+  if (reservation.status === 'denied') {
+    const paywalled = /subscription/i.test(reservation.message ?? '');
+    return json(res, paywalled ? 402 : 403, {
+      error: paywalled
+        ? 'Pre-Grade is part of a subscription — it runs paid image analysis for each card. Subscribe to unlock it.'
+        : 'Pre-Grade is not available for this account right now.',
     });
   }
-
-  const limit = Number(process.env.PREGRADE_DAILY_LIMIT || 10);
-  const count = await todayCount(req.headers.authorization);
-  if (count !== null && count >= limit) {
-    return json(res, 429, { error: `Daily pre-grade limit reached (${limit}). Try again tomorrow.` });
+  if (reservation.status === 'limit') {
+    return json(res, 429, {
+      error: `Daily pre-grade limit reached (${limit}). Try again tomorrow.`,
+    });
   }
 
   const body = req.body as { images?: ImageIn[]; hasRake?: boolean } | undefined;

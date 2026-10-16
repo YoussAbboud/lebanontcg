@@ -5,6 +5,7 @@ import { useToast } from '../state/ToastContext';
 import { PasswordField } from '../components/PasswordField';
 import { checkPassword, confirmationError } from '../lib/password';
 import './signin.css';
+import { usePageMeta } from '../lib/usePageMeta';
 
 /**
  * One-time prompt for accounts created by magic link before passwords
@@ -13,6 +14,7 @@ import './signin.css';
  */
 export function SetPasswordPage() {
   const { client, auth, user } = useApp();
+  usePageMeta({ title: 'Set a password', noindex: true });
   const navigate = useNavigate();
   const toast = useToast();
   const [password, setPassword] = useState('');

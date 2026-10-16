@@ -115,7 +115,7 @@ export function PregradeListingPanel({
                     key={slot}
                     href={report.captures[slot]}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="mono-label pgpanel-capture-link"
                   >
                     {slot.replaceAll('_', ' ')}

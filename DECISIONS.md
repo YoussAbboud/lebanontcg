@@ -976,3 +976,67 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
   `period_end` on every read, so a late expiry sweep can never extend
   access; `expire_subscriptions()` (hourly, pg_cron when available) only
   keeps the status column and the one-active index honest.
+
+## A12 — Pre-launch hardening and SEO
+
+- **Headers are set at the edge** (vercel.json): HSTS with preload, a
+  Content-Security-Policy that allows scripts only from this origin
+  (`'wasm-unsafe-eval'` for the HEIC decoder, no inline scripts),
+  connections only to this origin and Supabase, images from this origin,
+  Supabase storage and `data:`/`blob:` (client-side compression and the
+  mock's procedural cards), `frame-ancestors 'none'`, and the usual
+  nosniff / referrer / permissions policies. Inline *styles* stay
+  allowed: React sets styles through the CSSOM, which CSP never blocks,
+  and the risk inline styles carry is not worth a policy the next
+  component breaks. The smokes run against a server that applies the
+  same headers, so a CSP regression fails a test, not production.
+- **Internal entitlement helpers are no longer RPC-callable** (0020).
+  Everything that takes a `p_user` and answers about someone's plan had
+  the default PostgREST grant, so anyone could ask whether a given
+  account subscribes or how many credits it holds. Execute is revoked
+  from `public`, `anon` and `authenticated`; security-definer callers
+  (the trigger, `my_entitlements()`, `can_use_pregrade()`) run as the
+  owner and are unaffected. `can_use_pregrade()` lost its parameter for
+  the same reason — the policy and the endpoint only ever ask about the
+  caller.
+- **Pre-Grade calls are metered in the database, not by saved reports.**
+  A report is written *after* the model call, so an abandoned wizard
+  cost money and counted nothing. `consume_pregrade_call()` reserves one
+  call in a rolling 24-hour window before anything is spent, locks the
+  user's row so two simultaneous calls cannot both squeeze in, and
+  returns -1 when the window is full. The endpoint fails closed on any
+  answer it does not understand; the one exception is a 404 (function
+  not deployed yet), which means there is no meter to enforce.
+- **Free-text columns got ceilings** — purchase notes, report detail,
+  admin reasons — added `not valid` so rows already in the table are
+  left alone and only new writes are checked.
+- **`.env` is no longer tracked.** It only ever held the publishable key,
+  which is public by design, but a tracked `.env` is one careless paste
+  away from holding the secret one. `.env.example` documents the shape.
+- **react-router-dom moved to 6.30.6** for the open-redirect fix. The
+  remaining audit findings are all in the build/test toolchain (vite,
+  vitest) and never ship to a browser; their fixes are major-version
+  bumps and are not worth taking the week before launch.
+- **One head per route.** `usePageMeta` writes the title, description,
+  canonical, robots, Open Graph and Twitter tags and a JSON-LD block for
+  whichever page is on screen — a Product with an Offer on a listing, a
+  Person on a profile. Private surfaces (chat, settings, admin, my
+  listings, watchlist, sell, sign-in, 404) say `noindex`; robots.txt
+  says the same so crawlers do not even fetch them.
+- **Link previews are served, not rendered.** WhatsApp, Facebook and
+  Telegram do not run JavaScript, so `/listing/:id` and `/u/:handle`
+  requests from those scrapers (matched by User-Agent in vercel.json)
+  go to `api/share.ts`, which serves the real app shell with the head
+  replaced. Googlebot is deliberately *not* on that list: it renders the
+  SPA and reads the head the client writes, and serving it a different
+  document would be cloaking. The function fetches the shell from the
+  request's own host — allow-listed to our domains and `*.vercel.app`,
+  so a forged Host header cannot turn it into a proxy — so preview
+  deployments decorate their own asset hashes.
+- **The sitemap is generated** (`/sitemap.xml` → `api/sitemap.ts`) from
+  the live catalogue as the anonymous role: static routes, every active
+  listing with its `updated_at`, every seller with a handle. Only what
+  the public can already read is ever listed.
+- **Admin and Pre-Grade routes load on demand.** They are the two
+  heaviest bundles (moderation console, image pipeline) and almost
+  nobody landing from a search needs either on first paint.

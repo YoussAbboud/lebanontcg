@@ -88,3 +88,14 @@
   font-weight: 500;
   font-size: var(--fs-18);
 }
+
+.signin-inline-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--acid);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

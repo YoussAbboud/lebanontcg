@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { readReturnTo } from '../lib/returnTo';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { ImageCropper, type CroppedImage } from '../components/ImageCropper';
@@ -92,7 +93,7 @@ export function OnboardingPage() {
         ...(avatarUrl ? { avatarUrl } : {}),
       });
       toast('Welcome to LebanonTCG');
-      navigate('/', { replace: true });
+      navigate(readReturnTo(), { replace: true });
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong — try again.';
       if (/taken/i.test(msg)) setUsernameError(msg);

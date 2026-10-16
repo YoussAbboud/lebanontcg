@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { readReturnTo } from '../lib/returnTo';
 import { useApp } from '../state/AppContext';
 import { PasswordField } from '../components/PasswordField';
 import { checkPassword, confirmationError } from '../lib/password';
@@ -30,8 +31,8 @@ export function SignInPage() {
   // Set when a sign-in fails in a way that suggests a pre-password account.
   const [offerLink, setOfferLink] = useState(false);
 
-  // Already signed in: password gate → onboarding → home.
-  if (user) return <Navigate to={user.username ? '/' : '/welcome'} replace />;
+  // Already signed in: password gate → onboarding → back where they were.
+  if (user) return <Navigate to={user.username ? readReturnTo() : '/welcome'} replace />;
 
   const validEmail = () => {
     if (!EMAIL_RE.test(email.trim())) {
@@ -245,7 +246,19 @@ export function SignInPage() {
           <div className="signin-alt">
             {offerLink && (
               <p className="signin-alt-note">
-                Signed up before passwords existed? Get a sign-in link and set one.
+                New here?{' '}
+                <button
+                  type="button"
+                  className="signin-inline-link"
+                  onClick={() => {
+                    setMode('signup');
+                    setError('');
+                    setOfferLink(false);
+                  }}
+                >
+                  Create an account
+                </button>
+                . Signed up before passwords existed? Get a sign-in link and set one.
               </p>
             )}
             <button

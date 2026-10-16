@@ -400,3 +400,12 @@
   .chat-cluster, .chat-bubble-offer { max-width: 86%; }
   .chat-thread-actions { margin-left: 0; }
 }
+
+/* Which card the thread is about — one glance, no opening it. */
+.chat-row-card {
+  color: var(--text-2);
+  font-size: var(--fs-11);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

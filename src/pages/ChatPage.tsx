@@ -152,6 +152,7 @@ export function ChatPage() {
                     <span className="mono-value chat-row-time">{relativeTime(c.lastMessageAt)}</span>
                     {c.unreadCount > 0 && <span className="chat-row-unread" aria-label={`${c.unreadCount} unread`} />}
                   </div>
+                  <div className="mono-label chat-row-card">{c.listing.title}</div>
                   <div className="chat-row-snippet">{preview}</div>
                 </div>
               </Link>

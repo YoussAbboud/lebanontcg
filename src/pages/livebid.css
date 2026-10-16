@@ -104,3 +104,6 @@
 }
 .livebid-seller-name { font-weight: 600; }
 .livebid-desc { margin: 0; white-space: pre-wrap; }
+
+/* The countdown never wraps into "4d / 3h" on a phone. */
+.livebid-clock { white-space: nowrap; }

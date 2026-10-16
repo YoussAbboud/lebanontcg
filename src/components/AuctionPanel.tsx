@@ -242,6 +242,15 @@ export function AuctionPanel({
         <p className="aucpanel-sellernote mono-label">
           Your auction — bids land here live. End early or cancel above.
         </p>
+      ) : !user ? (
+        <div className="aucpanel-bidrow aucpanel-bidrow-signin">
+          <Link to="/signin" className="btn-acid">
+            Sign in to bid
+          </Link>
+          <span className="mono-label aucpanel-signin">
+            Next bid from {formatPrice(minNext, auction.currency)}
+          </span>
+        </div>
       ) : (
         <div className="aucpanel-bidrow">
           <input
@@ -260,15 +269,12 @@ export function AuctionPanel({
           <button
             type="button"
             className="btn-acid"
-            disabled={busy || !user}
+            disabled={busy}
             onClick={() => void place()}
           >
             {busy ? 'Bidding…' : 'Place bid'}
           </button>
         </div>
-      )}
-      {!over && !isSeller && !user && (
-        <p className="mono-label aucpanel-signin">Sign in to bid.</p>
       )}
       {rejected && (
         <p className="field-error aucpanel-rejected" role="alert">

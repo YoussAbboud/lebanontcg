@@ -73,3 +73,5 @@
   font: inherit;
 }
 .aucpanel-noshow-undo:hover { color: var(--text-1); }
+
+.aucpanel-bidrow-signin { align-items: center; flex-wrap: wrap; }

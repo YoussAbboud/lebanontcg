@@ -1040,3 +1040,41 @@ outline" and a false "camera's at an angle". Three causes, three fixes:
 - **Admin and Pre-Grade routes load on demand.** They are the two
   heaviest bundles (moderation console, image pipeline) and almost
   nobody landing from a search needs either on first paint.
+
+## A13 — Journey review
+
+A walk through every journey at 1280px and 390px, as a visitor, a fresh
+account, a free seller and a subscriber, turned up these:
+
+- **Signing in sent everyone to the home page**, however they got there.
+  Someone who tapped "Message seller" or "Place bid", signed in, and
+  landed on the home page had to find the card again. The shell now
+  remembers the last ordinary location (sessionStorage, so it survives
+  a magic-link round trip) and the sign-in and onboarding pages send
+  people back there. Auth pages are never remembered as destinations,
+  only same-origin paths are honoured, and the read is pure — a
+  "consume" during render double-fired under StrictMode and returned
+  the home page every time.
+- **On a phone the Browse page opened on a screen of filters** with no
+  card in sight. The rail now collapses behind one "Filters" button
+  below 760px, with a count of the facets already narrowing the grid,
+  so a filtered-down empty result is never a mystery. Desktop is
+  unchanged.
+- **A visitor on a live auction saw a disabled "Place bid" and a
+  whisper saying "Sign in to bid."** The button is now the sign-in
+  itself, with the next bid amount beside it — the one thing they
+  wanted to know before deciding.
+- **Chat rows named the person but not the card.** With more than two
+  conversations open that's a guessing game; each row now carries the
+  listing title under the handle.
+- An unknown email on the sign-in tab offered only the legacy
+  magic-link route; it now also offers the switch to Create an
+  account. The error stays generic — Supabase does not reveal whether
+  an address exists, and neither should we.
+- Nits: the live-auction countdown and the footer links no longer wrap
+  mid-phrase on phones.
+
+Looked at and left alone: the "blank cards" in long screenshots are
+`content-visibility: auto` doing its job offscreen, not a rendering
+bug; the dev user switcher and the mock-mode notes exist only in
+`VITE_MOCK=1` builds.

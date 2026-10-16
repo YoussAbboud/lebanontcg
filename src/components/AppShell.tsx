@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../state/AppContext';
+import { rememberReturnTo } from '../lib/returnTo';
 import { UserSwitcher } from './UserSwitcher';
 import { Avatar } from './Avatar';
 import flagGif from '../assets/flag.gif';
@@ -24,6 +25,11 @@ export function AppShell() {
         ? '/welcome'
         : null;
   const redirectTo = gate && gate !== location.pathname ? gate : null;
+
+  // Remember where people were, so signing in brings them back here.
+  useEffect(() => {
+    rememberReturnTo(location.pathname, location.search);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     if (!menuOpen) return;

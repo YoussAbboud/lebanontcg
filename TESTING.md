@@ -697,3 +697,15 @@ noindex; card photos have alt text; the lazily loaded Pre-Grade route
 renders; and no Content-Security-Policy violation is logged anywhere
 in the crawl. The paywall smoke (p1, 18 checks) runs under the same
 headers.
+
+## A13 — Journey smoke
+
+ux-smoke (13 checks, under the production headers): a signed-out
+visitor on a live auction sees a sign-in button carrying the next bid
+amount and no disabled control; an unknown email is offered the
+create-account switch and the switch works; signing in returns to the
+exact auction path and the real bid controls appear; chat rows name
+the card; desktop keeps the rail open with no toggle; a phone hides the
+rail, shows the first card on the first screen, counts the facet from
+the URL on the toggle, and opens the rail on tap. seo-smoke 31/31 and
+the paywall smoke 18/18 still pass on the same build; 197 unit tests.

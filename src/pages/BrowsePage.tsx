@@ -45,6 +45,8 @@ export function BrowsePage() {
   const [state, setState] = useState<LoadState>('loading');
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchDraft, setSearchDraft] = useState(filter.q);
+  // Phones start with the cards, not the controls.
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const requestSeq = useRef(0);
   const debounceRef = useRef<number | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -104,9 +106,38 @@ export function BrowsePage() {
     apply({ ...DEFAULT_FILTER, sort: filter.sort });
   };
 
+  // How many facets are narrowing the grid — the phone toggle shows it,
+  // so a filtered-down empty result is never a mystery.
+  const activeFacets =
+    (filter.q ? 1 : 0) +
+    ((filter.saleType ?? 'all') !== 'all' ? 1 : 0) +
+    filter.games.length +
+    filter.conditions.length +
+    filter.finishes.length +
+    (filter.priceMin !== null ? 1 : 0) +
+    (filter.priceMax !== null ? 1 : 0) +
+    (filter.language ? 1 : 0) +
+    (filter.gradedOnly ? 1 : 0) +
+    (filter.sellerHasReviews ? 1 : 0) +
+    (filter.hasPregrade ? 1 : 0);
+
   return (
     <div className="browse">
-      <aside aria-label="Filters" className="panel browse-side">
+      <button
+        type="button"
+        className="btn-outline browse-filters-toggle"
+        aria-expanded={filtersOpen}
+        aria-controls="browse-filters"
+        onClick={() => setFiltersOpen((v) => !v)}
+      >
+        {filtersOpen ? 'Hide filters' : 'Filters'}
+        {activeFacets > 0 && <span className="browse-filters-count">{activeFacets}</span>}
+      </button>
+      <aside
+        id="browse-filters"
+        aria-label="Filters"
+        className={`panel browse-side${filtersOpen ? ' is-open' : ''}`}
+      >
         <div className="browse-side-head">
           <div className="mono-label">Filters</div>
           <button type="button" className="btn-ghost-mono browse-clear" onClick={clearFilters}>

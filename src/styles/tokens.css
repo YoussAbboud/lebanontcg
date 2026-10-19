@@ -39,6 +39,7 @@
   --glyph-on-acid: rgba(8, 9, 11, 0.2);
 
   /* ---- Accent ----------------------------------------------------------- */
+  --online: #34d399;            /* presence: on the site right now */
   --acid: #d6ff3f;
   --acid-press: #9bc400;
   --acid-tint: rgba(214, 255, 63, 0.06);

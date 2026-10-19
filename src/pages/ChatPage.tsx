@@ -20,7 +20,7 @@ type InboxFilter = 'all' | 'buying' | 'selling' | 'unread';
 
 export function ChatPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
-  const { client, user, refreshUnread } = useApp();
+  const { client, user, refreshUnread, onlineIds } = useApp();
   usePageMeta({ title: 'Messages', noindex: true });
   const [conversations, setConversations] = useState<ConversationSummary[] | null>(null);
   const [listError, setListError] = useState(false);
@@ -148,6 +148,9 @@ export function ChatPage() {
                   <div className="chat-row-top">
                     <span className="chat-row-handle">
                       @{c.otherParty.username ?? c.otherParty.displayName}
+                      {onlineIds.has(c.otherParty.id) && (
+                        <span className="online-dot" role="img" aria-label="Online" title="Online now" />
+                      )}
                     </span>
                     <span className="mono-value chat-row-time">{relativeTime(c.lastMessageAt)}</span>
                     {c.unreadCount > 0 && <span className="chat-row-unread" aria-label={`${c.unreadCount} unread`} />}

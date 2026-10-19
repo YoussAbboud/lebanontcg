@@ -2281,6 +2281,32 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     }));
   }
 
+  // ---- Presence -------------------------------------------------------------
+
+  subscribeToOnline(cb: (onlineUserIds: Set<string>) => void): Unsubscribe {
+    // One site-wide presence channel. A signed-in tab tracks itself under
+    // its user id, so several tabs collapse into one key; visitors only
+    // read the state.
+    const uid = this.auth.user?.id ?? null;
+    const channel = this.sb.channel('presence-online', {
+      config: { presence: { key: uid ?? `anon-${Math.random().toString(36).slice(2, 10)}` } },
+    });
+    const emit = () =>
+      cb(new Set(Object.keys(channel.presenceState()).filter((k) => !k.startsWith('anon-'))));
+    channel
+      .on('presence', { event: 'sync' }, emit)
+      .on('presence', { event: 'join' }, emit)
+      .on('presence', { event: 'leave' }, emit)
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED' && uid) {
+          void channel.track({ at: Date.now() });
+        }
+      });
+    return () => {
+      void this.sb.removeChannel(channel);
+    };
+  }
+
   // ---- Notifications -----------------------------------------------------
 
   async listNotifications(limit: number): Promise<AppNotification[]> {

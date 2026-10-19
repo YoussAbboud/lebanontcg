@@ -79,6 +79,10 @@ import { capturesMatchCover } from '../pregrade/phashGate';
 
 const AUTH_KEY = 'lebanontcg.mock.currentUser';
 
+/** Demo accounts that always read as online in mock mode, so the
+    presence dot can be seen without a second tab. */
+const MOCK_ALWAYS_ONLINE = ['u-maya', 'u-lina'];
+
 /** Listings a new account gets before paying — free_listing_allowance() in 0019. */
 const FREE_LISTING_ALLOWANCE = 3;
 
@@ -173,6 +177,9 @@ export class MockClient implements MarketplaceClient {
   private auctionListeners = new Map<string, Set<(ev: AuctionEvent) => void>>();
   /** auctionId -> tabId -> last heartbeat (ms). Transient, never snapshotted. */
   private presence = new Map<string, Map<string, number>>();
+  /** userId -> tabId -> last heartbeat (ms): who is on the site. */
+  private online = new Map<string, Map<string, number>>();
+  private onlineListeners = new Set<(ids: Set<string>) => void>();
   private presenceListeners = new Map<string, Set<(count: number) => void>>();
   private presenceTimers = new Map<string, number>();
 
@@ -360,6 +367,14 @@ export class MockClient implements MarketplaceClient {
       }
       case 'credential': {
         this.credentials.set(patch.email, { userId: patch.userId, password: patch.password });
+        break;
+      }
+      case 'online': {
+        const tabs = this.online.get(patch.userId) ?? new Map<string, number>();
+        if (patch.leaving) tabs.delete(patch.tabId);
+        else tabs.set(patch.tabId, patch.at);
+        this.online.set(patch.userId, tabs);
+        this.emitOnline();
         break;
       }
       case 'presence': {
@@ -2150,6 +2165,54 @@ export class MockClient implements MarketplaceClient {
     };
   }
 
+  // ---- Presence: who is on the site ----------------------------------------
+  // Same shape as the auction rooms: heartbeats per tab, pruned after
+  // 12 seconds of silence. A few seeded accounts are always "online" so
+  // the dot is demonstrable in a single tab.
+
+  private onlineIds(): Set<string> {
+    const now = Date.now();
+    const ids = new Set<string>(MOCK_ALWAYS_ONLINE);
+    for (const [userId, tabs] of this.online) {
+      for (const [tabId, at] of tabs) {
+        if (now - at > 12_000) tabs.delete(tabId);
+      }
+      if (tabs.size > 0) ids.add(userId);
+    }
+    return ids;
+  }
+
+  private emitOnline(): void {
+    const ids = this.onlineIds();
+    for (const cb of this.onlineListeners) cb(new Set(ids));
+  }
+
+  subscribeToOnline(cb: (onlineUserIds: Set<string>) => void): Unsubscribe {
+    this.onlineListeners.add(cb);
+    const me = this.auth.user?.id ?? null;
+    const beat = () => {
+      if (!me) return;
+      const tabs = this.online.get(me) ?? new Map<string, number>();
+      tabs.set(tabId, Date.now());
+      this.online.set(me, tabs);
+      this.broadcast({ type: 'online', userId: me, tabId, at: Date.now() });
+    };
+    beat();
+    cb(this.onlineIds());
+    const heartbeat = window.setInterval(() => {
+      beat();
+      this.emitOnline();
+    }, 4_000);
+    return () => {
+      this.onlineListeners.delete(cb);
+      window.clearInterval(heartbeat);
+      if (me) {
+        this.online.get(me)?.delete(tabId);
+        this.broadcast({ type: 'online', userId: me, tabId, at: Date.now(), leaving: true });
+      }
+    };
+  }
+
   // ---- Notifications -----------------------------------------------------
   // Mirrors 0024: the same events, the same copy, the same dedupe — one
   // live row per thread or auction — and nobody hears about their own
@@ -3086,6 +3149,7 @@ type RemotePatch =
   | { type: 'auction'; auction: Auction }
   | { type: 'bid'; bid: Bid }
   | { type: 'presence'; auctionId: string; tabId: string; at: number; leaving?: boolean }
+  | { type: 'online'; userId: string; tabId: string; at: number; leaving?: boolean }
   | { type: 'noshow-retract'; auctionId: string; reporterId: string }
   | { type: 'notification'; notification: StoredNotification }
   | { type: 'notifications-read'; userId: string; ids: string[] | null; at: string }

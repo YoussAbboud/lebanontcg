@@ -17,7 +17,7 @@ import { profileMeta } from '../lib/pageMeta';
 
 export function ProfilePage() {
   const { username } = useParams<{ username: string }>();
-  const { client, user } = useApp();
+  const { client, user, onlineIds } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -214,7 +214,12 @@ export function ProfilePage() {
         )}
         <div className="profile-id">
           <div className="profile-id-top">
-            <h1 className="display profile-handle">@{profile.username}</h1>
+            <h1 className="display profile-handle">
+              @{profile.username}
+              {onlineIds.has(profile.id) && (
+                <span className="online-dot online-dot-lg" role="img" aria-label="Online" title="Online now" />
+              )}
+            </h1>
             {stats && (
               <span className={`rank-chip ${stats.rank === 1 ? 'rank-top' : ''}`}>
                 Rank {String(stats.rank).padStart(2, '0')}

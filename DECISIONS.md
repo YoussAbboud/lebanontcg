@@ -1174,3 +1174,19 @@ bug; the dev user switcher and the mock-mode notes exist only in
   a URL.
 - The mock mirrors every trigger, including dedupe and the actor
   exclusion, so the bell is demonstrable offline.
+
+## A19 — Online presence
+
+- A green dot after a person's handle means they are on the site right
+  now — in the Messages list next to the other party, and on their
+  profile. It answers the question a buyer actually has before writing:
+  "will I get a reply soon?"
+- One site-wide Realtime presence channel; a signed-in tab tracks
+  itself under its user id (several tabs collapse into one key) and
+  visitors only read the state. No table, no polling, nothing to clean
+  up — presence state lives in the socket and disappears with it.
+- The dot is green (`--online`), not acid: acid marks actions in this
+  system, and this is a state.
+- In mock mode two seeded accounts (Maya, Lina) always read as online so
+  the dot can be seen in a single tab; a second tab's sign-in shows up
+  through the same BroadcastChannel heartbeats the auction rooms use.

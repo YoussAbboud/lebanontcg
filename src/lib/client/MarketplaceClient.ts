@@ -258,6 +258,14 @@ export interface MarketplaceClient {
   /** "It came back as a…" — the calibration loop's raw material. */
   recordPregradeOutcome(reportId: string, actualGrade: number, certNumber?: string): Promise<void>;
 
+  // ---- Presence -------------------------------------------------------------
+  /**
+   * Who is on the site right now. Every signed-in tab announces itself;
+   * the callback gets the current set of online user ids whenever it
+   * changes. Signed-out tabs observe without announcing.
+   */
+  subscribeToOnline(cb: (onlineUserIds: Set<string>) => void): Unsubscribe;
+
   // ---- Notifications ------------------------------------------------------
   /** Newest first. Unread and read alike — the bell shows both. */
   listNotifications(limit: number): Promise<AppNotification[]>;

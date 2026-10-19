@@ -35,6 +35,8 @@ interface AppContextValue {
   /** Unread notifications (the bell's badge). */
   unreadNotifications: number;
   refreshNotifications(): void;
+  /** User ids on the site right now (site-wide presence). */
+  onlineIds: Set<string>;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -46,6 +48,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
   const [pendingReviewCount, setPendingReviewCount] = useState(0);
   const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
   const userId = auth.user?.id ?? null;
   const unreadTimer = useRef<number | null>(null);
 
@@ -122,6 +125,13 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
     return client.subscribeToNotifications(refreshNotifications);
   }, [client, userId, refreshNotifications]);
 
+  // Presence follows the sign-in: a signed-in tab announces itself,
+  // a signed-out one only watches.
+  useEffect(() => {
+    if (auth.loading) return;
+    return client.subscribeToOnline(setOnlineIds);
+  }, [client, userId, auth.loading]);
+
   const refreshPendingReviews = useCallback(() => {
     if (!userId) return;
     client
@@ -180,6 +190,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       refreshEntitlements,
       unreadNotifications,
       refreshNotifications,
+      onlineIds,
     }),
     [
       client,
@@ -194,6 +205,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       refreshEntitlements,
       unreadNotifications,
       refreshNotifications,
+      onlineIds,
     ],
   );
 

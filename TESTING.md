@@ -763,3 +763,11 @@ mirrors it: recipient-only delivery, dedupe per thread, a fresh row
 after reading, offers and their answers, one bid row per auction plus
 an outbid notice, partial mark-read, and that a tab's listener is not
 fired by its own user's actions.
+
+## A19 — Presence
+
+presence.test.ts (2 tests): a visitor sees the always-online demo
+accounts and nobody else; a signed-in tab announces itself and is gone
+once it unsubscribes. The journey smoke gains a check that Karim's
+Messages list shows the dot beside @mayapulls and that a profile of an
+online account carries it too.

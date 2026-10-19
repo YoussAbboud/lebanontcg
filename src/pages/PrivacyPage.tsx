@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { LegalPage, type LegalSection } from '../components/legal/LegalPage';
-import { CONTACT_EMAIL, OPERATOR_NAME } from '../lib/site';
+import { OPERATOR_NAME } from '../lib/site';
 import { usePageMeta } from '../lib/usePageMeta';
 
 const SECTIONS: LegalSection[] = [
@@ -11,8 +11,9 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           {OPERATOR_NAME} runs lebanontcg.com and decides how the personal data described here is
-          used. For anything about your data, write to{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. This policy covers the website
+          used. For anything about your data, open{' '}
+          <Link to="/support">a support ticket</Link> — a moderator reads every one. This policy
+          covers the website
           and the account you hold on it; it does not cover what another collector does with
           information you share with them in a deal.
         </p>
@@ -188,13 +189,13 @@ const SECTIONS: LegalSection[] = [
       <>
         <ul>
           <li><strong>See and correct</strong> your profile in Settings at any time.</li>
-          <li><strong>Get a copy</strong> of the data we hold about you — write to us and we will send it.</li>
-          <li><strong>Delete</strong> your account — write to us from the email on the account.</li>
-          <li><strong>Object</strong> to a use of your data you think is wrong, or ask us to restrict it, by writing to us.</li>
+          <li><strong>Get a copy</strong> of the data we hold about you.</li>
+          <li><strong>Delete</strong> your account.</li>
+          <li><strong>Object</strong> to a use of your data you think is wrong, or ask us to restrict it.</li>
         </ul>
         <p>
-          Requests go to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. We answer within
-          thirty days. If you are unhappy with our answer you may complain to the data protection
+          For any of these, open <Link to="/support">a support ticket</Link> under “My data”. We
+          answer within thirty days. If you are unhappy with our answer you may complain to the data protection
           authority where you live.
         </p>
       </>
@@ -234,8 +235,8 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           When this policy changes in substance we update the effective date at the top and tell
-          you in the app or by email first. Questions, requests and complaints:{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          you in the app or by email first. Questions, requests and complaints: open{' '}
+          <Link to="/support">a support ticket</Link>.
         </p>
       </>
     ),

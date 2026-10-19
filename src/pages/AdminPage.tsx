@@ -9,6 +9,7 @@ import { AdminListings } from '../components/admin/AdminListings';
 import { AdminAuctions } from '../components/admin/AdminAuctions';
 import { AdminReviews } from '../components/admin/AdminReviews';
 import { AdminBilling } from '../components/admin/AdminBilling';
+import { AdminSupport } from '../components/admin/AdminSupport';
 import { AdminAudit } from '../components/admin/AdminAudit';
 import './admin.css';
 import { usePageMeta } from '../lib/usePageMeta';
@@ -21,6 +22,7 @@ const TABS = [
   { key: 'auctions', label: 'Auctions' },
   { key: 'reviews', label: 'Reviews' },
   { key: 'billing', label: 'Billing' },
+  { key: 'support', label: 'Support' },
   { key: 'audit', label: 'Audit log' },
 ] as const;
 
@@ -122,6 +124,7 @@ export function AdminPage() {
       {tab === 'auctions' && <AdminAuctions onChanged={refresh} />}
       {tab === 'reviews' && <AdminReviews onChanged={refresh} />}
       {tab === 'billing' && <AdminBilling onChanged={refresh} />}
+      {tab === 'support' && <AdminSupport onChanged={refresh} />}
       {tab === 'audit' && <AdminAudit />}
     </main>
   );

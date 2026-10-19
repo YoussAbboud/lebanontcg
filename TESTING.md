@@ -795,3 +795,25 @@ titles and are indexable; Terms render at least ten sections with a
 matching contents list, cross-link to Privacy, and state the
 three-warning rule; Privacy names the processors; the footer links to
 both; the sign-up form carries the consent line.
+
+## A22 — Support tickets
+
+`supabase/dev/support-test.sql` (21 assertions, green): not signed in
+and a short subject are refused; a suspended user opens a ticket and
+its first message is not staff; a direct insert is refused; the
+moderator is notified and the queue lists the ticket as owed a reply;
+a stranger sees no ticket, cannot reply, and cannot read the queue; a
+staff reply is flagged, flips the ticket to waiting on the user and
+notifies them; the user replies and reads the whole thread but cannot
+close; closing records the moderator, writes a system line, notifies
+with the note, refuses a second close and the user's further replies;
+a staff reply reopens. All other suites unchanged; apply-all
+0001–0026 clean.
+
+`src/lib/client/support.test.ts` (3 tests) mirrors it in the mock. The
+support smoke (18 checks) runs the whole thing through the UI: footer
+link, sign-in gate, opening, the moderator's notification and queue,
+staff reply labelled Support, the user's notification opening the
+ticket, the reply, the close with a note moving it to Closed, the
+closed thread refusing replies, and a suspended account opening an
+appeal with Sell pointing at support.

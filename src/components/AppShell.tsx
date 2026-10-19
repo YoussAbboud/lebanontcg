@@ -249,6 +249,7 @@ export function AppShell() {
         <div className="mono-label">We connect collectors. You handle the deal.</div>
         <nav className="shell-footer-nav" aria-label="Footer">
           <Link to="/safety">Trading safely</Link>
+          <Link to="/support">Support</Link>
           <Link to="/terms">Terms</Link>
           <Link to="/privacy">Privacy</Link>
           <Link to="/reviews">Reviews</Link>

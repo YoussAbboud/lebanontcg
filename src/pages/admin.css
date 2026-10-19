@@ -442,3 +442,10 @@
 .awarning-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .awarning-reason { font-size: var(--fs-13); }
 .awarning-meta { color: var(--muted); }
+
+/* Support queue (0026): list on the left, thread on the right. */
+.asupport-layout { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1.6fr); gap: 16px; align-items: start; }
+.asupport-thread { padding: 16px; }
+.asupport-person { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.trow.is-selected { border-color: var(--acid); background: var(--acid-tint); }
+@media (max-width: 900px) { .asupport-layout { grid-template-columns: 1fr; } }

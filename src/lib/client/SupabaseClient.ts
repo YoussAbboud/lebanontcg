@@ -41,6 +41,10 @@ import type {
   ReportTargetType,
   Review,
   SellerStats,
+  SupportCategory,
+  SupportMessage,
+  SupportStatus,
+  SupportTicket,
   UserWarning,
 } from '../types';
 import type {
@@ -198,6 +202,27 @@ interface AdminActionRow {
   target_id: string;
   reason: string;
   detail: unknown;
+  created_at: string;
+}
+
+interface TicketRow {
+  id: string;
+  user_id: string;
+  subject: string;
+  category: SupportCategory;
+  status: SupportStatus;
+  last_from: 'user' | 'staff';
+  created_at: string;
+  updated_at: string;
+  message_count?: number | string;
+}
+
+interface SupportMessageRow {
+  id: string;
+  ticket_id: string;
+  sender_id: string | null;
+  from_staff: boolean;
+  body: string;
   created_at: string;
 }
 
@@ -2294,6 +2319,116 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       detail: (row.detail ?? {}) as Record<string, unknown>,
       createdAt: row.created_at,
     }));
+  }
+
+  // ---- Support --------------------------------------------------------------
+
+  private async mapTickets(rows: TicketRow[], withUsers: boolean): Promise<SupportTicket[]> {
+    const people = withUsers
+      ? await this.profilesByIds([...new Set(rows.map((r) => r.user_id))])
+      : new Map<string, Profile>();
+    return rows.map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      user: withUsers ? (people.get(r.user_id) ?? null) : null,
+      subject: r.subject,
+      category: r.category,
+      status: r.status,
+      lastFrom: r.last_from,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+      messageCount: Number(r.message_count ?? 0),
+    }));
+  }
+
+  async listMyTickets(): Promise<SupportTicket[]> {
+    if (!this.auth.user) return [];
+    const { data, error } = await this.sb
+      .from('support_tickets')
+      .select('*')
+      .eq('user_id', this.auth.user.id)
+      .order('updated_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return this.mapTickets((data ?? []) as TicketRow[], false);
+  }
+
+  async openSupportTicket(subject: string, category: SupportCategory, body: string): Promise<string> {
+    const { data, error } = await this.sb.rpc('open_support_ticket', {
+      p_subject: subject,
+      p_category: category,
+      p_body: body,
+    });
+    if (error) throw this.adminError(error);
+    return String(data);
+  }
+
+  async getSupportTicket(
+    id: string,
+  ): Promise<{ ticket: SupportTicket; messages: SupportMessage[] } | null> {
+    const [{ data: t, error }, { data: ms, error: e2 }] = await Promise.all([
+      this.sb.from('support_tickets').select('*').eq('id', id).maybeSingle(),
+      this.sb
+        .from('support_messages')
+        .select('*')
+        .eq('ticket_id', id)
+        .order('created_at', { ascending: true }),
+    ]);
+    if (error) throw new Error(error.message);
+    if (e2) throw new Error(e2.message);
+    if (!t) return null;
+    const rows = (ms ?? []) as SupportMessageRow[];
+    const [ticket] = await this.mapTickets([t as TicketRow], true);
+    const people = await this.profilesByIds([
+      ...new Set(rows.map((m) => m.sender_id).filter((x): x is string => Boolean(x))),
+    ]);
+    return {
+      ticket: { ...ticket, messageCount: rows.length },
+      messages: rows.map((m) => ({
+        id: m.id,
+        ticketId: m.ticket_id,
+        sender: m.sender_id ? (people.get(m.sender_id) ?? null) : null,
+        fromStaff: m.from_staff,
+        body: m.body,
+        createdAt: m.created_at,
+      })),
+    };
+  }
+
+  async replySupportTicket(id: string, body: string): Promise<void> {
+    const { error } = await this.sb.rpc('reply_support_ticket', { p_ticket: id, p_body: body });
+    if (error) throw this.adminError(error);
+  }
+
+  subscribeToSupportTicket(id: string, cb: () => void): Unsubscribe {
+    const channel = this.sb
+      .channel(`support-${id}-${Math.random().toString(36).slice(2)}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'support_messages', filter: `ticket_id=eq.${id}` },
+        () => cb(),
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'support_tickets', filter: `id=eq.${id}` },
+        () => cb(),
+      )
+      .subscribe();
+    return () => void this.sb.removeChannel(channel);
+  }
+
+  async adminListSupportTickets(status: SupportStatus): Promise<SupportTicket[]> {
+    const { data, error } = await this.sb.rpc('admin_list_support_tickets', { p_status: status });
+    if (error) throw this.adminError(error);
+    const rows = (data ?? []) as Array<TicketRow & { username: string | null; display_name: string }>;
+    return this.mapTickets(rows, true);
+  }
+
+  async adminCloseSupportTicket(id: string, note: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_close_support_ticket', {
+      p_ticket: id,
+      p_note: note,
+    });
+    if (error) throw this.adminError(error);
   }
 
   // ---- Warnings -------------------------------------------------------------

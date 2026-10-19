@@ -33,6 +33,10 @@ import type {
   PurchaseStatus,
   Review,
   SellerStats,
+  SupportCategory,
+  SupportMessage,
+  SupportStatus,
+  SupportTicket,
   UserWarning,
 } from '../types';
 import type {
@@ -259,6 +263,16 @@ export interface MarketplaceClient {
   /** "It came back as a…" — the calibration loop's raw material. */
   recordPregradeOutcome(reportId: string, actualGrade: number, certNumber?: string): Promise<void>;
 
+  // ---- Support --------------------------------------------------------------
+  /** My tickets, most recently active first. Works for suspended accounts. */
+  listMyTickets(): Promise<SupportTicket[]>;
+  openSupportTicket(subject: string, category: SupportCategory, body: string): Promise<string>;
+  /** One ticket with its thread — mine, or any when I'm a moderator. */
+  getSupportTicket(id: string): Promise<{ ticket: SupportTicket; messages: SupportMessage[] } | null>;
+  replySupportTicket(id: string, body: string): Promise<void>;
+  /** Fires when the thread changes; the page refetches. */
+  subscribeToSupportTicket(id: string, cb: () => void): Unsubscribe;
+
   // ---- Warnings -------------------------------------------------------------
   /** The signed-in user's own warnings, newest first, revoked ones included. */
   listMyWarnings(): Promise<UserWarning[]>;
@@ -349,6 +363,10 @@ export interface MarketplaceClient {
   adminWarnUser(userId: string, reason: string, listingId?: string | null): Promise<number>;
   /** Withdraw a warning. Does not lift a suspension — that is separate. */
   adminRevokeWarning(warningId: string, reason: string): Promise<void>;
+  /** The support queue: tickets waiting on staff first. */
+  adminListSupportTickets(status: SupportStatus): Promise<SupportTicket[]>;
+  /** Close a ticket, optionally with a last word. A later staff reply reopens it. */
+  adminCloseSupportTicket(id: string, note: string): Promise<void>;
   /** The billing queue. 'pending' is the one that needs a human. */
   adminListPurchases(status: PurchaseStatus): Promise<PurchaseRequest[]>;
   /** Approve (payment landed) or reject a request. Approving a

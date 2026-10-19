@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { LegalPage, type LegalSection } from '../components/legal/LegalPage';
-import { CONTACT_EMAIL, OPERATOR_NAME } from '../lib/site';
+import { OPERATOR_NAME } from '../lib/site';
 import { WARNING_LIMIT } from '../lib/types';
 import { usePageMeta } from '../lib/usePageMeta';
 
@@ -199,9 +199,9 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           You can see your warnings and standing in Settings. To appeal a warning or a suspension,
-          write to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> from the email on your
-          account and say which decision you are appealing and why. Every moderation action is
-          logged.
+          open <Link to="/support">a support ticket</Link> — a suspended account can still do that
+          — and say which decision you are appealing and why. A moderator replies in the ticket.
+          Every moderation action is logged.
         </p>
       </>
     ),
@@ -254,8 +254,8 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          You can stop using the Service at any time and ask us to delete your account by writing
-          to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. We may suspend or close an
+          You can stop using the Service at any time and ask us to delete your account by opening{' '}
+          <Link to="/support">a support ticket</Link>. We may suspend or close an
           account that breaks these Terms, or that we reasonably believe is being used for fraud or
           to harm others. Sections that by their nature should survive — your content licence for
           moderation records, liability, governing law — survive the end of the agreement.
@@ -288,8 +288,7 @@ const SECTIONS: LegalSection[] = [
           mandatory consumer protection you enjoy where you live.
         </p>
         <p>
-          Questions about these Terms:{' '}
-          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          Questions about these Terms: open <Link to="/support">a support ticket</Link>.
         </p>
       </>
     ),

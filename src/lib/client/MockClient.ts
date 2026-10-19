@@ -38,6 +38,10 @@ import type {
   ReportTargetType,
   Review,
   SellerStats,
+  SupportCategory,
+  SupportMessage,
+  SupportStatus,
+  SupportTicket,
   UserWarning,
 } from '../types';
 import { WARNING_LIMIT } from '../types';
@@ -70,6 +74,26 @@ import {
   seedSubscriptions,
 } from '../../mock/seed';
 import type { MockCreditPack, MockSubscription, StoredNotification } from '../../mock/seed';
+
+/** Support rows as the mock keeps them (mirror of 0026). */
+interface StoredTicket {
+  id: string;
+  userId: string;
+  subject: string;
+  category: SupportCategory;
+  status: SupportStatus;
+  lastFrom: 'user' | 'staff';
+  createdAt: string;
+  updatedAt: string;
+}
+interface StoredSupportMessage {
+  id: string;
+  ticketId: string;
+  senderId: string | null;
+  fromStaff: boolean;
+  body: string;
+  createdAt: string;
+}
 
 /** A warning row as the mock keeps it (mirror of 0025). */
 interface StoredWarning {
@@ -165,6 +189,31 @@ export class MockClient implements MarketplaceClient {
 
   // ---- Warnings (mirrors migration 0025) ------------------------------------
   private warnings: StoredWarning[] = [];
+
+  // ---- Support (mirrors migration 0026) -------------------------------------
+  private tickets: StoredTicket[] = [
+    {
+      id: 't-1',
+      userId: 'u-lina',
+      subject: 'Photo upload fails on iPhone',
+      category: 'bug',
+      status: 'open',
+      lastFrom: 'user',
+      createdAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+      updatedAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+    },
+  ];
+  private supportMessages: StoredSupportMessage[] = [
+    {
+      id: 'sm-1',
+      ticketId: 't-1',
+      senderId: 'u-lina',
+      fromStaff: false,
+      body: 'HEIC photos from my iPhone 15 fail to upload — the cropper never opens.',
+      createdAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+    },
+  ];
+  private ticketListeners = new Map<string, Set<() => void>>();
 
   // ---- Notifications (mirrors migration 0024) ------------------------------
   private notifications: StoredNotification[] = structuredClone(seedNotifications);
@@ -270,6 +319,8 @@ export class MockClient implements MarketplaceClient {
         this.adminActions = s.adminActions ?? this.adminActions;
         this.notifications = s.notifications ?? this.notifications;
         this.warnings = s.warnings ?? this.warnings;
+        this.tickets = s.tickets ?? this.tickets;
+        this.supportMessages = s.supportMessages ?? this.supportMessages;
         this.subscriptions = s.subscriptions ?? this.subscriptions;
         this.creditPacks = s.creditPacks ?? this.creditPacks;
         this.listingCounts = new Map(s.listingCounts ?? [...this.listingCounts.entries()]);
@@ -412,6 +463,17 @@ export class MockClient implements MarketplaceClient {
         this.emitAuction(patch.auction.id, { type: 'updated', auction: structuredClone(patch.auction) });
         break;
       }
+      case 'ticket': {
+        const t = patch.ticket;
+        const ti = this.tickets.findIndex((x) => x.id === t.id);
+        if (ti >= 0) this.tickets[ti] = t;
+        else this.tickets.unshift(t);
+        if (patch.message && !this.supportMessages.some((m) => m.id === patch.message!.id)) {
+          this.supportMessages.push(patch.message);
+        }
+        this.emitTicket(t.id);
+        break;
+      }
       case 'warning': {
         const w = patch.warning;
         const idx = this.warnings.findIndex((x) => x.id === w.id);
@@ -499,6 +561,8 @@ export class MockClient implements MarketplaceClient {
       adminActions: this.adminActions,
       notifications: this.notifications,
       warnings: this.warnings,
+      tickets: this.tickets,
+      supportMessages: this.supportMessages,
       subscriptions: this.subscriptions,
       creditPacks: this.creditPacks,
       listingCounts: [...this.listingCounts.entries()],
@@ -2193,6 +2257,140 @@ export class MockClient implements MarketplaceClient {
     };
   }
 
+  // ---- Support --------------------------------------------------------------
+  // Mirrors 0026: anyone signed in opens a ticket (suspended included),
+  // only the owner and moderators see it, closing is a moderator's call,
+  // and a staff reply reopens.
+
+  private emitTicket(id: string): void {
+    for (const cb of this.ticketListeners.get(id) ?? []) cb();
+  }
+
+  private notifyStaff(title: string, body: string, href: string, actorId: string, dedupe: string): void {
+    for (const p of this.profiles) {
+      if (p.isAdmin) this.notify(p.id, 'support', title, body, href, actorId, dedupe);
+    }
+  }
+
+  private toTicket(t: StoredTicket, withUser: boolean): SupportTicket {
+    return {
+      id: t.id,
+      userId: t.userId,
+      user: withUser ? this.profileById(t.userId) : null,
+      subject: t.subject,
+      category: t.category,
+      status: t.status,
+      lastFrom: t.lastFrom,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+      messageCount: this.supportMessages.filter((m) => m.ticketId === t.id).length,
+    };
+  }
+
+  private pushTicketMessage(t: StoredTicket, senderId: string | null, fromStaff: boolean, body: string): StoredSupportMessage {
+    const m: StoredSupportMessage = {
+      id: nextId('sm'),
+      ticketId: t.id,
+      senderId,
+      fromStaff,
+      body,
+      createdAt: new Date().toISOString(),
+    };
+    this.supportMessages.push(m);
+    t.updatedAt = m.createdAt;
+    this.broadcast({ type: 'ticket', ticket: structuredClone(t), message: structuredClone(m) });
+    this.emitTicket(t.id);
+    return m;
+  }
+
+  async listMyTickets(): Promise<SupportTicket[]> {
+    if (!this.auth.user) return [];
+    await sleep(netDelay());
+    const me = this.auth.user.id;
+    return this.tickets
+      .filter((t) => t.userId === me)
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      .map((t) => this.toTicket(t, false));
+  }
+
+  async openSupportTicket(subject: string, category: SupportCategory, body: string): Promise<string> {
+    const me = this.me(); // not meActive(): a suspended account can appeal
+    await sleep(netDelay());
+    if (subject.trim().length < 3) throw new Error('Give the ticket a subject.');
+    if (body.trim().length < 1) throw new Error('Say what you need.');
+    if (this.tickets.filter((t) => t.userId === me.id && t.status === 'open').length >= 5) {
+      throw new Error('You already have five open tickets — add to one of those.');
+    }
+    const now = new Date().toISOString();
+    const t: StoredTicket = {
+      id: nextId('t'),
+      userId: me.id,
+      subject: subject.trim(),
+      category,
+      status: 'open',
+      lastFrom: 'user',
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.tickets.unshift(t);
+    this.pushTicketMessage(t, me.id, false, body.trim());
+    this.notifyStaff(
+      `New ticket — ${t.subject}`,
+      `${this.handleOf(me)}: ${body.trim().slice(0, 140)}`,
+      `/admin?tab=support&ticket=${t.id}`,
+      me.id,
+      `ticket:${t.id}`,
+    );
+    return t.id;
+  }
+
+  async getSupportTicket(id: string): Promise<{ ticket: SupportTicket; messages: SupportMessage[] } | null> {
+    const me = this.me();
+    await sleep(netDelay());
+    const t = this.tickets.find((x) => x.id === id);
+    if (!t) return null;
+    if (t.userId !== me.id && !this.isAdminId(me.id)) return null;
+    return {
+      ticket: this.toTicket(t, true),
+      messages: this.supportMessages
+        .filter((m) => m.ticketId === id)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+        .map((m) => ({
+          id: m.id,
+          ticketId: m.ticketId,
+          sender: m.senderId ? this.profileById(m.senderId) : null,
+          fromStaff: m.fromStaff,
+          body: m.body,
+          createdAt: m.createdAt,
+        })),
+    };
+  }
+
+  async replySupportTicket(id: string, body: string): Promise<void> {
+    const me = this.me();
+    await sleep(netDelay());
+    if (body.trim().length < 1) throw new Error('Write something first.');
+    const t = this.tickets.find((x) => x.id === id);
+    if (!t) throw new Error('Ticket not found.');
+    const staff = this.isAdminId(me.id);
+    if (t.userId !== me.id && !staff) throw new Error('Not your ticket.');
+    if (t.status === 'closed' && !staff) throw new Error('This ticket is closed — open a new one.');
+    if (staff && t.status === 'closed') t.status = 'open';
+    t.lastFrom = staff ? 'staff' : 'user';
+    this.pushTicketMessage(t, me.id, staff, body.trim());
+    if (staff) {
+      this.notify(t.userId, 'support', `Support replied — ${t.subject}`, body.trim().slice(0, 140), `/support/${t.id}`, me.id, `ticket:${t.id}`);
+    } else {
+      this.notifyStaff(`Reply on ticket — ${t.subject}`, `${this.handleOf(me)}: ${body.trim().slice(0, 140)}`, `/admin?tab=support&ticket=${t.id}`, me.id, `ticket:${t.id}`);
+    }
+  }
+
+  subscribeToSupportTicket(id: string, cb: () => void): Unsubscribe {
+    if (!this.ticketListeners.has(id)) this.ticketListeners.set(id, new Set());
+    this.ticketListeners.get(id)!.add(cb);
+    return () => this.ticketListeners.get(id)?.delete(cb);
+  }
+
   // ---- Warnings -------------------------------------------------------------
   // Mirrors 0025: a reason is required, the third active warning suspends
   // through adminSetSuspended, revoking never unsuspends.
@@ -2970,6 +3168,40 @@ export class MockClient implements MarketplaceClient {
     }));
   }
 
+  // ---- Admin: support -----------------------------------------------------
+
+  async adminListSupportTickets(status: SupportStatus): Promise<SupportTicket[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    return this.tickets
+      .filter((t) => t.status === status)
+      .sort((a, b) => {
+        const owe = Number(b.lastFrom === 'user') - Number(a.lastFrom === 'user');
+        return owe || b.updatedAt.localeCompare(a.updatedAt);
+      })
+      .map((t) => this.toTicket(t, true));
+  }
+
+  async adminCloseSupportTicket(id: string, note: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    const t = this.tickets.find((x) => x.id === id && x.status === 'open');
+    if (!t) throw new Error('No open ticket with that id.');
+    if (note.trim()) this.pushTicketMessage(t, actor.id, true, note.trim());
+    t.status = 'closed';
+    t.lastFrom = 'staff';
+    this.pushTicketMessage(t, null, true, `Ticket closed by ${this.handleOf(actor)}.`);
+    this.notify(
+      t.userId,
+      'support',
+      `Ticket closed — ${t.subject}`,
+      note.trim() || 'If anything is still unresolved, open a new ticket.',
+      `/support/${t.id}`,
+      actor.id,
+      `ticket:${t.id}`,
+    );
+  }
+
   // ---- Admin: warnings ----------------------------------------------------
 
   async adminListWarnings(userId: string): Promise<UserWarning[]> {
@@ -3258,6 +3490,8 @@ interface SnapshotState {
   adminActions?: StoredAdminAction[];
   notifications?: StoredNotification[];
   warnings?: StoredWarning[];
+  tickets?: StoredTicket[];
+  supportMessages?: StoredSupportMessage[];
   subscriptions?: MockSubscription[];
   creditPacks?: MockCreditPack[];
   listingCounts?: Array<[string, number]>;
@@ -3289,6 +3523,7 @@ type RemotePatch =
   | { type: 'noshow-retract'; auctionId: string; reporterId: string }
   | { type: 'notification'; notification: StoredNotification }
   | { type: 'warning'; warning: StoredWarning }
+  | { type: 'ticket'; ticket: StoredTicket; message?: StoredSupportMessage }
   | { type: 'notifications-read'; userId: string; ids: string[] | null; at: string }
   | {
       type: 'billing';

@@ -375,11 +375,11 @@ export function SellPage() {
           <h3>Your account is suspended</h3>
           <p>
             {user.suspendedReason ? `${user.suspendedReason}. ` : ''}
-            You can still read and message about existing deals, but not list cards. A moderator
-            can lift it — your warnings and standing are in Settings.
+            You can still read and message about existing deals, but not list cards. Your
+            warnings and standing are in Settings; to appeal, open a support ticket.
           </p>
-          <Link to="/settings" className="btn-outline">
-            Account standing
+          <Link to="/support" className="btn-acid">
+            Open a support ticket
           </Link>
         </div>
       </main>

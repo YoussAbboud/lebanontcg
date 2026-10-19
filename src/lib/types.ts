@@ -555,7 +555,8 @@ export type NotificationKind =
   | 'auction'
   | 'review'
   | 'watch'
-  | 'moderation';
+  | 'moderation'
+  | 'support';
 
 /** One thing a person should hear about. Written by the database (or
     the mock) when the event happens — never by the client. */
@@ -570,4 +571,64 @@ export interface AppNotification {
   actor: Profile | null;
   createdAt: string;
   readAt: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Support tickets (0026)
+// ---------------------------------------------------------------------------
+
+export type SupportCategory =
+  | 'account'
+  | 'listing'
+  | 'deal'
+  | 'payment'
+  | 'appeal'
+  | 'privacy'
+  | 'bug'
+  | 'other';
+export type SupportStatus = 'open' | 'closed';
+
+export const SUPPORT_CATEGORIES: SupportCategory[] = [
+  'account',
+  'listing',
+  'deal',
+  'payment',
+  'appeal',
+  'privacy',
+  'bug',
+  'other',
+];
+export const SUPPORT_CATEGORY_LABELS: Record<SupportCategory, string> = {
+  account: 'My account',
+  listing: 'A listing',
+  deal: 'A deal with someone',
+  payment: 'Plans and payment',
+  appeal: 'Appeal a warning or suspension',
+  privacy: 'My data (access, export, deletion)',
+  bug: 'Something is broken',
+  other: 'Something else',
+};
+
+export interface SupportTicket {
+  id: string;
+  userId: string;
+  /** The opener — present on admin views; null when it's your own list. */
+  user: Profile | null;
+  subject: string;
+  category: SupportCategory;
+  status: SupportStatus;
+  /** 'user' means staff owe a reply. */
+  lastFrom: 'user' | 'staff';
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+}
+
+export interface SupportMessage {
+  id: string;
+  ticketId: string;
+  sender: Profile | null;
+  fromStaff: boolean;
+  body: string;
+  createdAt: string;
 }

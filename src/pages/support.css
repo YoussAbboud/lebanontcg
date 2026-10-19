@@ -1,0 +1,9 @@
+.support { max-width: 760px; margin: 0 auto; padding: 32px var(--pad-x) 72px; display: flex; flex-direction: column; gap: 18px; }
+.support-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.support-title { font-size: var(--fs-28); }
+.support-lede { color: var(--text-2); font-size: var(--fs-13); margin-top: 8px; max-width: 520px; line-height: 1.55; }
+.support-group { color: var(--muted); margin-bottom: 8px; }
+.support-field { display: flex; flex-direction: column; gap: 6px; }
+.support-actions { display: flex; gap: 10px; }
+.support-back { color: var(--muted); }
+.support-thread { padding: 18px; }

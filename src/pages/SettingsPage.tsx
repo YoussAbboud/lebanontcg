@@ -261,8 +261,8 @@ export function SettingsPage() {
           <p className="settings-standing-bad">
             <strong>Your account is suspended.</strong>
             {user.suspendedReason ? ` ${user.suspendedReason}.` : ''} You can still read and message
-            about existing deals, but not list, bid or start new conversations. A moderator can lift
-            it.
+            about existing deals, but not list, bid or start new conversations. To appeal,{' '}
+            <Link to="/support">open a support ticket</Link>.
           </p>
         ) : (
           <p className="settings-muted">

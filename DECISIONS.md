@@ -1242,3 +1242,27 @@ bug; the dev user switcher and the mock-mode notes exist only in
   sign-up form and the Sell notice. The documents were drafted by an
   engineer, not a lawyer, and should be read by one before the site
   takes money.
+
+## A22 — Support tickets instead of a mailbox
+
+- The contact email is gone. Appeals, data requests, deal disputes and
+  bugs go through tickets: a person opens one with a subject, a
+  category and a first message; moderators see the queue in Admin →
+  Support with the ones owed a reply first; the thread is a chat; a
+  moderator closes it with an optional last word. Every step notifies
+  the other side through the bell (one live row per ticket).
+- **A suspended account can open a ticket.** The functions are
+  security-definer and deliberately skip the suspension check that
+  every other write has — that is who most needs to appeal. The Sell
+  page's suspension notice and Settings → Account standing both point
+  at support.
+- A closed ticket takes no user replies (open a new one), but a staff
+  reply reopens it — moderators should not have to fight the state
+  machine to follow up. Five open tickets per account is the only rate
+  limit.
+- The queue is a security-definer function; tickets and messages have
+  select-only RLS for the owner and moderators and no write policies,
+  so nothing can be opened, replied to or closed except through the
+  functions.
+- The Terms and the Privacy Policy now promise a ticket, not an email,
+  as the channel for appeals and rights requests.

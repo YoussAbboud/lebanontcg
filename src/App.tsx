@@ -20,6 +20,7 @@ import { PlansPage } from './pages/PlansPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { SupportPage } from './pages/SupportPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 // The two heaviest routes (image pipeline, moderation console) load on
@@ -71,6 +72,8 @@ export default function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/support/:id" element={<SupportPage />} />
           <Route
             path="/admin"
             element={

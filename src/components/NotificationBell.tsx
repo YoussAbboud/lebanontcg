@@ -15,6 +15,7 @@ const KIND_GLYPH: Record<NotificationKind, string> = {
   review: '★',
   watch: '☆',
   moderation: '⚑',
+  support: '?',
 };
 
 /**

@@ -2304,6 +2304,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     if (error) throw new Error(error.message);
     const raw = (data ?? {}) as Record<string, unknown>;
     return {
+      // A database without 0021 still enforces the cap, so the UI must too.
+      quotaEnabled: raw.quota_enabled === undefined ? true : Boolean(raw.quota_enabled),
       isAdmin: Boolean(raw.is_admin),
       subscribed: Boolean(raw.subscribed),
       tier: (raw.tier as Entitlements['tier']) ?? null,

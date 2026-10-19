@@ -5,3 +5,11 @@ export const SITE_NAME = 'LebanonTCG';
 export const DEFAULT_DESCRIPTION =
   "Lebanon's peer-to-peer trading card marketplace. List Pokémon, Magic, Yu-Gi-Oh! and One Piece cards, find deals, and arrange trades directly with other collectors.";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og.png`;
+
+/**
+ * Whether the listing cap is on, as far as a signed-out visitor can
+ * tell. The database is the authority (listing_quota_enabled(), read
+ * through my_entitlements() once signed in); this only decides which
+ * copy the Plans page shows before that. Flip together with the SQL.
+ */
+export const LISTING_QUOTA_DEFAULT = false;

@@ -709,3 +709,15 @@ the card; desktop keeps the rail open with no toggle; a phone hides the
 rail, shows the first card on the first screen, counts the facet from
 the URL on the toggle, and opens the rail on tap. seo-smoke 31/31 and
 the paywall smoke 18/18 still pass on the same build; 197 unit tests.
+
+## A14 — Quota switch
+
+plans-test.sql forces `listing_quota_enabled()` to true at the top so
+the 43 paywall assertions and the 0020 lockdown still run, then flips
+it to false for five more: a used-up free seller can create listings
+again, four go through, no credit is spent, the tally still grows, and
+Pre-Grade is untouched (48/0). plans.test.ts constructs the mock with
+`{ listingQuota: true }` for the rules and adds one default-mode test
+(15 tests). The paywall smoke now expects two plan cards, the
+free-period copy, and "unlimited for everyone" in a free seller's
+standing (18/18).

@@ -1078,3 +1078,28 @@ Looked at and left alone: the "blank cards" in long screenshots are
 `content-visibility: auto` doing its job offscreen, not a rendering
 bug; the dev user switcher and the mock-mode notes exist only in
 `VITE_MOCK=1` builds.
+
+## A14 — The listing cap is switched off until payments exist
+
+- Nothing is sold through the app yet, so walling sellers at three
+  listings would only cost us listings. Everyone lists without limit
+  for now. The whole quota machinery from 0019 — trigger, counters,
+  plans, credit packs — stays in place behind one function,
+  `listing_quota_enabled()`, which 0021 sets to false. Turning it back
+  on is a one-line migration; nothing else moves.
+- Listings created meanwhile **are still counted**, so the day the
+  switch flips we decide on purpose — grandfather early sellers, grant
+  credits, or let the allowance stand — rather than by accident.
+- `my_entitlements()` now reports `quota_enabled`, and the UI follows
+  it: no wall or counters on Sell, no listing packs for sale on Plans,
+  and the plans copy says plainly that listings are free while we set
+  up payments. A database that has not yet applied 0021 still enforces
+  the cap, so a missing key is read as "on" — the UI never promises
+  more than the database allows.
+- **Pre-Grade is not part of the switch.** Each estimate spends a
+  vision-model call, so it stays with subscriptions and admins; the
+  subscription's first-listed benefit is now the estimator, with
+  "unlimited listings, even after the free period" second.
+- The test suites exercise the paywall rules with the switch forced on
+  and then prove the default: a used-up free seller lists four more
+  cards, spends no credit, and the tally keeps counting.

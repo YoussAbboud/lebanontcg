@@ -13,6 +13,12 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000b4', 'boss@plan.dev'),
   ('00000000-0000-0000-0000-0000000000b5', 'lapsed@plan.dev');
 
+-- The quota ships switched OFF (0021). Flip it on for this suite so the
+-- paywall rules are exercised; the last section turns it off again and
+-- proves a free seller past the allowance still lists.
+create or replace function public.listing_quota_enabled()
+returns boolean language sql immutable as $$ select true $$;
+
 -- b4 is the admin. Privileged profile fields announce themselves.
 set app.admin_action = '1';
 update public.profiles set is_admin = true
@@ -259,4 +265,26 @@ select public.request_purchase('credits_5', repeat('x', 501));
 select 'P53 (expect error above: note too long)';
 select 'P54 a reasonable note is fine: '
   || (public.request_purchase('credits_5', repeat('x', 500)) is not null)::text;
+reset role;
+
+-- ---------------------------------------------------------------------------
+-- 0021: with the switch off there is no wall, and the tally still runs
+-- ---------------------------------------------------------------------------
+create or replace function public.listing_quota_enabled()
+returns boolean language sql immutable as $$ select false $$;
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000b1';
+select 'P55 switched off, the wall is gone for a used-up free seller: '
+  || ((public.my_entitlements()->>'can_create_listing')::boolean
+      and (public.my_entitlements()->>'quota_enabled') = 'false')::text;
+insert into public.listings (seller_id, title, game, condition, price)
+  select auth.uid(), 'Free period ' || n, 'pokemon', 'NM', 10 from generate_series(1, 4) n;
+select 'P56 four more listings go through without credits: ' || (count(*) = 4)::text
+  from public.listings where seller_id = auth.uid() and title like 'Free period %';
+select 'P57 no credit was spent on them: '
+  || ((public.my_entitlements()->>'credits_remaining')::int = 5)::text;
+select 'P58 the tally kept counting for the day the switch flips back: '
+  || ((public.my_entitlements()->>'listings_created')::int >= 13)::text;
+select 'P59 Pre-Grade is untouched by the switch: '
+  || (public.can_use_pregrade() = false)::text;
 reset role;

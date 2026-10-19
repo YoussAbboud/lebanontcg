@@ -83,8 +83,26 @@ const newSeller = async () => {
 
 beforeEach(async () => {
   session.clear();
-  client = new MockClient();
+  // The cap ships switched off (0021); these are the rules for when it's on.
+  client = new MockClient({ listingQuota: true });
   await authSettled(client);
+});
+
+describe('the switch (0021)', () => {
+  it('ships with the listing cap off: no wall, nothing spent, tally still runs', async () => {
+    session.clear();
+    client = new MockClient();
+    await authSettled(client);
+    await newSeller();
+    for (const n of [1, 2, 3, 4, 5]) await client.createListing(listingInput(`Card ${n}`), []);
+    const e = await client.getEntitlements();
+    expect(e?.quotaEnabled).toBe(false);
+    expect(e?.canCreateListing).toBe(true);
+    expect(e?.listingsCreated).toBe(5);
+    expect(e?.creditsRemaining).toBe(0);
+    // Pre-Grade is not part of the switch.
+    expect(e?.canUsePregrade).toBe(false);
+  });
 });
 
 describe('the free listing allowance', () => {

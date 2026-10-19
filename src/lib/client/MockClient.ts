@@ -79,6 +79,12 @@ const AUTH_KEY = 'lebanontcg.mock.currentUser';
 /** Listings a new account gets before paying — free_listing_allowance() in 0019. */
 const FREE_LISTING_ALLOWANCE = 3;
 
+export interface MockClientOptions {
+  /** The listing cap. Ships OFF (0021) until payments exist; tests of
+      the paywall rules turn it on. */
+  listingQuota?: boolean;
+}
+
 /** No-show grace period — mirrors migration 0016. */
 const NO_SHOW_GRACE_MS = 24 * 60 * 60 * 1000;
 
@@ -167,7 +173,11 @@ export class MockClient implements MarketplaceClient {
   private channel: BroadcastChannel | null = null;
   private snapshotApplied = false;
 
-  constructor() {
+  /** Mirrors listing_quota_enabled() — false until payments exist. */
+  private readonly listingQuota: boolean;
+
+  constructor(options: MockClientOptions = {}) {
+    this.listingQuota = options.listingQuota ?? false;
     const seeded = buildSeedConversations();
     this.conversations = seeded.conversations;
     this.messages = seeded.messages;
@@ -2032,6 +2042,7 @@ export class MockClient implements MarketplaceClient {
 
   private canCreateListingFor(userId: string): boolean {
     return (
+      !this.listingQuota ||
       this.isAdminId(userId) ||
       Boolean(this.activeSubscription(userId)) ||
       this.listingsCreated(userId) < FREE_LISTING_ALLOWANCE ||
@@ -2046,7 +2057,7 @@ export class MockClient implements MarketplaceClient {
   /** The quota, charged where listings are born. Throws the same message
       the database trigger raises. */
   private chargeListingQuota(userId: string): void {
-    if (this.isAdminId(userId) || this.activeSubscription(userId)) {
+    if (!this.listingQuota || this.isAdminId(userId) || this.activeSubscription(userId)) {
       this.listingCounts.set(userId, this.listingsCreated(userId) + 1);
       return;
     }
@@ -2085,6 +2096,7 @@ export class MockClient implements MarketplaceClient {
     const id = this.auth.user.id;
     const sub = this.activeSubscription(id);
     return {
+      quotaEnabled: this.listingQuota,
       isAdmin: this.isAdminId(id),
       subscribed: Boolean(sub),
       tier: sub?.tier ?? null,

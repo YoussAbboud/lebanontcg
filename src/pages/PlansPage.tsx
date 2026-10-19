@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Plan } from '../lib/types';
 import { freeListingsLeft } from '../lib/types';
+import { LISTING_QUOTA_DEFAULT } from '../lib/site';
 import { formatPrice } from '../lib/format';
 import { useApp } from '../state/AppContext';
 import './plans.css';
@@ -48,6 +49,10 @@ export function PlansPage() {
   }, [client]);
 
   const left = freeListingsLeft(entitlements);
+  // The cap is a database switch (0021). Signed-out visitors have no
+  // entitlements row to read it from, so the page follows the build-time
+  // default until one is known.
+  const quotaOff = entitlements ? !entitlements.quotaEnabled : !LISTING_QUOTA_DEFAULT;
   const subs = plans.filter((p) => p.kind === 'subscription');
   const packs = plans.filter((p) => p.kind === 'credits');
 
@@ -80,8 +85,8 @@ export function PlansPage() {
       <ul className="plans-features">
         {plan.kind === 'subscription' ? (
           <>
-            <li>Unlimited listings</li>
             <li>Pre-Grade estimator included</li>
+            <li>{quotaOff ? 'Unlimited listings, even after the free period' : 'Unlimited listings'}</li>
             <li>Cancel any time — it just lapses</li>
           </>
         ) : (
@@ -110,10 +115,20 @@ export function PlansPage() {
   return (
     <main className="plans">
       <header className="plans-hero">
-        <h1 className="display plans-title">
-          Three listings free, <span className="hero-grad-text">then your call</span>
-        </h1>
-        <p className="plans-lede">{OPERATIONS_LINE}</p>
+        {quotaOff ? (
+          <h1 className="display plans-title">
+            Listings are free <span className="hero-grad-text">for now</span>
+          </h1>
+        ) : (
+          <h1 className="display plans-title">
+            Three listings free, <span className="hero-grad-text">then your call</span>
+          </h1>
+        )}
+        <p className="plans-lede">
+          {quotaOff
+            ? "While we set up payments, every collector lists as much as they like. Subscribing unlocks the Pre-Grade estimator today — and keeps your listings unlimited once the free period ends."
+            : OPERATIONS_LINE}
+        </p>
       </header>
 
       {user && entitlements && (
@@ -129,6 +144,11 @@ export function PlansPage() {
               {entitlements.periodEnd
                 ? ` Renews ${new Date(entitlements.periodEnd).toLocaleDateString()}.`
                 : ''}
+            </p>
+          ) : quotaOff ? (
+            <p>
+              <strong>Listings are unlimited for everyone right now.</strong> Pre-Grade needs a
+              subscription.
             </p>
           ) : (
             <p>
@@ -158,8 +178,12 @@ export function PlansPage() {
         <>
           <h2 className="plans-group-title">Subscriptions</h2>
           <ul className="plans-grid">{subs.map(planCard)}</ul>
-          <h2 className="plans-group-title">Or just buy a few listings</h2>
-          <ul className="plans-grid">{packs.map(planCard)}</ul>
+          {!quotaOff && (
+            <>
+              <h2 className="plans-group-title">Or just buy a few listings</h2>
+              <ul className="plans-grid">{packs.map(planCard)}</ul>
+            </>
+          )}
         </>
       )}
 

@@ -478,6 +478,9 @@ export interface Plan {
 /** Where an account stands against the paywall. One round trip
     (my_entitlements() in Postgres); the UI never recomputes it. */
 export interface Entitlements {
+  /** False while the listing cap is switched off (0021) — then nothing
+      below about allowances or credits gates anything. */
+  quotaEnabled: boolean;
   isAdmin: boolean;
   subscribed: boolean;
   tier: PlanTier | null;
@@ -496,7 +499,7 @@ export interface Entitlements {
 /** Free listings left before the wall. Subscribers and admins get null —
     there is no number to show them. */
 export function freeListingsLeft(e: Entitlements | null): number | null {
-  if (!e || e.subscribed || e.isAdmin) return null;
+  if (!e || !e.quotaEnabled || e.subscribed || e.isAdmin) return null;
   return Math.max(0, e.freeAllowance - e.listingsCreated);
 }
 

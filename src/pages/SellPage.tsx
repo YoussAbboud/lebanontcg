@@ -368,7 +368,8 @@ export function SellPage() {
 
   // The wall, as the database sees it (0019). Editing an existing
   // listing never consumes anything, so it is never blocked.
-  const walled = !editing && entitlements !== null && !entitlements.canCreateListing;
+  const walled =
+    !editing && entitlements !== null && entitlements.quotaEnabled && !entitlements.canCreateListing;
   const listingsLeft = freeListingsLeft(entitlements);
 
   const publish = async () => {

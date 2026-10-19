@@ -300,16 +300,22 @@ select.input {
   z-index: 60;
 }
 
-/* Presence: the person is on the site right now. Green, not acid — acid
-   is for actions, this is a state. */
+/* Presence, always shown: green while the person is on the site, grey
+   when not. Green, not acid — acid is for actions, this is a state. */
 .online-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
   margin-left: 6px;
   border-radius: 50%;
+  vertical-align: middle;
+  background: var(--muted);
+  box-shadow: 0 0 0 2px var(--surface);
+  opacity: 0.6;
+}
+.online-dot.is-online {
   background: var(--online, #34d399);
   box-shadow: 0 0 0 2px var(--surface), 0 0 10px var(--online, #34d399);
-  vertical-align: middle;
+  opacity: 1;
 }
 .online-dot-lg { width: 12px; height: 12px; margin-left: 10px; }

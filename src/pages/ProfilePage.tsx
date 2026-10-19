@@ -7,6 +7,7 @@ import { formatPrice, memberSince, relativeTime } from '../lib/format';
 import { formatTimeLeft, isEffectivelyOver } from '../lib/auction';
 import { useNow } from '../lib/useNow';
 import { useApp } from '../state/AppContext';
+import { PresenceDot } from '../components/PresenceDot';
 import { useToast } from '../state/ToastContext';
 import { Avatar } from '../components/Avatar';
 import { ListingCard } from '../components/ListingCard';
@@ -216,9 +217,7 @@ export function ProfilePage() {
           <div className="profile-id-top">
             <h1 className="display profile-handle">
               @{profile.username}
-              {onlineIds.has(profile.id) && (
-                <span className="online-dot online-dot-lg" role="img" aria-label="Online" title="Online now" />
-              )}
+              <PresenceDot online={onlineIds.has(profile.id)} large />
             </h1>
             {stats && (
               <span className={`rank-chip ${stats.rank === 1 ? 'rank-top' : ''}`}>

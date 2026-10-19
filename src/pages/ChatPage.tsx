@@ -7,6 +7,7 @@ import { formatPrice, relativeTime, timeOfDay } from '../lib/format';
 import { STATUS_LABELS } from '../lib/status';
 import { glyphOf, thumbBackground } from '../lib/face';
 import { useApp } from '../state/AppContext';
+import { PresenceDot } from '../components/PresenceDot';
 import { useToast } from '../state/ToastContext';
 import { ReviewPrompt } from '../components/ReviewPrompt';
 import { ReportDialog } from '../components/ReportDialog';
@@ -148,9 +149,7 @@ export function ChatPage() {
                   <div className="chat-row-top">
                     <span className="chat-row-handle">
                       @{c.otherParty.username ?? c.otherParty.displayName}
-                      {onlineIds.has(c.otherParty.id) && (
-                        <span className="online-dot" role="img" aria-label="Online" title="Online now" />
-                      )}
+                      <PresenceDot online={onlineIds.has(c.otherParty.id)} />
                     </span>
                     <span className="mono-value chat-row-time">{relativeTime(c.lastMessageAt)}</span>
                     {c.unreadCount > 0 && <span className="chat-row-unread" aria-label={`${c.unreadCount} unread`} />}

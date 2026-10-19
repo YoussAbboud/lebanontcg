@@ -1177,10 +1177,12 @@ bug; the dev user switcher and the mock-mode notes exist only in
 
 ## A19 — Online presence
 
-- A green dot after a person's handle means they are on the site right
-  now — in the Messages list next to the other party, and on their
-  profile. It answers the question a buyer actually has before writing:
-  "will I get a reply soon?"
+- A dot after a person's handle — in the Messages list next to the
+  other party, and on their profile — is always there: green while they
+  are on the site, grey when they are not. Always showing it makes the
+  absence of green a statement rather than a missing feature, and
+  answers the question a buyer actually has before writing: "will I get
+  a reply soon?"
 - One site-wide Realtime presence channel; a signed-in tab tracks
   itself under its user id (several tabs collapse into one key) and
   visitors only read the state. No table, no polling, nothing to clean

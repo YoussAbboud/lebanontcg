@@ -1266,3 +1266,16 @@ bug; the dev user switcher and the mock-mode notes exist only in
   functions.
 - The Terms and the Privacy Policy now promise a ticket, not an email,
   as the channel for appeals and rights requests.
+
+## A23 — Sticky header
+
+- The header now stays at the top as the page scrolls, on every width,
+  frosted (translucent frame colour with a backdrop blur) so content
+  sliding under it stays legible without competing. The frame's
+  `overflow: hidden` became `overflow: clip`: hidden would have made the
+  frame a scroll container and pinned the header to it rather than the
+  viewport, while clip keeps the rounded-corner clipping and creates no
+  scroll container.
+- The header sits at z-index 50, above page content and below dialogs
+  (report, cropper, lightbox), so the bell, the user menu and the dev
+  switcher that hang off it stay reachable mid-page.

@@ -817,3 +817,11 @@ staff reply labelled Support, the user's notification opening the
 ticket, the reply, the close with a note moving it to Closed, the
 closed thread refusing replies, and a suspended account opening an
 appeal with Sell pointing at support.
+
+## A23 — Sticky header
+
+sticky-smoke (8 checks): at 1280px and 390px the page scrolls 1400px
+and the header's box stays at y=0 with its height unchanged, the
+element under the header's centre is the header (content scrolls
+beneath it), and on desktop the bell panel opens off the pinned header
+above the content while scrolled.

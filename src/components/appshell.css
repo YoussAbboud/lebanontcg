@@ -8,7 +8,9 @@
   background: var(--bg-frame);
   border-radius: var(--r-frame);
   border: 1px solid var(--hairline);
-  overflow: hidden;
+  /* clip, not hidden: hidden would make the frame a scroll container and
+     pin the sticky header to it instead of the viewport. */
+  overflow: clip;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -40,13 +42,22 @@
 
 /* ---- Header ------------------------------------------------------------------ */
 .shell-header {
-  position: relative;
+  /* Sticks to the top as the page scrolls; frosted so the content
+     sliding under it stays legible without competing. */
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   gap: 24px;
   padding: 18px var(--pad-x);
   border-bottom: 1px solid var(--hairline);
-  z-index: 2;
+  background: color-mix(in srgb, var(--bg-frame) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  z-index: 50;
+}
+@supports not (color-mix(in srgb, red 50%, transparent)) {
+  .shell-header { background: var(--bg-frame); }
 }
 
 .shell-logo {

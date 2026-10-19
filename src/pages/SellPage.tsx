@@ -434,26 +434,24 @@ export function SellPage() {
             <div className="display sell-panel-title">Photos</div>
             <p className="sell-panel-sub">1–8 photos. The first is the cover. Drag to reorder.</p>
             <ImageManager images={images} onChange={setImages} error={errors.images} />
-            <div className="sell-pregrade-cta">
-              {entitlements && !entitlements.canUsePregrade ? (
-                <>
-                  <span>
-                    Raw card? Pre-Grade estimates its grade before you list — it's part of a
-                    subscription.
-                  </span>
-                  <Link to="/plans" className="btn-outline sell-pregrade-link">
-                    See plans →
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <span>Raw card? Check its grade potential before you list it.</span>
-                  <Link to="/pregrade" className="btn-outline sell-pregrade-link">
-                    Run a Pre-Grade →
-                  </Link>
-                </>
-              )}
+            <div className="sell-notice">
+              <p>
+                <strong>Listing is free for now.</strong> Subscription plans are coming in the
+                future — until then, list as much as you like.
+              </p>
+              <p className="sell-notice-rule">
+                Fake, misleading or copied listings get the account banned. List only cards you
+                actually have, as they actually are.
+              </p>
             </div>
+            {entitlements?.canUsePregrade && (
+              <div className="sell-pregrade-cta">
+                <span>Raw card? Check its grade potential before you list it.</span>
+                <Link to="/pregrade" className="btn-outline sell-pregrade-link">
+                  Run a Pre-Grade →
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -777,7 +775,9 @@ export function SellPage() {
             <div className="sell-disclaimer">
               {form.saleType === 'auction'
                 ? "Bids aren't binding and LebanonTCG handles no payment. When the clock runs out, the highest bidder and you get a chat to sort out the deal yourselves."
-                : "LebanonTCG doesn't handle payment or shipping. You'll arrange both directly with the buyer in chat."}
+                : "LebanonTCG doesn't handle payment or shipping. You'll arrange both directly with the buyer in chat."}{' '}
+              By publishing you confirm this is a real card you own, described honestly — fake
+              or misleading listings get the account banned.
             </div>
             <button
               type="button"

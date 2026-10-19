@@ -199,3 +199,21 @@
   font-size: var(--fs-12);
 }
 .sell-quota a { color: var(--acid); }
+
+/* Free-period note and the honesty rule, shown where listing starts. */
+.sell-notice {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  padding: 14px 16px;
+  background: var(--input-bg);
+  font-size: var(--fs-13);
+  color: var(--text-2);
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sell-notice strong { color: var(--text); }
+.sell-notice-rule { color: var(--text-2); }
+.sell-notice-rule::before { content: '⚠ '; color: var(--acid); }

@@ -1120,3 +1120,17 @@ bug; the dev user switcher and the mock-mode notes exist only in
 - The local shim now enables RLS on `storage.objects` and grants the
   client roles access the way Supabase does, so storage policies are
   part of the RLS suite from here on.
+
+## A16 — No plans talk while listing
+
+- With the cap off, the listing flow should not mention plans at all:
+  the footer's Plans link is gone and the Sell wizard's Pre-Grade
+  upsell ("it's part of a subscription — see plans") is replaced by a
+  plain notice. Accounts that can already use Pre-Grade (admins,
+  subscribers) still get the "Run a Pre-Grade" shortcut, which names
+  no plan. `/plans` stays reachable by URL for anyone who wants it.
+- The notice says two things, where listing starts: listing is free
+  for now and subscription plans are coming in the future; and fake,
+  misleading or copied listings get the account banned. The Review
+  step repeats the honesty rule next to the publish button, so nobody
+  publishes without having read it.

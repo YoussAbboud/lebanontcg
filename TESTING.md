@@ -728,3 +728,10 @@ rls-test grows to 24: with two owners' files seeded, an owner listing
 `listing-images` sees exactly their own folder, and the anonymous role
 sees nothing at all. Needed the shim to enable RLS on `storage.objects`
 and grant the client roles, as Supabase does.
+
+## A16 — Sell notice
+
+The paywall smoke now asserts, as a free seller on Sell: the notice
+says listing is free for now and plans are coming, it warns about bans,
+no Pre-Grade upsell or plans mention is present, and the footer has no
+Plans link; a subscriber still sees "Run a Pre-Grade" (21/21).

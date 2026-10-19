@@ -1134,3 +1134,17 @@ bug; the dev user switcher and the mock-mode notes exist only in
   misleading or copied listings get the account banned. The Review
   step repeats the honesty rule next to the publish button, so nobody
   publishes without having read it.
+
+## A17 — listing_likes without an owner-rights view
+
+- 0008 made `listing_likes` an owner-rights view on purpose: `favorites`
+  RLS hides who liked what, and the view leaked only the aggregate.
+  Supabase's advisor flags every SECURITY DEFINER view, and the general
+  point stands — a view that runs as its creator is one careless column
+  away from leaking the table behind it.
+- 0023 removes the need: like counts live in `listing_like_counts`, a
+  table holding nothing but a count, public to read, with no client
+  write path; a security-definer trigger on `favorites` keeps it
+  current. `listing_likes` is now an ordinary `security_invoker` view
+  over that table with the same two columns, so the client is
+  unchanged.

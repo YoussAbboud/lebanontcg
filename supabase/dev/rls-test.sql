@@ -235,3 +235,33 @@ set role anon;
 select 'T41 a visitor cannot list the bucket at all: ' || (count(*) = 0)::text
   from storage.objects where bucket_id = 'listing-images';
 reset role;
+
+-- ---------------------------------------------------------------------------
+-- 0023: like counts without an owner-rights view
+-- ---------------------------------------------------------------------------
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000002';
+select 'T42 a visitor-facing count is readable and still 1: ' || (likes = 1)::text
+  from public.listing_likes where listing_id = '10000000-0000-0000-0000-000000000001';
+select 'T43 but nobody else''s favorites rows are: ' || (count(*) = 0)::text
+  from public.favorites where user_id <> auth.uid();
+insert into public.listing_like_counts (listing_id, likes)
+  values ('10000000-0000-0000-0000-000000000001', 999);
+select 'T44 (expect error above: counts cannot be written directly)';
+update public.listing_like_counts set likes = 999;
+select 'T45 the count was not forged: ' || (likes = 1)::text
+  from public.listing_likes where listing_id = '10000000-0000-0000-0000-000000000001';
+-- A second like raises it; removing it lowers it.
+insert into public.favorites (user_id, listing_id)
+  values (auth.uid(), '10000000-0000-0000-0000-000000000001')
+  on conflict do nothing;
+select 'T46 a new like raises the count: ' || (likes = 2)::text
+  from public.listing_likes where listing_id = '10000000-0000-0000-0000-000000000001';
+delete from public.favorites
+  where user_id = auth.uid() and listing_id = '10000000-0000-0000-0000-000000000001';
+select 'T47 removing it lowers the count: ' || (likes = 1)::text
+  from public.listing_likes where listing_id = '10000000-0000-0000-0000-000000000001';
+reset role;
+select 'T48 the view no longer runs as its owner: '
+  || (coalesce((select reloptions::text from pg_class
+                 where relname = 'listing_likes' and relkind = 'v'), '') like '%security_invoker=true%')::text;

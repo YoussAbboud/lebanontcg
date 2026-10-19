@@ -735,3 +735,10 @@ The paywall smoke now asserts, as a free seller on Sell: the notice
 says listing is free for now and plans are coming, it warns about bans,
 no Pre-Grade upsell or plans mention is present, and the footer has no
 Plans link; a subscriber still sees "Run a Pre-Grade" (21/21).
+
+## A17 — Like counts
+
+rls-test grows to 30: another user reads the count but zero of anyone
+else's favorites rows; writing the counts table directly is refused and
+leaves the count intact; a new like raises it and removing it lowers
+it; and `pg_class` confirms the view carries `security_invoker=true`.

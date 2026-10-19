@@ -1,6 +1,7 @@
 import type {
   AdminAction,
   AdminAuction,
+  AppNotification,
   AdminListingFilter,
   AdminReview,
   AdminStats,
@@ -256,6 +257,16 @@ export interface MarketplaceClient {
   unpublishPregradeReport(reportId: string): Promise<PregradeReport>;
   /** "It came back as a…" — the calibration loop's raw material. */
   recordPregradeOutcome(reportId: string, actualGrade: number, certNumber?: string): Promise<void>;
+
+  // ---- Notifications ------------------------------------------------------
+  /** Newest first. Unread and read alike — the bell shows both. */
+  listNotifications(limit: number): Promise<AppNotification[]>;
+  getUnreadNotificationCount(): Promise<number>;
+  /** Mark some, or with no ids all, of the caller's notifications read. */
+  markNotificationsRead(ids?: string[]): Promise<void>;
+  /** Fires whenever a notification for the signed-in user arrives or
+      changes; the bell refetches. */
+  subscribeToNotifications(cb: () => void): Unsubscribe;
 
   // ---- Plans and entitlements ---------------------------------------------
   /** The price list, cheapest-first by sort order. Public. */

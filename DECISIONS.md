@@ -1148,3 +1148,29 @@ bug; the dev user switcher and the mock-mode notes exist only in
   current. `listing_likes` is now an ordinary `security_invoker` view
   over that table with the same two columns, so the client is
   unchanged.
+
+## A18 — Notifications
+
+- A bell in the header, between search and the avatar, with an unread
+  badge and a dropdown of the latest; the long list lives at
+  `/notifications`. Rows are written **only by the database** (0024) —
+  triggers on the tables where things happen — so nothing can be
+  forged, and only the recipient can read or mark their rows (the one
+  client write goes through `mark_notifications_read`).
+- What fires: a message or an offer (to the other party), an offer's
+  answer (back to whoever made it), a bid on your auction, your top
+  bid being beaten, an auction you won / your auction ending / a
+  cancellation (to every bidder), a review received, a watchlist card
+  selling or dropping in price, and a moderator removing or restoring
+  your listing. Nobody is ever notified of their own action.
+- **Repeats collapse.** A second message in the same thread, a second
+  bid on the same auction, a second price drop on the same card
+  refresh the live unread row instead of stacking another, so the
+  badge counts conversations, not keystrokes. Once read, the next event
+  makes a fresh row.
+- Realtime pushes new rows on a per-user channel; the shell refreshes
+  the badge and an open panel refetches. Opening a notification marks
+  it read and follows its `href`, which is always an app path — never
+  a URL.
+- The mock mirrors every trigger, including dedupe and the actor
+  exclusion, so the bell is demonstrable offline.

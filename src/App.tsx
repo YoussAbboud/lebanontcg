@@ -17,6 +17,7 @@ import { SignInPage } from './pages/SignInPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { SetPasswordPage } from './pages/SetPasswordPage';
 import { PlansPage } from './pages/PlansPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 // The two heaviest routes (image pipeline, moderation console) load on
@@ -65,6 +66,7 @@ export default function App() {
             }
           />
           <Route path="/plans" element={<PlansPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route
             path="/admin"
             element={

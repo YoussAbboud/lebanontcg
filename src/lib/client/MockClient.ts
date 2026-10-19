@@ -1,6 +1,7 @@
 import type {
   AdminAction,
   AdminActionKind,
+  AppNotification,
   AdminAuction,
   AdminListingFilter,
   AdminReview,
@@ -22,6 +23,7 @@ import type {
   ListingStatus,
   ListingWithSeller,
   Message,
+  NotificationKind,
   PendingReview,
   OfferStatus,
   Plan,
@@ -62,9 +64,10 @@ import {
   seedProfiles,
   seedReports,
   seedReviews,
+  seedNotifications,
   seedSubscriptions,
 } from '../../mock/seed';
-import type { MockCreditPack, MockSubscription } from '../../mock/seed';
+import type { MockCreditPack, MockSubscription, StoredNotification } from '../../mock/seed';
 import { avatarDataUrl, cardImageUrl } from '../../mock/cardImage';
 import type { Condition, Finish, Game } from '../types';
 import type { DefectAssessment, PregradeReport, PregradeReportInput } from '../pregrade/types';
@@ -139,6 +142,10 @@ export class MockClient implements MarketplaceClient {
   private adminActions: StoredAdminAction[] = [];
   /** Pre-grade reports live per-tab in mock mode (captures = object URLs). */
   private pregradeReports: PregradeReport[] = [];
+
+  // ---- Notifications (mirrors migration 0024) ------------------------------
+  private notifications: StoredNotification[] = structuredClone(seedNotifications);
+  private notificationListeners = new Set<() => void>();
 
   // ---- Paywall (mirrors migration 0019) ----------------------------------
   private plans: Plan[] = structuredClone(seedPlans);
@@ -235,6 +242,7 @@ export class MockClient implements MarketplaceClient {
         this.reviews = s.reviews;
         this.reports = s.reports;
         this.adminActions = s.adminActions ?? this.adminActions;
+        this.notifications = s.notifications ?? this.notifications;
         this.subscriptions = s.subscriptions ?? this.subscriptions;
         this.creditPacks = s.creditPacks ?? this.creditPacks;
         this.listingCounts = new Map(s.listingCounts ?? [...this.listingCounts.entries()]);
@@ -369,6 +377,23 @@ export class MockClient implements MarketplaceClient {
         this.emitAuction(patch.auction.id, { type: 'updated', auction: structuredClone(patch.auction) });
         break;
       }
+      case 'notification': {
+        const n = patch.notification;
+        const idx = this.notifications.findIndex((x) => x.id === n.id);
+        if (idx >= 0) this.notifications[idx] = n;
+        else this.notifications.unshift(n);
+        if (this.auth.user?.id === n.userId) this.emitNotifications();
+        break;
+      }
+      case 'notifications-read': {
+        for (const n of this.notifications) {
+          if (n.userId === patch.userId && !n.readAt && (!patch.ids || patch.ids.includes(n.id))) {
+            n.readAt = patch.at;
+          }
+        }
+        if (this.auth.user?.id === patch.userId) this.emitNotifications();
+        break;
+      }
       case 'billing': {
         this.subscriptions = patch.subscriptions;
         this.creditPacks = patch.creditPacks;
@@ -430,6 +455,7 @@ export class MockClient implements MarketplaceClient {
       reviews: this.reviews,
       reports: this.reports,
       adminActions: this.adminActions,
+      notifications: this.notifications,
       subscriptions: this.subscriptions,
       creditPacks: this.creditPacks,
       listingCounts: [...this.listingCounts.entries()],
@@ -886,6 +912,15 @@ export class MockClient implements MarketplaceClient {
     // An auction listing's price mirrors the current bid — edits can't move it.
     if (listing.saleType === 'auction') listing.price = priorPrice;
     listing.updatedAt = new Date().toISOString();
+    if (listing.status === 'active' && listing.price < priorPrice) {
+      for (const [userId, favs] of this.favorites) {
+        if (favs.has(id)) {
+          this.notify(userId, 'watch', `Price drop — ${listing.title}`,
+            `Now ${this.money(listing.price, listing.currency)}, was ${Math.round(priorPrice).toLocaleString('en-US')}`,
+            `/listing/${id}`, me.id, `price:${id}`);
+        }
+      }
+    }
     listing.images = images.map((img, i) => ({
       id: img.kind === 'existing' ? img.id : nextId('img'),
       listingId: id,
@@ -917,6 +952,15 @@ export class MockClient implements MarketplaceClient {
     listing.reservedForConversationId =
       status === 'reserved' ? (opts?.reservedForConversationId ?? null) : null;
     listing.updatedAt = new Date().toISOString();
+
+    if (status === 'sold') {
+      for (const [userId, favs] of this.favorites) {
+        if (favs.has(id)) {
+          this.notify(userId, 'watch', `Sold — ${listing.title}`,
+            'A card on your watchlist found a buyer.', `/listing/${id}`, me.id);
+        }
+      }
+    }
 
     // Insert a system message into every conversation about this listing,
     // and notify their participants live.
@@ -986,6 +1030,21 @@ export class MockClient implements MarketplaceClient {
       a.status = 'closed';
       a.winnerId = top.bidderId;
       a.winningBid = top.amount;
+      this.notify(
+        top.bidderId,
+        'auction',
+        `You won ${listing?.title ?? 'the auction'}`,
+        `At ${this.money(top.amount, a.currency)} — the chat with the seller is open.`,
+        `/listing/${a.listingId}`,
+      );
+      this.notify(
+        a.sellerId,
+        'auction',
+        `Your auction ended — ${listing?.title ?? ''}`,
+        `Won by ${this.handleOfId(top.bidderId)} at ${this.money(top.amount, a.currency)}`,
+        `/listing/${a.listingId}`,
+        top.bidderId,
+      );
       let conv = this.conversations.find(
         (c) => c.listingId === a.listingId && c.buyerId === top.bidderId,
       );
@@ -1028,6 +1087,13 @@ export class MockClient implements MarketplaceClient {
       // No bids, or reserve not met: nobody wins, the card stays with
       // the seller and the listing leaves browse. Relist makes a new one.
       a.status = 'closed';
+      this.notify(
+        a.sellerId,
+        'auction',
+        `Your auction ended — ${listing?.title ?? ''}`,
+        'No winner this time. You can relist it.',
+        `/listing/${a.listingId}`,
+      );
       if (listing && listing.status === 'active') {
         listing.status = 'removed';
         listing.updatedAt = nowIso;
@@ -1139,7 +1205,32 @@ export class MockClient implements MarketplaceClient {
       extended,
       createdAt: new Date().toISOString(),
     };
+    const prevTop = top && top.bidderId !== bidder.id ? top.bidderId : null;
     this.bids.push(bid);
+    {
+      const l = this.listings.find((x) => x.id === a.listingId);
+      const title = l?.title ?? 'your auction';
+      this.notify(
+        a.sellerId,
+        'bid',
+        `New bid on ${title}`,
+        `${this.handleOf(bidder)} bid ${this.money(amount, a.currency)}`,
+        `/listing/${a.listingId}`,
+        bidder.id,
+        `auction:${a.id}`,
+      );
+      if (prevTop) {
+        this.notify(
+          prevTop,
+          'outbid',
+          `You were outbid on ${title}`,
+          `The bid is now ${this.money(amount, a.currency)}`,
+          `/listing/${a.listingId}`,
+          bidder.id,
+          `outbid:${a.id}`,
+        );
+      }
+    }
     const listing = this.listings.find((l) => l.id === a.listingId);
     if (listing) {
       listing.price = amount;
@@ -1348,6 +1439,13 @@ export class MockClient implements MarketplaceClient {
     // Every bidder hears about it, in chat, with the reason.
     const bidderIds = [...new Set(this.bids.filter((b) => b.auctionId === a.id).map((b) => b.bidderId))];
     for (const bidderId of bidderIds) {
+      this.notify(
+        bidderId,
+        'auction',
+        `Auction cancelled — ${this.listings.find((x) => x.id === a.listingId)?.title ?? ''}`,
+        a.cancelReason ?? '',
+        `/listing/${a.listingId}`,
+      );
       let conv = this.conversations.find(
         (c) => c.listingId === a.listingId && c.buyerId === bidderId,
       );
@@ -1629,6 +1727,18 @@ export class MockClient implements MarketplaceClient {
     });
     this.emitInbox();
     this.broadcast({ type: 'message', message: structuredClone(message) });
+    {
+      const l = this.listings.find((x) => x.id === conv.listingId);
+      this.notify(
+        otherId,
+        'message',
+        `${this.handleOf(me)} · ${l?.title ?? 'a listing'}`,
+        body.slice(0, 140),
+        `/chat/${conversationId}`,
+        me.id,
+        `conv:${conversationId}`,
+      );
+    }
     return structuredClone(message);
   }
 
@@ -1668,6 +1778,17 @@ export class MockClient implements MarketplaceClient {
     });
     this.emitInbox();
     this.broadcast({ type: 'message', message: structuredClone(message) });
+    {
+      const l = this.listings.find((x) => x.id === conv.listingId);
+      this.notify(
+        otherId,
+        'offer',
+        `${this.handleOf(me)} offered ${this.money(amount, l?.currency ?? 'USD')}`,
+        l?.title ?? '',
+        `/chat/${conversationId}`,
+        me.id,
+      );
+    }
     return structuredClone(message);
   }
 
@@ -1679,6 +1800,18 @@ export class MockClient implements MarketplaceClient {
     if (msg.offerStatus !== 'proposed') throw new Error('This offer was already settled.');
     const status: OfferStatus = accept ? 'accepted' : 'declined';
     msg.offerStatus = status;
+    {
+      const conv0 = this.conversations.find((c) => c.id === conversationId);
+      const l = conv0 ? this.listings.find((x) => x.id === conv0.listingId) : undefined;
+      this.notify(
+        msg.senderId,
+        'offer',
+        `Your offer of ${this.money(msg.amount ?? 0, l?.currency ?? 'USD')} was ${status}`,
+        l?.title ?? '',
+        `/chat/${conversationId}`,
+        me.id,
+      );
+    }
     this.broadcast({ type: 'offer', conversationId, messageId, status });
     this.emitConversation(conversationId, { type: 'refresh', conversationId });
     if (accept) {
@@ -1838,6 +1971,14 @@ export class MockClient implements MarketplaceClient {
       reviewer: structuredClone(me),
     };
     this.reviews.push(review);
+    this.notify(
+      conv.sellerId,
+      'review',
+      `${this.handleOf(me)} left you a ${rating}-star review`,
+      body.slice(0, 140),
+      '/reviews',
+      me.id,
+    );
     this.broadcast({ type: 'review', review: structuredClone(review) });
     return structuredClone(review);
   }
@@ -2007,6 +2148,112 @@ export class MockClient implements MarketplaceClient {
       certNumber: certNumber ?? null,
       reportedAt: new Date().toISOString(),
     };
+  }
+
+  // ---- Notifications -----------------------------------------------------
+  // Mirrors 0024: the same events, the same copy, the same dedupe — one
+  // live row per thread or auction — and nobody hears about their own
+  // actions.
+
+  private emitNotifications(): void {
+    for (const cb of this.notificationListeners) cb();
+  }
+
+  private handleOfId(userId: string | null | undefined): string {
+    const p = userId ? this.profiles.find((x) => x.id === userId) : undefined;
+    return p ? this.handleOf(p) : 'Someone';
+  }
+
+  private money(amount: number, currency: string): string {
+    return `${Math.round(amount).toLocaleString('en-US')} ${currency}`;
+  }
+
+  private notify(
+    userId: string | null | undefined,
+    kind: NotificationKind,
+    title: string,
+    body: string,
+    href: string,
+    actorId: string | null = null,
+    dedupeKey: string | null = null,
+  ): void {
+    if (!userId || userId === actorId) return;
+    const now = new Date().toISOString();
+    if (dedupeKey) {
+      const live = this.notifications.find(
+        (n) => n.userId === userId && n.dedupeKey === dedupeKey && !n.readAt,
+      );
+      if (live) {
+        live.title = title.slice(0, 160);
+        live.body = body.slice(0, 400);
+        live.actorId = actorId;
+        live.createdAt = now;
+        this.broadcast({ type: 'notification', notification: structuredClone(live) });
+        if (this.auth.user?.id === userId) this.emitNotifications();
+        return;
+      }
+    }
+    const n: StoredNotification = {
+      id: nextId('n'),
+      userId,
+      kind,
+      title: title.slice(0, 160),
+      body: body.slice(0, 400),
+      href,
+      actorId,
+      dedupeKey,
+      createdAt: now,
+      readAt: null,
+    };
+    this.notifications.unshift(n);
+    this.broadcast({ type: 'notification', notification: structuredClone(n) });
+    if (this.auth.user?.id === userId) this.emitNotifications();
+  }
+
+  private toNotification(n: StoredNotification): AppNotification {
+    return {
+      id: n.id,
+      kind: n.kind,
+      title: n.title,
+      body: n.body,
+      href: n.href,
+      actor: n.actorId ? this.profileById(n.actorId) : null,
+      createdAt: n.createdAt,
+      readAt: n.readAt,
+    };
+  }
+
+  async listNotifications(limit: number): Promise<AppNotification[]> {
+    if (!this.auth.user) return [];
+    await sleep(netDelay());
+    const me = this.auth.user.id;
+    return this.notifications
+      .filter((n) => n.userId === me)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, limit)
+      .map((n) => this.toNotification(n));
+  }
+
+  async getUnreadNotificationCount(): Promise<number> {
+    if (!this.auth.user) return 0;
+    const me = this.auth.user.id;
+    return this.notifications.filter((n) => n.userId === me && !n.readAt).length;
+  }
+
+  async markNotificationsRead(ids?: string[]): Promise<void> {
+    const me = this.me();
+    await sleep(netDelay());
+    const at = new Date().toISOString();
+    for (const n of this.notifications) {
+      if (n.userId === me.id && !n.readAt && (!ids || ids.includes(n.id))) n.readAt = at;
+    }
+    this.broadcast({ type: 'notifications-read', userId: me.id, ids: ids ?? null, at });
+    this.emitNotifications();
+  }
+
+  subscribeToNotifications(cb: () => void): Unsubscribe {
+    this.notificationListeners.add(cb);
+    return () => this.notificationListeners.delete(cb);
   }
 
   // ---- Plans and entitlements --------------------------------------------
@@ -2403,7 +2650,17 @@ export class MockClient implements MarketplaceClient {
     const from = listing.status;
     // Moderation deliberately bypasses canTransition — a fraudulent
     // listing comes down even from `sold`.
+    const wasStatus = listing.status;
     listing.status = status;
+    if (status !== wasStatus && (status === 'removed' || status === 'active')) {
+      this.notify(
+        listing.sellerId,
+        'moderation',
+        status === 'removed' ? 'A moderator removed your listing' : 'A moderator restored your listing',
+        listing.title,
+        `/listing/${listing.id}`,
+      );
+    }
     listing.reservedForConversationId = null;
     listing.updatedAt = new Date().toISOString();
 
@@ -2801,6 +3058,7 @@ interface SnapshotState {
   reviews: Review[];
   reports: StoredReport[];
   adminActions?: StoredAdminAction[];
+  notifications?: StoredNotification[];
   subscriptions?: MockSubscription[];
   creditPacks?: MockCreditPack[];
   listingCounts?: Array<[string, number]>;
@@ -2829,6 +3087,8 @@ type RemotePatch =
   | { type: 'bid'; bid: Bid }
   | { type: 'presence'; auctionId: string; tabId: string; at: number; leaving?: boolean }
   | { type: 'noshow-retract'; auctionId: string; reporterId: string }
+  | { type: 'notification'; notification: StoredNotification }
+  | { type: 'notifications-read'; userId: string; ids: string[] | null; at: string }
   | {
       type: 'billing';
       subscriptions: MockSubscription[];

@@ -742,3 +742,24 @@ rls-test grows to 30: another user reads the count but zero of anyone
 else's favorites rows; writing the counts table directly is refused and
 leaves the count intact; a new like raises it and removing it lowers
 it; and `pg_class` confirms the view carries `security_invoker=true`.
+
+## A18 — Notifications
+
+`supabase/dev/notify-test.sql` (19 assertions, green): the sender hears
+nothing about their own message; the seller is told with the card
+named and a thread link; a second message refreshes the one unread row
+and carries the latest body; mark-read reports one row and the next
+message makes a new one; an offer reaches the seller and its acceptance
+reaches the buyer; a user sees only their own rows, cannot insert one,
+and cannot mark another user's; a review reaches the reviewee; a
+watcher hears about a price drop and a sale while the seller hears
+nothing; a bid gives the seller one live row carrying the latest
+amount, the beaten bidder is told, and the close tells the winner and
+the seller who won. rls 30/0, auction 27/0, plans 48/0 still pass with
+the new triggers in place; apply-all 0001–0024 clean.
+
+`src/lib/client/notifications.test.ts` (7 tests) asserts the mock
+mirrors it: recipient-only delivery, dedupe per thread, a fresh row
+after reading, offers and their answers, one bid row per auction plus
+an outbid notice, partial mark-read, and that a tab's listener is not
+fired by its own user's actions.

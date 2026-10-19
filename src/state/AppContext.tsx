@@ -32,6 +32,9 @@ interface AppContextValue {
    */
   entitlements: Entitlements | null;
   refreshEntitlements(): void;
+  /** Unread notifications (the bell's badge). */
+  unreadNotifications: number;
+  refreshNotifications(): void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -42,6 +45,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
   const [unreadCount, setUnreadCount] = useState(0);
   const [pendingReviewCount, setPendingReviewCount] = useState(0);
   const [entitlements, setEntitlements] = useState<Entitlements | null>(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const userId = auth.user?.id ?? null;
   const unreadTimer = useRef<number | null>(null);
 
@@ -54,6 +58,7 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       setUnreadCount(0);
       setPendingReviewCount(0);
       setEntitlements(null);
+      setUnreadNotifications(0);
       return;
     }
     client.getFavoriteIds().then((ids) => {
@@ -72,6 +77,12 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       .getEntitlements()
       .then((e) => {
         if (!cancelled) setEntitlements(e);
+      })
+      .catch(() => {});
+    client
+      .getUnreadNotificationCount()
+      .then((n) => {
+        if (!cancelled) setUnreadNotifications(n);
       })
       .catch(() => {});
     return () => {
@@ -97,6 +108,19 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       .then(setEntitlements)
       .catch(() => {});
   }, [client, userId]);
+
+  const refreshNotifications = useCallback(() => {
+    if (!userId) return;
+    client
+      .getUnreadNotificationCount()
+      .then(setUnreadNotifications)
+      .catch(() => {});
+  }, [client, userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    return client.subscribeToNotifications(refreshNotifications);
+  }, [client, userId, refreshNotifications]);
 
   const refreshPendingReviews = useCallback(() => {
     if (!userId) return;
@@ -154,6 +178,8 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       refreshPendingReviews,
       entitlements,
       refreshEntitlements,
+      unreadNotifications,
+      refreshNotifications,
     }),
     [
       client,
@@ -166,6 +192,8 @@ export function AppProvider({ client, children }: { client: MarketplaceClient; c
       refreshPendingReviews,
       entitlements,
       refreshEntitlements,
+      unreadNotifications,
+      refreshNotifications,
     ],
   );
 

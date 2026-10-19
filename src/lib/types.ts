@@ -518,3 +518,32 @@ export interface PurchaseRequest {
   note: string;
   createdAt: string;
 }
+
+// ---------------------------------------------------------------------------
+// Notifications (0024)
+// ---------------------------------------------------------------------------
+
+export type NotificationKind =
+  | 'message'
+  | 'offer'
+  | 'bid'
+  | 'outbid'
+  | 'auction'
+  | 'review'
+  | 'watch'
+  | 'moderation';
+
+/** One thing a person should hear about. Written by the database (or
+    the mock) when the event happens — never by the client. */
+export interface AppNotification {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  /** App path to open. */
+  href: string;
+  /** Who caused it — for the avatar. Null for system events. */
+  actor: Profile | null;
+  createdAt: string;
+  readAt: string | null;
+}

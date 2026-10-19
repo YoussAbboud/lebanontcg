@@ -2,6 +2,7 @@ import { createClient as createSupabase, type SupabaseClient } from '@supabase/s
 import type {
   AdminAction,
   AdminActionKind,
+  AppNotification,
   AdminAuction,
   AdminListingFilter,
   AdminReview,
@@ -197,6 +198,18 @@ interface AdminActionRow {
   reason: string;
   detail: unknown;
   created_at: string;
+}
+
+interface NotificationRow {
+  id: string;
+  user_id: string;
+  kind: AppNotification['kind'];
+  title: string;
+  body: string | null;
+  href: string;
+  actor_id: string | null;
+  created_at: string;
+  read_at: string | null;
 }
 
 interface PlanRow {
@@ -2266,6 +2279,65 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       detail: (row.detail ?? {}) as Record<string, unknown>,
       createdAt: row.created_at,
     }));
+  }
+
+  // ---- Notifications -----------------------------------------------------
+
+  async listNotifications(limit: number): Promise<AppNotification[]> {
+    if (!this.auth.user) return [];
+    const { data, error } = await this.sb
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(error.message);
+    const rows = (data ?? []) as NotificationRow[];
+    const actors = await this.profilesByIds([
+      ...new Set(rows.map((r) => r.actor_id).filter((x): x is string => Boolean(x))),
+    ]);
+    return rows.map((r) => ({
+      id: r.id,
+      kind: r.kind,
+      title: r.title,
+      body: r.body ?? '',
+      href: r.href,
+      actor: r.actor_id ? (actors.get(r.actor_id) ?? null) : null,
+      createdAt: r.created_at,
+      readAt: r.read_at,
+    }));
+  }
+
+  async getUnreadNotificationCount(): Promise<number> {
+    if (!this.auth.user) return 0;
+    const { count, error } = await this.sb
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .is('read_at', null);
+    if (error) return 0;
+    return count ?? 0;
+  }
+
+  async markNotificationsRead(ids?: string[]): Promise<void> {
+    const { error } = await this.sb.rpc('mark_notifications_read', {
+      p_ids: ids && ids.length ? ids : null,
+    });
+    if (error) throw new Error(error.message);
+  }
+
+  subscribeToNotifications(cb: () => void): Unsubscribe {
+    const uid = this.auth.user?.id;
+    if (!uid) return () => undefined;
+    // RLS already scopes the rows; the filter just keeps other people's
+    // traffic off this socket.
+    const channel = this.sb
+      .channel(`notifications-${Math.random().toString(36).slice(2)}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` },
+        () => cb(),
+      )
+      .subscribe();
+    return () => void this.sb.removeChannel(channel);
   }
 
   // ---- Plans and entitlements --------------------------------------------

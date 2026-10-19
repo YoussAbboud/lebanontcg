@@ -3,6 +3,7 @@ import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react
 import { useApp } from '../state/AppContext';
 import { rememberReturnTo } from '../lib/returnTo';
 import { UserSwitcher } from './UserSwitcher';
+import { NotificationBell } from './NotificationBell';
 import { Avatar } from './Avatar';
 import flagGif from '../assets/flag.gif';
 import './appshell.css';
@@ -111,6 +112,7 @@ export function AppShell() {
             ⌕
           </button>
           {client.isMock && <UserSwitcher />}
+          <NotificationBell />
           {user ? (
             <div className="shell-user" ref={menuRef}>
               <button

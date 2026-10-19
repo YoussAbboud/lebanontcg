@@ -6,6 +6,7 @@ import type {
   Game,
   Listing,
   Message,
+  NotificationKind,
   Plan,
   PlanTier,
   Profile,
@@ -658,5 +659,71 @@ export const seedCreditPacks: MockCreditPack[] = [
     status: 'pending',
     note: 'Whish, ref 88120',
     createdAt: days(1),
+  },
+];
+
+/** A notification row as MockClient keeps it (mirror of 0024). */
+export interface StoredNotification {
+  id: string;
+  userId: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  href: string;
+  actorId: string | null;
+  dedupeKey: string | null;
+  createdAt: string;
+  readAt: string | null;
+}
+
+/** A bell with something in it for the demo accounts. */
+export const seedNotifications: StoredNotification[] = [
+  {
+    id: 'n-karim-1',
+    userId: 'u-karim',
+    kind: 'message',
+    title: '@mayapulls · Charizard Base Set Unlimited',
+    body: "Saturday works. Caribou on Bliss street, 3pm? I'll bring a loupe so you can check it properly.",
+    href: '/chat/c-1',
+    actorId: 'u-maya',
+    dedupeKey: 'conv:c-1',
+    createdAt: mins(14),
+    readAt: null,
+  },
+  {
+    id: 'n-karim-2',
+    userId: 'u-karim',
+    kind: 'review',
+    title: '@linacollects left you a 4-star review',
+    body: 'Card was fine, shipping took a bit longer than promised.',
+    href: '/reviews',
+    actorId: 'u-lina',
+    dedupeKey: null,
+    createdAt: days(2),
+    readAt: days(1),
+  },
+  {
+    id: 'n-maya-1',
+    userId: 'u-maya',
+    kind: 'offer',
+    title: '@karim_tcg offered 300 USD',
+    body: 'Charizard Base Set Unlimited',
+    href: '/chat/c-1',
+    actorId: 'u-karim',
+    dedupeKey: null,
+    createdAt: mins(12),
+    readAt: null,
+  },
+  {
+    id: 'n-maya-2',
+    userId: 'u-maya',
+    kind: 'bid',
+    title: 'New bid on Umbreon VMAX Alt Art — Evolving Skies',
+    body: '@nabil_pulls bid 250 USD',
+    href: '/listing/l-auc-1',
+    actorId: 'u-nabil',
+    dedupeKey: 'auction:a-1',
+    createdAt: mins(40),
+    readAt: null,
   },
 ];

@@ -1,0 +1,15 @@
+/* Notifications page (Sleeved). */
+.notifs { max-width: 720px; margin: 0 auto; padding: 32px var(--pad-x) 72px; display: flex; flex-direction: column; gap: 16px; }
+.notifs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.notifs-title { font-size: var(--fs-28); }
+.notifs-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.notifs-item { padding: 0; }
+.notifs-item.is-unread { border-color: var(--acid); }
+.notifs-link { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; color: inherit; text-decoration: none; }
+.notifs-avatar { flex-shrink: 0; width: 34px; height: 34px; }
+.notifs-glyph { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--input-bg); color: var(--acid); }
+.notifs-text { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.notifs-item-title { font-size: var(--fs-14); font-weight: 600; }
+.notifs-body { font-size: var(--fs-13); color: var(--text-2); }
+.notifs-time { color: var(--muted); margin-top: 2px; }
+.notifs-dot { flex-shrink: 0; width: 8px; height: 8px; margin-top: 8px; border-radius: 50%; background: var(--acid); }

@@ -367,6 +367,26 @@ export interface AdminUser {
   noShowCount: number;
   /** Blocked from bidding — by no-shows or by the suspension itself. */
   bidBanned: boolean;
+  /** Active (not revoked) warnings. Three suspend the account. */
+  warningCount: number;
+}
+
+/** How many active warnings suspend an account (warning_limit() in 0025). */
+export const WARNING_LIMIT = 3;
+
+/** One moderator warning. The person sees their own; admins see all. */
+export interface UserWarning {
+  id: string;
+  userId: string;
+  issuedBy: Profile | null;
+  listingId: string | null;
+  /** Copied at issue time so it still reads after the listing is gone. */
+  listingTitle: string | null;
+  reason: string;
+  createdAt: string;
+  revokedAt: string | null;
+  revokedBy: Profile | null;
+  revokeReason: string | null;
 }
 
 /** A live/closed auction with the context needed to judge it. */
@@ -393,7 +413,9 @@ export type AdminActionKind =
   | 'listing_delete'
   | 'auction_cancel'
   | 'review_delete'
-  | 'report_resolve';
+  | 'report_resolve'
+  | 'user_warn'
+  | 'warning_revoke';
 
 export const ADMIN_ACTION_LABELS: Record<AdminActionKind, string> = {
   user_suspend: 'Suspended user',
@@ -406,6 +428,8 @@ export const ADMIN_ACTION_LABELS: Record<AdminActionKind, string> = {
   auction_cancel: 'Cancelled auction',
   review_delete: 'Deleted review',
   report_resolve: 'Actioned report',
+  user_warn: 'Warned user',
+  warning_revoke: 'Withdrew warning',
 };
 
 /** One append-only audit row. Nothing in the app can delete these. */

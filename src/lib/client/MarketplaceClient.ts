@@ -33,6 +33,7 @@ import type {
   PurchaseStatus,
   Review,
   SellerStats,
+  UserWarning,
 } from '../types';
 import type {
   DefectAssessment,
@@ -258,6 +259,10 @@ export interface MarketplaceClient {
   /** "It came back as a…" — the calibration loop's raw material. */
   recordPregradeOutcome(reportId: string, actualGrade: number, certNumber?: string): Promise<void>;
 
+  // ---- Warnings -------------------------------------------------------------
+  /** The signed-in user's own warnings, newest first, revoked ones included. */
+  listMyWarnings(): Promise<UserWarning[]>;
+
   // ---- Presence -------------------------------------------------------------
   /**
    * Who is on the site right now. Every signed-in tab announces itself;
@@ -336,6 +341,14 @@ export interface MarketplaceClient {
   adminResolveReport(reportId: string, status: ReportStatus, note: string): Promise<void>;
   /** The append-only audit log, newest first. */
   adminListActions(limit: number): Promise<AdminAction[]>;
+  /** A user's warnings, newest first. */
+  adminListWarnings(userId: string): Promise<UserWarning[]>;
+  /** Warn an account (reason required; listing optional). Returns the
+      active count afterwards — at WARNING_LIMIT the account is
+      suspended on the spot through adminSetSuspended. */
+  adminWarnUser(userId: string, reason: string, listingId?: string | null): Promise<number>;
+  /** Withdraw a warning. Does not lift a suspension — that is separate. */
+  adminRevokeWarning(warningId: string, reason: string): Promise<void>;
   /** The billing queue. 'pending' is the one that needs a human. */
   adminListPurchases(status: PurchaseStatus): Promise<PurchaseRequest[]>;
   /** Approve (payment landed) or reject a request. Approving a

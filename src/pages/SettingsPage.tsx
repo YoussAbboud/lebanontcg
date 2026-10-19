@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { Profile } from '../lib/types';
+import type { Profile, UserWarning } from '../lib/types';
+import { WARNING_LIMIT } from '../lib/types';
+import { relativeTime } from '../lib/format';
 import { useApp } from '../state/AppContext';
 import { Avatar } from '../components/Avatar';
 import { ImageCropper } from '../components/ImageCropper';
@@ -26,12 +28,21 @@ export function SettingsPage() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [pwState, setPwState] = useState<'idle' | 'busy' | 'saved'>('idle');
   const [pwError, setPwError] = useState('');
+  const [warnings, setWarnings] = useState<UserWarning[]>([]);
 
   useEffect(() => {
     if (!user) return;
     setDisplayName(user.displayName);
     setBio(user.bio);
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- reset only when identity changes
+
+  useEffect(() => {
+    if (!user) return;
+    client
+      .listMyWarnings()
+      .then(setWarnings)
+      .catch(() => setWarnings([]));
+  }, [client, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps -- reload per identity
 
   useEffect(() => {
     if (!user) return;
@@ -238,6 +249,38 @@ export function SettingsPage() {
                 <button className="btn-outline settings-sm" onClick={() => void unblock(p.id)}>
                   Unblock
                 </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="settings-section panel" aria-label="Account standing">
+        <h2 className="mono-label settings-section-title">Account standing</h2>
+        {user.suspendedAt ? (
+          <p className="settings-standing-bad">
+            <strong>Your account is suspended.</strong>
+            {user.suspendedReason ? ` ${user.suspendedReason}.` : ''} You can still read and message
+            about existing deals, but not list, bid or start new conversations. A moderator can lift
+            it.
+          </p>
+        ) : (
+          <p className="settings-muted">
+            {warnings.filter((w) => !w.revokedAt).length === 0
+              ? 'No warnings. Keep listings honest and this stays empty.'
+              : `${warnings.filter((w) => !w.revokedAt).length} of ${WARNING_LIMIT} warnings — at ${WARNING_LIMIT} the account is suspended until a moderator lifts it.`}
+          </p>
+        )}
+        {warnings.length > 0 && (
+          <ul className="settings-warnings">
+            {warnings.map((w) => (
+              <li key={w.id} className={`settings-warning${w.revokedAt ? ' is-revoked' : ''}`}>
+                <span className="settings-warning-reason">{w.reason}</span>
+                <span className="mono-label settings-warning-meta">
+                  {w.listingTitle ? `${w.listingTitle} · ` : ''}
+                  {relativeTime(w.createdAt)}
+                  {w.revokedAt && ' · withdrawn'}
+                </span>
               </li>
             ))}
           </ul>

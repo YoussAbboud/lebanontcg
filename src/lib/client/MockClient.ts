@@ -38,7 +38,9 @@ import type {
   ReportTargetType,
   Review,
   SellerStats,
+  UserWarning,
 } from '../types';
+import { WARNING_LIMIT } from '../types';
 import type {
   AuctionEvent,
   AuthState,
@@ -68,6 +70,20 @@ import {
   seedSubscriptions,
 } from '../../mock/seed';
 import type { MockCreditPack, MockSubscription, StoredNotification } from '../../mock/seed';
+
+/** A warning row as the mock keeps it (mirror of 0025). */
+interface StoredWarning {
+  id: string;
+  userId: string;
+  issuedBy: string | null;
+  listingId: string | null;
+  listingTitle: string | null;
+  reason: string;
+  createdAt: string;
+  revokedAt: string | null;
+  revokedBy: string | null;
+  revokeReason: string | null;
+}
 import { avatarDataUrl, cardImageUrl } from '../../mock/cardImage';
 import type { Condition, Finish, Game } from '../types';
 import type { DefectAssessment, PregradeReport, PregradeReportInput } from '../pregrade/types';
@@ -146,6 +162,9 @@ export class MockClient implements MarketplaceClient {
   private adminActions: StoredAdminAction[] = [];
   /** Pre-grade reports live per-tab in mock mode (captures = object URLs). */
   private pregradeReports: PregradeReport[] = [];
+
+  // ---- Warnings (mirrors migration 0025) ------------------------------------
+  private warnings: StoredWarning[] = [];
 
   // ---- Notifications (mirrors migration 0024) ------------------------------
   private notifications: StoredNotification[] = structuredClone(seedNotifications);
@@ -250,6 +269,7 @@ export class MockClient implements MarketplaceClient {
         this.reports = s.reports;
         this.adminActions = s.adminActions ?? this.adminActions;
         this.notifications = s.notifications ?? this.notifications;
+        this.warnings = s.warnings ?? this.warnings;
         this.subscriptions = s.subscriptions ?? this.subscriptions;
         this.creditPacks = s.creditPacks ?? this.creditPacks;
         this.listingCounts = new Map(s.listingCounts ?? [...this.listingCounts.entries()]);
@@ -392,6 +412,13 @@ export class MockClient implements MarketplaceClient {
         this.emitAuction(patch.auction.id, { type: 'updated', auction: structuredClone(patch.auction) });
         break;
       }
+      case 'warning': {
+        const w = patch.warning;
+        const idx = this.warnings.findIndex((x) => x.id === w.id);
+        if (idx >= 0) this.warnings[idx] = w;
+        else this.warnings.unshift(w);
+        break;
+      }
       case 'notification': {
         const n = patch.notification;
         const idx = this.notifications.findIndex((x) => x.id === n.id);
@@ -471,6 +498,7 @@ export class MockClient implements MarketplaceClient {
       reports: this.reports,
       adminActions: this.adminActions,
       notifications: this.notifications,
+      warnings: this.warnings,
       subscriptions: this.subscriptions,
       creditPacks: this.creditPacks,
       listingCounts: [...this.listingCounts.entries()],
@@ -2165,6 +2193,39 @@ export class MockClient implements MarketplaceClient {
     };
   }
 
+  // ---- Warnings -------------------------------------------------------------
+  // Mirrors 0025: a reason is required, the third active warning suspends
+  // through adminSetSuspended, revoking never unsuspends.
+
+  private activeWarnings(userId: string): number {
+    return this.warnings.filter((w) => w.userId === userId && !w.revokedAt).length;
+  }
+
+  private toWarning(w: StoredWarning): UserWarning {
+    return {
+      id: w.id,
+      userId: w.userId,
+      issuedBy: w.issuedBy ? this.profileById(w.issuedBy) : null,
+      listingId: w.listingId,
+      listingTitle: w.listingTitle,
+      reason: w.reason,
+      createdAt: w.createdAt,
+      revokedAt: w.revokedAt,
+      revokedBy: w.revokedBy ? this.profileById(w.revokedBy) : null,
+      revokeReason: w.revokeReason,
+    };
+  }
+
+  async listMyWarnings(): Promise<UserWarning[]> {
+    if (!this.auth.user) return [];
+    await sleep(netDelay());
+    const me = this.auth.user.id;
+    return this.warnings
+      .filter((w) => w.userId === me)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((w) => this.toWarning(w));
+  }
+
   // ---- Presence: who is on the site ----------------------------------------
   // Same shape as the auction rooms: heartbeats per tab, pruned after
   // 12 seconds of silence. A few seeded accounts are always "online" so
@@ -2613,6 +2674,7 @@ export class MockClient implements MarketplaceClient {
               new Date(n.createdAt).getTime() > cutoff,
           ).length,
           bidBanned: this.isBidBanned(p.id),
+          warningCount: this.activeWarnings(p.id),
         };
       });
   }
@@ -2908,6 +2970,79 @@ export class MockClient implements MarketplaceClient {
     }));
   }
 
+  // ---- Admin: warnings ----------------------------------------------------
+
+  async adminListWarnings(userId: string): Promise<UserWarning[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    return this.warnings
+      .filter((w) => w.userId === userId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((w) => this.toWarning(w));
+  }
+
+  async adminWarnUser(userId: string, reason: string, listingId?: string | null): Promise<number> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    if (userId === actor.id) throw new Error('You cannot warn your own account.');
+    if (reason.trim().length < 3) throw new Error('A reason is required for a warning.');
+    const target = this.profiles.find((p) => p.id === userId);
+    if (!target) throw new Error('User not found.');
+    if (target.isAdmin) throw new Error('Demote this admin before warning the account.');
+    const listing = listingId ? this.listings.find((l) => l.id === listingId) : undefined;
+    const w: StoredWarning = {
+      id: nextId('w'),
+      userId,
+      issuedBy: actor.id,
+      listingId: listing?.id ?? null,
+      listingTitle: listing?.title ?? null,
+      reason: reason.trim(),
+      createdAt: new Date().toISOString(),
+      revokedAt: null,
+      revokedBy: null,
+      revokeReason: null,
+    };
+    this.warnings.unshift(w);
+    this.broadcast({ type: 'warning', warning: structuredClone(w) });
+    const count = this.activeWarnings(userId);
+    this.logAdmin(actor, 'user_warn', 'user', userId, reason, {
+      warning_id: w.id,
+      listing_id: w.listingId,
+      warning_count: count,
+    });
+    this.notify(
+      userId,
+      'moderation',
+      `Warning ${Math.min(count, WARNING_LIMIT)} of ${WARNING_LIMIT}${w.listingTitle ? ` — ${w.listingTitle}` : ''}`,
+      `${w.reason}${count >= WARNING_LIMIT ? '' : ` At ${WARNING_LIMIT} warnings the account is suspended.`}`,
+      '/settings',
+    );
+    if (count >= WARNING_LIMIT && !target.suspendedAt) {
+      await this.adminSetSuspended(userId, true, `${WARNING_LIMIT} warnings — ${w.reason}`);
+      this.notify(
+        userId,
+        'moderation',
+        'Your account is suspended',
+        `It reached ${WARNING_LIMIT} warnings. You can still read and message about existing deals; a moderator can lift it.`,
+        '/settings',
+      );
+    }
+    return count;
+  }
+
+  async adminRevokeWarning(warningId: string, reason: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    const w = this.warnings.find((x) => x.id === warningId && !x.revokedAt);
+    if (!w) throw new Error('No active warning with that id.');
+    w.revokedAt = new Date().toISOString();
+    w.revokedBy = actor.id;
+    w.revokeReason = reason.trim() || null;
+    this.broadcast({ type: 'warning', warning: structuredClone(w) });
+    this.logAdmin(actor, 'warning_revoke', 'user', w.userId, reason, { warning_id: w.id });
+    this.notify(w.userId, 'moderation', 'A warning was withdrawn', reason.trim(), '/settings');
+  }
+
   // ---- Admin: billing ----------------------------------------------------
 
   async adminListPurchases(status: PurchaseStatus): Promise<PurchaseRequest[]> {
@@ -3122,6 +3257,7 @@ interface SnapshotState {
   reports: StoredReport[];
   adminActions?: StoredAdminAction[];
   notifications?: StoredNotification[];
+  warnings?: StoredWarning[];
   subscriptions?: MockSubscription[];
   creditPacks?: MockCreditPack[];
   listingCounts?: Array<[string, number]>;
@@ -3152,6 +3288,7 @@ type RemotePatch =
   | { type: 'online'; userId: string; tabId: string; at: number; leaving?: boolean }
   | { type: 'noshow-retract'; auctionId: string; reporterId: string }
   | { type: 'notification'; notification: StoredNotification }
+  | { type: 'warning'; warning: StoredWarning }
   | { type: 'notifications-read'; userId: string; ids: string[] | null; at: string }
   | {
       type: 'billing';

@@ -8,6 +8,7 @@ import { thumbBackground, glyphOf } from '../../lib/face';
 import { useApp } from '../../state/AppContext';
 import { useToast } from '../../state/ToastContext';
 import { ReasonPrompt } from './ReasonPrompt';
+import { WARNING_LIMIT } from '../../lib/types';
 import { Chip, handleOf } from './shared';
 
 const PAGE = 20;
@@ -87,6 +88,29 @@ export function AdminListings({ onChanged }: { onChanged(): void }) {
       },
     });
   };
+
+  const warnSeller = (listing: ListingWithSeller, removeToo: boolean) =>
+    setPending({
+      title: removeToo ? 'Remove and warn the seller' : 'Warn the seller',
+      body: (
+        <>
+          <strong>{listing.title}</strong>
+          {removeToo ? ' leaves browse and ' : ' stays as it is and '}
+          {handleOf(listing.seller)} gets a warning naming this listing and your reason. Three
+          active warnings suspend the account automatically.
+        </>
+      ),
+      confirmLabel: removeToo ? 'Remove and warn' : 'Issue warning',
+      requireReason: true,
+      destructive: removeToo,
+      run: async (reason) => {
+        if (removeToo && listing.status !== 'removed') {
+          await client.adminSetListingStatus(listing.id, 'removed', reason);
+        }
+        const n = await client.adminWarnUser(listing.sellerId, reason, listing.id);
+        await after(n >= WARNING_LIMIT ? 'Warned — account suspended' : `Warning ${n} of ${WARNING_LIMIT} issued`);
+      },
+    });
 
   const hardDelete = (listing: ListingWithSeller) =>
     setPending({
@@ -237,6 +261,19 @@ export function AdminListings({ onChanged }: { onChanged(): void }) {
                       onClick={() => changeStatus(l, 'removed')}
                     >
                       Remove
+                    </button>
+                  )}
+                  {l.status === 'removed' ? (
+                    <button type="button" className="btn-outline" onClick={() => warnSeller(l, false)}>
+                      Warn seller
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn-outline btn-danger-outline"
+                      onClick={() => warnSeller(l, true)}
+                    >
+                      Remove &amp; warn
                     </button>
                   )}
                   <button

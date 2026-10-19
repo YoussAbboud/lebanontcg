@@ -41,6 +41,7 @@ import type {
   ReportTargetType,
   Review,
   SellerStats,
+  UserWarning,
 } from '../types';
 import type {
   AxisRatio,
@@ -198,6 +199,19 @@ interface AdminActionRow {
   reason: string;
   detail: unknown;
   created_at: string;
+}
+
+interface WarningRow {
+  id: string;
+  user_id: string;
+  issued_by: string | null;
+  listing_id: string | null;
+  listing_title: string | null;
+  reason: string;
+  created_at: string;
+  revoked_at: string | null;
+  revoked_by: string | null;
+  revoke_reason: string | null;
 }
 
 interface NotificationRow {
@@ -1984,6 +1998,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       reportsAgainst: Number(row.reports_against ?? 0),
       noShowCount: Number(row.no_show_count ?? 0),
       bidBanned: Boolean(row.bid_banned),
+      warningCount: Number(row.warning_count ?? 0),
     }));
   }
 
@@ -2279,6 +2294,67 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       detail: (row.detail ?? {}) as Record<string, unknown>,
       createdAt: row.created_at,
     }));
+  }
+
+  // ---- Warnings -------------------------------------------------------------
+
+  private async mapWarnings(rows: WarningRow[]): Promise<UserWarning[]> {
+    const people = await this.profilesByIds([
+      ...new Set(
+        rows.flatMap((r) => [r.issued_by, r.revoked_by]).filter((x): x is string => Boolean(x)),
+      ),
+    ]);
+    return rows.map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      issuedBy: r.issued_by ? (people.get(r.issued_by) ?? null) : null,
+      listingId: r.listing_id,
+      listingTitle: r.listing_title,
+      reason: r.reason,
+      createdAt: r.created_at,
+      revokedAt: r.revoked_at,
+      revokedBy: r.revoked_by ? (people.get(r.revoked_by) ?? null) : null,
+      revokeReason: r.revoke_reason,
+    }));
+  }
+
+  async listMyWarnings(): Promise<UserWarning[]> {
+    if (!this.auth.user) return [];
+    const { data, error } = await this.sb
+      .from('user_warnings')
+      .select('*')
+      .eq('user_id', this.auth.user.id)
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return this.mapWarnings((data ?? []) as WarningRow[]);
+  }
+
+  async adminListWarnings(userId: string): Promise<UserWarning[]> {
+    const { data, error } = await this.sb
+      .from('user_warnings')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    if (error) throw this.adminError(error);
+    return this.mapWarnings((data ?? []) as WarningRow[]);
+  }
+
+  async adminWarnUser(userId: string, reason: string, listingId?: string | null): Promise<number> {
+    const { data, error } = await this.sb.rpc('admin_warn_user', {
+      p_user: userId,
+      p_reason: reason,
+      p_listing: listingId ?? null,
+    });
+    if (error) throw this.adminError(error);
+    return Number(data ?? 0);
+  }
+
+  async adminRevokeWarning(warningId: string, reason: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_revoke_warning', {
+      p_warning: warningId,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
   }
 
   // ---- Presence -------------------------------------------------------------

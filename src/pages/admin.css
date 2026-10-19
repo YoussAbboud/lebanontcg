@@ -424,3 +424,21 @@
 /* Billing queue (0019). */
 .abilling-note { color: var(--muted); font-size: var(--fs-12); margin-bottom: 10px; }
 .abilling-paynote { color: var(--text-2); font-style: italic; }
+
+/* Warnings on a user card (0025). */
+.awarnings { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.awarning {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  background: var(--input-bg);
+}
+.awarning.is-revoked { opacity: 0.55; }
+.awarning.is-revoked .awarning-reason { text-decoration: line-through; }
+.awarning-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.awarning-reason { font-size: var(--fs-13); }
+.awarning-meta { color: var(--muted); }

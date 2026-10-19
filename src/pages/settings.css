@@ -90,3 +90,21 @@
   gap: 10px;
   margin-top: 8px;
 }
+
+/* Account standing: warnings and suspension, in the person's own words. */
+.settings-standing-bad { color: var(--text-2); font-size: var(--fs-13); line-height: 1.55; }
+.settings-standing-bad strong { color: var(--danger); }
+.settings-warnings { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.settings-warning {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  background: var(--input-bg);
+}
+.settings-warning.is-revoked { opacity: 0.55; }
+.settings-warning.is-revoked .settings-warning-reason { text-decoration: line-through; }
+.settings-warning-reason { font-size: var(--fs-13); }
+.settings-warning-meta { color: var(--muted); }

@@ -771,3 +771,19 @@ accounts and nobody else; a signed-in tab announces itself and is gone
 once it unsubscribes. The journey smoke gains a check that Karim's
 Messages list shows the dot beside @mayapulls and that a profile of an
 online account carries it too.
+
+## A20 — Warnings
+
+`supabase/dev/warn-test.sql` (23 assertions, green): non-admins and
+self-warnings are refused, as is a reason under three characters and a
+direct insert; the count climbs 1, 2, 3 with the listing title kept;
+the person reads their own warnings and is notified of each with the
+count while another user sees none; the third warning suspends with
+the reason on the profile, logs user_suspend and three user_warn
+rows, and admin_users reports the count; a suspended seller cannot
+list; revoking drops the count but not the suspension; revoking twice
+errors; lifting by hand keeps the record; the next warning re-suspends
+immediately. The other four suites still pass; apply-all 0001–0025
+clean.
+
+`src/lib/client/warnings.test.ts` (4 tests) mirrors it in the mock.

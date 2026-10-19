@@ -366,6 +366,26 @@ export function SellPage() {
     setStep(target);
   };
 
+  // A suspended account cannot list (RLS refuses the insert); say so
+  // here rather than at Publish, after four steps of work.
+  if (user.suspendedAt) {
+    return (
+      <main className="sell">
+        <div className="empty-dashed sell-suspended">
+          <h3>Your account is suspended</h3>
+          <p>
+            {user.suspendedReason ? `${user.suspendedReason}. ` : ''}
+            You can still read and message about existing deals, but not list cards. A moderator
+            can lift it — your warnings and standing are in Settings.
+          </p>
+          <Link to="/settings" className="btn-outline">
+            Account standing
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   // The wall, as the database sees it (0019). Editing an existing
   // listing never consumes anything, so it is never blocked.
   const walled =

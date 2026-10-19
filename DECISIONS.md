@@ -1192,3 +1192,29 @@ bug; the dev user switcher and the mock-mode notes exist only in
 - In mock mode two seeded accounts (Maya, Lina) always read as online so
   the dot can be seen in a single tab; a second tab's sign-in shows up
   through the same BroadcastChannel heartbeats the auction rooms use.
+
+## A20 — Warnings
+
+- A moderator can warn an account as often as it takes, always with a
+  reason and, when it is about a listing, with that listing attached
+  (its title is copied onto the warning so it still reads after the
+  listing is gone). The **third active warning suspends the account
+  automatically** — through `admin_set_suspended`, the same path a
+  manual suspension takes, so the audit log, the notification and
+  every "suspended accounts cannot list, bid or open conversations"
+  rule apply unchanged.
+- **Withdrawing a warning and lifting a suspension are separate
+  actions.** Revoking a warning stops it counting but leaves the
+  suspension in place; lifting a suspension leaves the warnings on
+  record. A moderator who lifts a suspension with three warnings still
+  active is giving a last chance — the next warning suspends again at
+  once. Wiping the slate means withdrawing warnings, one by one, with a
+  reason.
+- The person sees their own warnings and standing in Settings
+  (Account standing: "2 of 3 warnings — at 3 the account is suspended
+  until a moderator lifts it"), and is notified of each one with the
+  count. Admins see the count as a chip on the user card, the list
+  behind a Warnings button, and a "Remove & warn" action on a listing
+  that does both in one go.
+- Admins cannot be warned (demote first, as with suspension) and
+  nobody can warn themselves.

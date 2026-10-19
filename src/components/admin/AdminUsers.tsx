@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import type { AdminUser } from '../../lib/types';
-import { memberSince } from '../../lib/format';
+import type { AdminUser, UserWarning } from '../../lib/types';
+import { WARNING_LIMIT } from '../../lib/types';
+import { memberSince, relativeTime } from '../../lib/format';
 import { useApp } from '../../state/AppContext';
 import { useToast } from '../../state/ToastContext';
 import { ReasonPrompt } from './ReasonPrompt';
@@ -47,6 +48,58 @@ export function AdminUsers({ onChanged }: { onChanged(): void }) {
     onChanged();
     await load();
   };
+
+  const [openWarnings, setOpenWarnings] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<UserWarning[]>([]);
+  const loadWarnings = async (userId: string) => {
+    setOpenWarnings(userId);
+    try {
+      setWarnings(await client.adminListWarnings(userId));
+    } catch {
+      setWarnings([]);
+    }
+  };
+
+  const warn = (row: AdminUser) =>
+    setPending({
+      title: `Warn ${handleOf(row.profile)}`,
+      body: (
+        <>
+          Warning {Math.min(row.warningCount + 1, WARNING_LIMIT)} of {WARNING_LIMIT}. They are told
+          the reason.{' '}
+          {row.warningCount + 1 >= WARNING_LIMIT
+            ? 'This one suspends the account on the spot.'
+            : `At ${WARNING_LIMIT} the account is suspended automatically.`}
+        </>
+      ),
+      confirmLabel: row.warningCount + 1 >= WARNING_LIMIT ? 'Warn and suspend' : 'Issue warning',
+      requireReason: true,
+      destructive: row.warningCount + 1 >= WARNING_LIMIT,
+      run: async (reason) => {
+        const n = await client.adminWarnUser(row.profile.id, reason);
+        await after(n >= WARNING_LIMIT ? 'Warned — account suspended' : `Warning ${n} of ${WARNING_LIMIT} issued`);
+        if (openWarnings === row.profile.id) await loadWarnings(row.profile.id);
+      },
+    });
+
+  const revoke = (w: UserWarning) =>
+    setPending({
+      title: 'Withdraw this warning',
+      body: (
+        <>
+          "{w.reason}" stops counting. The account is not unsuspended by this — lift the
+          suspension separately if that is what you mean.
+        </>
+      ),
+      confirmLabel: 'Withdraw warning',
+      requireReason: false,
+      destructive: false,
+      run: async (reason) => {
+        await client.adminRevokeWarning(w.id, reason);
+        await after('Warning withdrawn');
+        await loadWarnings(w.userId);
+      },
+    });
 
   const suspend = (row: AdminUser) =>
     setPending({
@@ -146,6 +199,11 @@ export function AdminUsers({ onChanged }: { onChanged(): void }) {
                     {p.isAdmin && <Chip tone="acid">Admin</Chip>}
                     {p.suspendedAt && <Chip tone="danger">Suspended</Chip>}
                     {row.bidBanned && !p.suspendedAt && <Chip tone="warn">Bid-banned</Chip>}
+                    {row.warningCount > 0 && (
+                      <Chip tone={row.warningCount >= WARNING_LIMIT ? 'danger' : 'warn'}>
+                        {row.warningCount} warning{row.warningCount === 1 ? '' : 's'}
+                      </Chip>
+                    )}
                     {isSelf && <Chip>You</Chip>}
                   </span>
                 </div>
@@ -224,7 +282,52 @@ export function AdminUsers({ onChanged }: { onChanged(): void }) {
                       Clear bid ban
                     </button>
                   )}
+                  {!p.isAdmin && (
+                    <button
+                      type="button"
+                      className="btn-outline"
+                      onClick={() => warn(row)}
+                      disabled={isSelf}
+                    >
+                      Warn
+                    </button>
+                  )}
+                  {row.warningCount > 0 || openWarnings === p.id ? (
+                    <button
+                      type="button"
+                      className="btn-ghost-mono"
+                      onClick={() =>
+                        openWarnings === p.id ? setOpenWarnings(null) : void loadWarnings(p.id)
+                      }
+                    >
+                      {openWarnings === p.id ? 'Hide warnings' : 'Warnings'}
+                    </button>
+                  ) : null}
                 </div>
+
+                {openWarnings === p.id && (
+                  <ul className="awarnings">
+                    {warnings.length === 0 && <li className="mono-label">No warnings on record.</li>}
+                    {warnings.map((w) => (
+                      <li key={w.id} className={`awarning${w.revokedAt ? ' is-revoked' : ''}`}>
+                        <div className="awarning-main">
+                          <span className="awarning-reason">{w.reason}</span>
+                          <span className="mono-label awarning-meta">
+                            {w.listingTitle ? `${w.listingTitle} · ` : ''}
+                            {handleOf(w.issuedBy)} · {relativeTime(w.createdAt)}
+                            {w.revokedAt && ` · withdrawn by ${handleOf(w.revokedBy)}`}
+                            {w.revokeReason && ` — ${w.revokeReason}`}
+                          </span>
+                        </div>
+                        {!w.revokedAt && (
+                          <button type="button" className="btn-ghost-mono" onClick={() => revoke(w)}>
+                            Withdraw
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             );
           })}

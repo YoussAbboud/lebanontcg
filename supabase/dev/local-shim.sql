@@ -48,6 +48,12 @@ language sql immutable as $$
   select (string_to_array(name, '/'))[1 : array_length(string_to_array(name, '/'), 1) - 1]
 $$;
 
+-- Supabase exposes storage.objects to clients through RLS; mirror that so
+-- storage policies are testable here too.
+alter table storage.objects enable row level security;
+grant usage on schema storage to anon, authenticated, service_role;
+grant all on storage.objects, storage.buckets to anon, authenticated, service_role;
+
 create publication supabase_realtime;
 grant usage on schema public to anon, authenticated;
 alter default privileges in schema public grant all on tables to anon, authenticated;

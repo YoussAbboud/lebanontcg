@@ -1103,3 +1103,20 @@ bug; the dev user switcher and the mock-mode notes exist only in
 - The test suites exercise the paywall rules with the switch forced on
   and then prove the default: a used-up free seller lists four more
   cards, spends no credit, and the tally keeps counting.
+
+## A15 — Nobody can list the image bucket
+
+- Supabase's advisor flagged `listing-images`: 0007 granted SELECT on
+  every object in the bucket to everyone, which lets any client call
+  `list()` and enumerate every seller's folder (their user id) and
+  file names. The app never needed it — a public bucket serves files
+  by URL without consulting `storage.objects` — and the only
+  authenticated operations are an owner uploading, replacing and
+  removing their own files, which have their own policies.
+- 0022 narrows SELECT to the owner's own folder rather than dropping
+  it, because the storage API reads the row it is about to remove or
+  overwrite. Public image URLs are unaffected; visitors can no longer
+  list anything.
+- The local shim now enables RLS on `storage.objects` and grants the
+  client roles access the way Supabase does, so storage policies are
+  part of the RLS suite from here on.

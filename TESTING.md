@@ -721,3 +721,10 @@ Pre-Grade is untouched (48/0). plans.test.ts constructs the mock with
 (15 tests). The paywall smoke now expects two plan cards, the
 free-period copy, and "unlimited for everyone" in a free seller's
 standing (18/18).
+
+## A15 — Storage listing
+
+rls-test grows to 24: with two owners' files seeded, an owner listing
+`listing-images` sees exactly their own folder, and the anonymous role
+sees nothing at all. Needed the shim to enable RLS on `storage.objects`
+and grant the client roles, as Supabase does.

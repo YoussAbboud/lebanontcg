@@ -215,3 +215,23 @@ select c.id, c.listing_id, auth.uid(), c.buyer_id, 5, 'nice buyer'
   from public.conversations c limit 1;
 select 'T37 (expect error above: seller cannot review the buyer)';
 reset role;
+
+-- ---------------------------------------------------------------------------
+-- 0022: the listing-images bucket cannot be enumerated
+-- ---------------------------------------------------------------------------
+-- Seed two owners' files as the system, then look as each of them.
+reset role;
+insert into storage.objects (bucket_id, name, owner) values
+  ('listing-images', '00000000-0000-0000-0000-000000000001/a.jpg', '00000000-0000-0000-0000-000000000001'),
+  ('listing-images', '00000000-0000-0000-0000-000000000002/b.jpg', '00000000-0000-0000-0000-000000000002');
+set role authenticated;
+set request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';
+select 'T40 an owner sees only their own folder: '
+  || (count(*) = 1 and bool_and(name like '00000000-0000-0000-0000-000000000001/%'))::text
+  from storage.objects where bucket_id = 'listing-images';
+-- A visitor carries no subject claim at all.
+set request.jwt.claim.sub = '';
+set role anon;
+select 'T41 a visitor cannot list the bucket at all: ' || (count(*) = 0)::text
+  from storage.objects where bucket_id = 'listing-images';
+reset role;

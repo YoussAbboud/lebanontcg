@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { readReturnTo } from '../lib/returnTo';
 import { useApp } from '../state/AppContext';
 import { PasswordField } from '../components/PasswordField';
@@ -229,6 +229,13 @@ export function SignInPage() {
         {error && (
           <p className="field-error" role="alert">
             {error}
+          </p>
+        )}
+
+        {mode === 'signup' && (
+          <p className="signin-consent">
+            By creating an account you agree to the <Link to="/terms">Terms of Service</Link> and
+            the <Link to="/privacy">Privacy Policy</Link>.
           </p>
         )}
 

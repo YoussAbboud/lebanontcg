@@ -787,3 +787,11 @@ immediately. The other four suites still pass; apply-all 0001–0025
 clean.
 
 `src/lib/client/warnings.test.ts` (4 tests) mirrors it in the mock.
+
+## A21 — Legal pages
+
+The SEO smoke gains eight checks: /terms and /privacy carry their own
+titles and are indexable; Terms render at least ten sections with a
+matching contents list, cross-link to Privacy, and state the
+three-warning rule; Privacy names the processors; the footer links to
+both; the sign-up form carries the consent line.

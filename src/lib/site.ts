@@ -13,3 +13,12 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/og.png`;
  * copy the Plans page shows before that. Flip together with the SQL.
  */
 export const LISTING_QUOTA_DEFAULT = false;
+
+/**
+ * Legal. CONTACT_EMAIL is where privacy and account requests go — set it
+ * to a mailbox someone reads. The effective date moves whenever the
+ * Terms or the Privacy Policy change in substance.
+ */
+export const CONTACT_EMAIL = 'hello@lebanontcg.com';
+export const LEGAL_EFFECTIVE_DATE = '2026-10-19';
+export const OPERATOR_NAME = 'LebanonTCG';

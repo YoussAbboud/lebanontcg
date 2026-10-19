@@ -1218,3 +1218,27 @@ bug; the dev user switcher and the mock-mode notes exist only in
   that does both in one go.
 - Admins cannot be warned (demote first, as with suspension) and
   nobody can warn themselves.
+
+## A21 — Terms of Service and Privacy Policy
+
+- Both are written to match what the product actually does rather than
+  borrowed boilerplate: a venue, not a merchant; non-binding bids and
+  offers with no-show accountability instead; payments arranged between
+  people and, for plans, by Whish or crypto after we make contact; the
+  three-warning suspension and the appeal route; Pre-Grade as an
+  estimate produced by an AI model, never a grade; exactly which data is
+  stored, which of it is public, who processes it (Supabase, Vercel,
+  Anthropic for Pre-Grade photos) and where. Plain language throughout,
+  because a policy nobody reads protects nobody.
+- Acceptance is by clickwrap at sign-up ("By creating an account you
+  agree to…") and by continued use; the effective date lives in one
+  constant (`LEGAL_EFFECTIVE_DATE`) and moves when the text changes in
+  substance. We did not add an accepted-version column to profiles —
+  worth doing the first time the Terms change materially.
+- `CONTACT_EMAIL` is a single constant used by both documents and must
+  point at a mailbox someone reads; it is the appeal and
+  data-request channel the documents promise.
+- Both pages are indexable, in the sitemap, linked from the footer, the
+  sign-up form and the Sell notice. The documents were drafted by an
+  engineer, not a lawyer, and should be read by one before the site
+  takes money.

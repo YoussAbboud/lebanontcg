@@ -461,7 +461,8 @@ export function SellPage() {
               </p>
               <p className="sell-notice-rule">
                 Fake, misleading or copied listings get the account banned. List only cards you
-                actually have, as they actually are.
+                actually have, as they actually are — the <Link to="/terms">Terms</Link> spell it
+                out.
               </p>
             </div>
             {entitlements?.canUsePregrade && (

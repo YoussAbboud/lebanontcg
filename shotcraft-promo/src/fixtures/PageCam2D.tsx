@@ -12,6 +12,7 @@
 //   </PageCam2D>
 import React from 'react';
 import { AbsoluteFill, Img, interpolate, staticFile, useCurrentFrame, Easing } from 'remotion';
+import { useFmt } from '../fmt';
 
 export type CamKey2D = {
   frame: number;
@@ -36,6 +37,8 @@ export const PageCam2D: React.FC<{
   ease?: (t: number) => number;
 }> = ({ src, pageH, keys, children, bg = '#faf7f2', blur = 0, ease = Easing.bezier(0.33, 0, 0.15, 1) }) => {
   const frame = useCurrentFrame();
+  const { W, H } = useFmt();
+  const VX = W / 2, VY = H / 2; // viewport centre (page point (cx, cy) lands here)
   let a = keys[0];
   let b = keys[keys.length - 1];
   for (let i = 0; i < keys.length - 1; i++) {
@@ -72,7 +75,7 @@ export const PageCam2D: React.FC<{
             position: 'absolute',
             width: 1920,
             height: pageH,
-            transform: `translate(${960 - cx * zoom}px, ${540 - cy * zoom}px) scale(${zoom})`,
+            transform: `translate(${VX - cx * zoom}px, ${VY - cy * zoom}px) scale(${zoom})`,
             transformOrigin: '0 0',
             filter: blur > 0 ? `blur(${blur}px)` : undefined,
           }}
@@ -91,7 +94,7 @@ export const PageCam2D: React.FC<{
           position: 'absolute',
           inset: 0,
           perspective: `${persp * zoom}px`,
-          perspectiveOrigin: '960px 540px',
+          perspectiveOrigin: `${VX}px ${VY}px`,
         }}
       >
         <div
@@ -100,7 +103,7 @@ export const PageCam2D: React.FC<{
             width: 1920,
             height: pageH,
             zoom,
-            transform: `translate(${960 / zoom - cx}px, ${540 / zoom - cy}px) rotateY(${rotY}deg) rotateX(${rotX}deg) rotateZ(${rotZ}deg)`,
+            transform: `translate(${VX / zoom - cx}px, ${VY / zoom - cy}px) rotateY(${rotY}deg) rotateX(${rotX}deg) rotateZ(${rotZ}deg)`,
             transformOrigin: `${cx}px ${cy}px`,
             transformStyle: 'preserve-3d',
             filter: blur > 0 ? `blur(${blur}px)` : undefined,

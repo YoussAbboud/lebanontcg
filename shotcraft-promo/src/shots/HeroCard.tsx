@@ -31,6 +31,7 @@ import { EASE, FONT, Grain, ramp } from '../fixtures/Polish';
 import { Dust, LOOKS, alpha } from '../fixtures/Look';
 import layout from '../live-layout.json';
 import { C } from '../theme';
+import { Fmt, useFmt } from '../fmt';
 
 // LebanonTCG adaptation: Browse page + the live Red-Eyes listing card (tall 260×570 card → camera zoom rescaled
 // 2.6×312/570 ≈ 1.42 so the card fills the same screen share; focus offset rescaled the same way). Palette moved from
@@ -50,9 +51,11 @@ const CARD = layout.browse.cards.find((c) => c.title === layout.browse.heroTitle
 const MCX = CARD.x + CARD.w / 2; // 1225
 const MCY = CARD.y + CARD.h / 2; // 537
 const RADIUS = 18;
-const Z = 1.42; // close-up zoom for a 570px-tall card
-const FX = 105 * (2.6 / Z); // demo focus offsets, rescaled to keep the same screen offsets
-const FY = 10 * (2.6 / Z);
+// close-up zoom for a 570px-tall card; vertical has the height for a bigger card (≈1000px), the note still fits on its left
+const zoomFor = (v: boolean) => (v ? 1.75 : 1.42);
+// demo focus offsets, rescaled to keep the same screen offsets (FX·Z = 273, FY·Z = 26)
+const fxFor = (v: boolean) => 105 * (2.6 / zoomFor(v));
+const fyFor = (v: boolean) => 10 * (2.6 / zoomFor(v));
 
 // —— 节拍 ——
 const LOCK = 34;
@@ -63,12 +66,17 @@ const RISE1 = 66;
 const RESEAT0 = 124;
 const LAND = 142;
 
-const CAM_KEYS: CamKey2D[] = [
-  { frame: 0, cx: 960, cy: 680, zoom: 0.8, rotX: 0, rotY: 0, rotZ: 0, persp: 1200 },
-  { frame: PUSH0, cx: 960, cy: 680, zoom: 0.8, rotX: 0, rotY: 0, rotZ: 0, persp: 1200 },
+// vertical: the wide view starts lower on the page so the tall frame is filled with page (1920/0.8 = 2400 page px)
+const WIDE_CY = (v: boolean) => (v ? 1200 : 680);
+const camKeys = (v: boolean): CamKey2D[] => {
+  const Z = zoomFor(v), FX = fxFor(v), FY = fyFor(v);
+  return [
+  { frame: 0, cx: 960, cy: WIDE_CY(v), zoom: 0.8, rotX: 0, rotY: 0, rotZ: 0, persp: 1200 },
+  { frame: PUSH0, cx: 960, cy: WIDE_CY(v), zoom: 0.8, rotX: 0, rotY: 0, rotZ: 0, persp: 1200 },
   { frame: PUSH1, cx: MCX - FX, cy: MCY - FY, zoom: Z, rotX: 8, rotY: 34, rotZ: 2, persp: 1200 * (2.6 / Z) },
   { frame: SPOTLIGHT_HERO_CARD_DURATION, cx: MCX - FX, cy: MCY - FY, zoom: Z, rotX: 8, rotY: 34, rotZ: 2, persp: 1200 * (2.6 / Z) },
-];
+  ];
+};
 const PUSH_EASE = Easing.bezier(0.35, 0, 0.2, 1);
 const POP_EASE = Easing.bezier(0.2, 1.25, 0.3, 1);
 const RESEAT_EASE = Easing.bezier(0.4, 0, 0.3, 1.05);
@@ -76,24 +84,25 @@ const RESEAT_EASE = Easing.bezier(0.4, 0, 0.3, 1.05);
 const clampOpt = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 
 // 页面相机的纯函数版（与 PageCam2D 同一套插值与 3D 坐标数学），供注记层复用同一台相机
-const camAt = (frame: number) => {
-  let a = CAM_KEYS[0];
-  let b = CAM_KEYS[CAM_KEYS.length - 1];
-  for (let i = 0; i < CAM_KEYS.length - 1; i++) {
-    if (frame >= CAM_KEYS[i].frame && frame <= CAM_KEYS[i + 1].frame) { a = CAM_KEYS[i]; b = CAM_KEYS[i + 1]; break; }
+const camAt = (frame: number, keys: CamKey2D[]) => {
+  let a = keys[0];
+  let b = keys[keys.length - 1];
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (frame >= keys[i].frame && frame <= keys[i + 1].frame) { a = keys[i]; b = keys[i + 1]; break; }
   }
   const t = a.frame === b.frame ? 1 : interpolate(frame, [a.frame, b.frame], [0, 1], { ...clampOpt, easing: PUSH_EASE });
   const m = (x?: number, y?: number) => (x ?? 0) + ((y ?? 0) - (x ?? 0)) * t;
   return { cx: m(a.cx, b.cx), cy: m(a.cy, b.cy), zoom: m(a.zoom, b.zoom), rotX: m(a.rotX, b.rotX), rotY: m(a.rotY, b.rotY), rotZ: m(a.rotZ, b.rotZ), persp: m(a.persp, b.persp) };
 };
-const NoteCam: React.FC<{ frame: number; children: React.ReactNode }> = ({ frame, children }) => {
-  const c = camAt(frame);
+const NoteCam: React.FC<{ frame: number; keys: CamKey2D[]; fmt: Fmt; children: React.ReactNode }> = ({ frame, keys, fmt, children }) => {
+  const c = camAt(frame, keys);
+  const VX = fmt.W / 2, VY = fmt.H / 2;
   return (
     <AbsoluteFill style={{ overflow: 'hidden', pointerEvents: 'none' }}>
-      <div style={{ position: 'absolute', inset: 0, perspective: `${c.persp * c.zoom}px`, perspectiveOrigin: '960px 540px' }}>
+      <div style={{ position: 'absolute', inset: 0, perspective: `${c.persp * c.zoom}px`, perspectiveOrigin: `${VX}px ${VY}px` }}>
         <div style={{
           position: 'absolute', width: 1920, height: PAGE_H, zoom: c.zoom, transformOrigin: `${c.cx}px ${c.cy}px`, transformStyle: 'preserve-3d',
-          transform: `translate(${960 / c.zoom - c.cx}px, ${540 / c.zoom - c.cy}px) rotateY(${c.rotY}deg) rotateX(${c.rotX}deg) rotateZ(${c.rotZ}deg)`,
+          transform: `translate(${VX / c.zoom - c.cx}px, ${VY / c.zoom - c.cy}px) rotateY(${c.rotY}deg) rotateX(${c.rotX}deg) rotateZ(${c.rotZ}deg)`,
         }}>
           {children}
         </div>
@@ -104,15 +113,24 @@ const NoteCam: React.FC<{ frame: number; children: React.ReactNode }> = ({ frame
 
 export const HeroCard: React.FC = () => {
   const frame = useCurrentFrame();
+  const fmt = useFmt();
+  const CAM_KEYS = camKeys(fmt.v);
 
   // --- 开灯：亮 → 回闪 → 稳（舞台灯推闸） ---
   const lamp = interpolate(frame, [1, 3, 4, 6], [0, 1, 0.62, 1], clampOpt);
 
   // --- 光池游走（屏幕空间 %）：3 个中间站，站间短停 → 锁定卡心 → 随推进移到画面中 ---
   const ST = [4, 10, 13, 19, 22, 28, LOCK, PUSH1];
-  const spotX = interpolate(frame, ST, [30, 30, 78, 78, 42, 42, 61, 64], { ...clampOpt, easing: EASE.smooth });
-  const spotY = interpolate(frame, ST, [34, 34, 46, 46, 62, 62, 39, 52], { ...clampOpt, easing: EASE.smooth });
-  const poolBase = interpolate(frame, [22, LOCK, PUSH1], [400, 280, 470], { ...clampOpt, easing: EASE.swift });
+  // lock = the card's screen position in the wide view; PUSH1 = in the close-up. Landscape keeps the demo-tuned values
+  // (the same formula gives 61/39 and 64/52); vertical derives them for its frame.
+  const lockX = fmt.v ? ((fmt.W / 2 + (MCX - 960) * 0.8) / fmt.W) * 100 : 61;
+  const lockY = fmt.v ? ((fmt.H / 2 + (MCY - WIDE_CY(true)) * 0.8) / fmt.H) * 100 : 39;
+  const pushX = fmt.v ? ((fmt.W / 2 + fxFor(true) * zoomFor(true)) / fmt.W) * 100 : 64;
+  const pushY = fmt.v ? ((fmt.H / 2 + fyFor(true) * zoomFor(true)) / fmt.H) * 100 : 52;
+  const poolK = zoomFor(fmt.v) / zoomFor(false); // the pool grows with the close-up card
+  const spotX = interpolate(frame, ST, [30, 30, 78, 78, 42, 42, lockX, pushX], { ...clampOpt, easing: EASE.smooth });
+  const spotY = interpolate(frame, ST, [34, 34, 46, 46, 62, 62, lockY, pushY], { ...clampOpt, easing: EASE.smooth });
+  const poolBase = interpolate(frame, [22, LOCK, PUSH1], [400, 280, 470 * poolK], { ...clampOpt, easing: EASE.swift });
   const pulse = interpolate(frame, [LOCK, LOCK + 4, LOCK + 10], [0, 0.06, 0], clampOpt);
   const breathe = 1 + 0.015 * Math.sin((frame - LAND) / 14) * ramp(frame, LAND, 20, EASE.out);
   const poolRx = poolBase * (1 + pulse) * breathe;
@@ -157,8 +175,8 @@ export const HeroCard: React.FC = () => {
   const hl = ramp(frame, 84, 12, EASE.swift);
 
   // --- 体积光柱：光源在画面上方偏右，打到光池 ---
-  const px = (spotX / 100) * 1920;
-  const py = (spotY / 100) * 1080;
+  const px = (spotX / 100) * fmt.W;
+  const py = (spotY / 100) * fmt.H;
   const sx = px + 420;
   const sy = -720;
   const coneW = poolRx * 0.6;
@@ -263,7 +281,7 @@ export const HeroCard: React.FC = () => {
       </AbsoluteFill>
       {/* 注记层：与页面同一台相机（camAt 复刻 PageCam2D 的坐标数学），但画在灯光层之上——
           它是"自发光"的字，不被关灯的 multiply 压暗；暗色衬底负责把背后的邻卡字压下去 */}
-      <NoteCam frame={frame}>
+      <NoteCam frame={frame} keys={CAM_KEYS} fmt={fmt}>
           {/* 3D 注记：卡左侧，同一 3D 空间、同一台相机；reseat 时一起落回页面 */}
           {frame >= 70 ? (
             <div style={{ transformStyle: 'preserve-3d', pointerEvents: 'none' }}>

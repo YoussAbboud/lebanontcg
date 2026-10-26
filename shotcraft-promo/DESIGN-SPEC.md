@@ -104,3 +104,21 @@ The BGM carries the drums; SFX only pin picture-specific actions. Planned: trans
 - **Audio path:** Remotion WAV → ffmpeg AAC 320k for both deliveries (`render.sh`). Remotion's own AAC put the mix 42.7 ms late. Measurements: `analysis/av_offset.json`, `analysis/av_backtest.json`.
 - **S2 table (render performance):** the demo paints its graphite table as CSS gradients and an feTurbulence tile on a ~10k × 12k px plane. Under this machine's software GL, that costs ~20 s per frame and the render times out. The same CSS is pre-rendered once by Chromium (`capture/bake-table.mjs` → `public/textures/table/`): a 2× brush tile, the base and specular band, and the far-edge fade (the demo's mask ellipse as an overlay). The top light stays animated as a stretched baked blob with the demo's size, position and alpha. T stays at 4000, and frames match the live-CSS stills (`out/qa/cmp-baked.png`).
 - **Gallery reference clips** could not be downloaded (github.io blocked by this environment's network policy); reference frames for review are rendered from the exact demo TSX instead (the same source the gallery clips were rendered from).
+
+## Vertical cut (1080×1920)
+
+The same timeline renders a 9:16 cut (`LtcgPromoVertical`; `src/fmt.tsx` supplies the frame size to every shot). Cuts, beats, motion timings and the SFX table are shared, so both cuts are identical in time and use the same audio. Only framing and overlay layout change:
+
+| Shot | Vertical framing |
+|---|---|
+| S0 | flag mark stacked above a 118px wordmark; kicker typed on two lines |
+| S1 | wide view starts lower on the page (cy 1200) so the tall frame is filled; close-up 1.75× (landscape 1.42×) so the card fills ~half the height; spotlight lock/push stations derived from the card's screen position |
+| S2 | same orbit → pull-out → chase; runway less diagonal (rotZ −12°) and centred; title block under the board with a floor scrim |
+| T1–T3 | 112px, wrapped inside 940px |
+| S3 | wide window ≈1008px; crash lands at 1.28× (panel ≈1003px wide); after the hit the panel glides **up** (not left) and the "+60s" readout sits under it |
+| S4 | the thread spans the frame width (zoom 1.04 → 1.08, same drift); caption in the band below |
+| S5 | 1000px window at 1.0× over the same page band, so every bracket fires on the same frame (shared SCAN_FIRES / SFX); status row drops "PRE-GRADE" and the side Y readout |
+| S6 | the nine cutouts in two clusters above and below a stacked lockup (flag over a 112px wordmark); description and URL under it |
+| Captions | wrap inside 940px, bottom 250px (clear of feed UI) |
+
+Text-size note (Q11): the chat thread is the one place the vertical cut is smaller than landscape (≈1.05× vs 1.5–1.62×), because the full thread width sets the zoom.

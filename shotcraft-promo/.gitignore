@@ -3,6 +3,8 @@ out/qa/
 out/*.mp4
 !out/promo.mp4
 !out/promo-nobgm.mp4
+!out/promo-vertical.mp4
+!out/promo-vertical-nobgm.mp4
 out/render-*.log
 review/ref/
 out/*.wav

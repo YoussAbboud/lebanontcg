@@ -7,6 +7,7 @@ import { AbsoluteFill, interpolate, useCurrentFrame, Easing } from 'remotion';
 import { BRAND, COPY, FlagMark } from '../fixtures/Brand';
 import { FONT, Grain } from '../fixtures/Polish';
 import { C } from '../theme';
+import { useFmt } from '../fmt';
 
 const WORDMARK = 'LEBANONTCG';
 const KICKER = COPY.tagline;
@@ -15,6 +16,9 @@ const OUT1 = 117;
 
 export const BrandOpen: React.FC = () => {
   const frame = useCurrentFrame();
+  // vertical: flag mark above a 118px wordmark (140px is wider than the frame), kicker on two lines
+  const { v } = useFmt();
+  const kicker = v ? KICKER.replace('. ', '.\n') : KICKER;
   const vDraw = interpolate(frame, [0, 9], [100, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.3, 0, 0.2, 1) });
   const hDraw = interpolate(frame, [8, 18], [100, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.linear });
   const crossFade = interpolate(frame, [24, 34], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
@@ -22,7 +26,7 @@ export const BrandOpen: React.FC = () => {
   const perChar = 0.7;
   const kickStart = 28;
   const kickChars = Math.floor(Math.max(0, frame - kickStart) / perChar);
-  const kickDone = kickStart + KICKER.length * perChar;
+  const kickDone = kickStart + kicker.length * perChar;
   const cursorOn = frame >= kickStart && (frame < kickDone || (frame <= 100 && Math.floor((frame - kickDone) / 2) % 2 === 0));
 
   const brandOut = interpolate(frame, [OUT0, OUT1], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.4, 0, 0.5, 1) });
@@ -37,11 +41,11 @@ export const BrandOpen: React.FC = () => {
           <line x1={32} y1={2} x2={32} y2={62} stroke={C.acid} strokeWidth={5} strokeLinecap="round" pathLength={100} strokeDasharray={100} strokeDashoffset={vDraw} />
           <line x1={2} y1={32} x2={62} y2={32} stroke={C.acid} strokeWidth={5} strokeLinecap="round" pathLength={100} strokeDasharray={100} strokeDashoffset={hDraw} />
         </svg>
-        <div style={{ display: 'inline-flex', alignItems: 'flex-end', gap: 34 }}>
+        <div style={{ display: 'inline-flex', flexDirection: v ? 'column' : 'row', alignItems: v ? 'center' : 'flex-end', gap: v ? 40 : 34 }}>
           <div style={{ opacity: markT, transform: `scale(${1.6 - 0.6 * markT})`, transformOrigin: 'center bottom', filter: `blur(${(1 - markT) * 6}px)`, marginBottom: 6 }}>
             <FlagMark size={124} />
           </div>
-          <div style={{ fontFamily: BRAND.font, fontSize: 140, fontWeight: 700, color: C.ink, letterSpacing: '0.04em', lineHeight: 1, whiteSpace: 'pre', display: 'inline-flex', alignItems: 'flex-end' }}>
+          <div style={{ fontFamily: BRAND.font, fontSize: v ? 118 : 140, fontWeight: 700, color: C.ink, letterSpacing: '0.04em', lineHeight: 1, whiteSpace: 'pre', display: 'inline-flex', alignItems: 'flex-end' }}>
             {[...WORDMARK, '.'].map((ch, i) => {
               const delay = 10 + i * 3;
               const t = interpolate(frame, [delay, delay + 12], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.2, 0.7, 0.25, 1) });
@@ -57,9 +61,16 @@ export const BrandOpen: React.FC = () => {
             })}
           </div>
         </div>
-        <div style={{ fontFamily: FONT.mono, fontWeight: 500, fontSize: 34, letterSpacing: '0.14em', color: C.ink2, marginTop: 40, textTransform: 'uppercase', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <span style={{ whiteSpace: 'pre' }}>{KICKER.slice(0, kickChars)}</span>
-          <span style={{ display: 'inline-block', width: 16, height: 30, marginLeft: 6, background: C.acid, opacity: cursorOn ? 0.9 : 0 }} />
+        <div style={{ fontFamily: FONT.mono, fontWeight: 500, fontSize: 34, letterSpacing: '0.14em', color: C.ink2, marginTop: 40, textTransform: 'uppercase', height: v ? 96 : 40, display: 'flex', justifyContent: 'center', alignItems: v ? 'flex-start' : 'center', lineHeight: v ? '48px' : undefined }}>
+          {v ? (
+            // two lines: the cursor rides at the end of the text
+            <span style={{ whiteSpace: 'pre', textAlign: 'center' }}>{kicker.slice(0, kickChars)}<span style={{ display: 'inline-block', width: 16, height: 30, marginLeft: 6, verticalAlign: '-5px', background: C.acid, opacity: cursorOn ? 0.9 : 0 }} /></span>
+          ) : (
+            <>
+              <span style={{ whiteSpace: 'pre' }}>{kicker.slice(0, kickChars)}</span>
+              <span style={{ display: 'inline-block', width: 16, height: 30, marginLeft: 6, background: C.acid, opacity: cursorOn ? 0.9 : 0 }} />
+            </>
+          )}
         </div>
       </div>
       <Grain opacity={0.06} blend="soft-light" />

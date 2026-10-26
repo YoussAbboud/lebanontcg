@@ -4,6 +4,7 @@
 // 全部是 props / frame 的纯函数，确定性渲染（无 Math.random / Date）。依赖 remotion + react + ./Polish。
 // 可选共享件——copy demo 时连同 Polish.tsx 一并带上并改 import 路径。
 import React from 'react';
+import { useFmt } from '../fmt';
 import { spring, useCurrentFrame } from 'remotion';
 import { EASE, FONT, Grain, Vignette, tracking } from './Polish';
 
@@ -223,18 +224,20 @@ export const Dust: React.FC<{ look: Look; count?: number; seed?: number; drift?:
   look, count = 40, seed = 1, drift = 0.25, opacity = 0.7, color,
 }) => {
   const frame = useCurrentFrame();
+  const { W, H } = useFmt();
+  const XW = W + 200, YH = H + 100; // travel area (wraps)
   const c = color ?? look.light;
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity }}>
       {Array.from({ length: count }, (_, i) => {
         const z = hash(seed * 31 + i * 7.1);
         const size = 2 + z * z * 16;
-        const x = (((hash(seed * 13 + i * 3.7) * 2120 + frame * drift * (0.4 + z)) % 2120) + 2120) % 2120 - 100;
-        const y = hash(seed * 17 + i * 5.3) * 1080 - frame * drift * 0.3 * (0.5 + z);
+        const x = (((hash(seed * 13 + i * 3.7) * XW + frame * drift * (0.4 + z)) % XW) + XW) % XW - 100;
+        const y = hash(seed * 17 + i * 5.3) * H - frame * drift * 0.3 * (0.5 + z);
         const tw = 0.5 + 0.5 * Math.sin(frame / (14 + z * 20) + i);
         return (
           <div key={i} style={{
-            position: 'absolute', left: x, top: ((y % 1180) + 1180) % 1180 - 50, width: size, height: size, borderRadius: '50%',
+            position: 'absolute', left: x, top: ((y % YH) + YH) % YH - 50, width: size, height: size, borderRadius: '50%',
             background: `radial-gradient(circle, ${alpha(c, 0.9)} 0%, ${alpha(c, 0)} 70%)`,
             opacity: (0.25 + 0.75 * tw) * (0.3 + z * 0.7), filter: z > 0.7 ? `blur(${((z - 0.7) * 10).toFixed(1)}px)` : undefined,
           }} />

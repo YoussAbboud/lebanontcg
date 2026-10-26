@@ -30,6 +30,7 @@ import { LOOKS, Stage, TextReveal, alpha, type } from '../fixtures/Look';
 import layout from '../live-layout.json';
 import { COPY, FlagMark } from '../fixtures/Brand';
 import { C } from '../theme';
+import { useFmt } from '../fmt';
 
 // LebanonTCG adaptation: the 24 real listing cards of the Browse page (cutouts + the hidden-card backplate) are the deck;
 // the board is the site's own dark frame (x 260–1660), so no extra rows are needed (24 cards, not 26). The pile sits on
@@ -84,6 +85,16 @@ const ANCHORS: Key[] = [
   { frame: 110, cx: 960, cy: 2150, zoom: 0.5, rotX: 52, rotY: -6, rotZ: -26, persp: 3300, sx: 300 },
   { frame: DECK_DEAL_FLYIN_DURATION, cx: 960, cy: 2166, zoom: 0.511, rotX: 52, rotY: -6, rotZ: -26, persp: 3300, sx: 300 },
 ];
+// vertical: same orbit → pull-out → chase; the runway ends less diagonal (rotZ −12) and centred (no sx shift: the title
+// sits under the board instead of beside it), slightly wider so the full board reads in the tall frame
+const ANCHORS_V: Key[] = [
+  { frame: 0, cx: PILE_CX - 40, cy: PILE_CY + 60, zoom: 1.9, rotX: 48, rotY: -30, rotZ: 9, persp: 1100, sx: 0 },
+  { frame: 30, cx: PILE_CX + 20, cy: PILE_CY + 40, zoom: 1.8, rotX: 42, rotY: 24, rotZ: -6, persp: 1100, sx: 0 },
+  { frame: 62, cx: 1020, cy: 1100, zoom: 0.74, rotX: 22, rotY: 0, rotZ: 2, persp: 1700, sx: 0 },
+  { frame: 86, cx: 980, cy: 1900, zoom: 0.54, rotX: 36, rotY: -3, rotZ: -6, persp: 2500, sx: 0 },
+  { frame: 110, cx: 960, cy: 2300, zoom: 0.48, rotX: 50, rotY: -4, rotZ: -12, persp: 3300, sx: 0 },
+  { frame: DECK_DEAL_FLYIN_DURATION, cx: 960, cy: 2316, zoom: 0.49, rotX: 50, rotY: -4, rotZ: -12, persp: 3300, sx: 0 },
+];
 const PARAMS: (keyof Cam)[] = ['cx', 'cy', 'zoom', 'rotX', 'rotY', 'rotZ', 'persp', 'sx'];
 const hermite = (xs: number[], ys: number[]) => {
   const n = xs.length;
@@ -105,8 +116,10 @@ const hermite = (xs: number[], ys: number[]) => {
     return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h * m[i + 1];
   };
 };
-const CURVES = Object.fromEntries(PARAMS.map((p) => [p, hermite(ANCHORS.map((k) => k.frame), ANCHORS.map((k) => k[p]))])) as Record<keyof Cam, (x: number) => number>;
-const camAt = (f: number): Cam => Object.fromEntries(PARAMS.map((p) => [p, CURVES[p](f)])) as Cam;
+const curvesOf = (anchors: Key[]) => Object.fromEntries(PARAMS.map((p) => [p, hermite(anchors.map((k) => k.frame), anchors.map((k) => k[p]))])) as Record<keyof Cam, (x: number) => number>;
+const CURVES = curvesOf(ANCHORS);
+const CURVES_V = curvesOf(ANCHORS_V);
+const camAt = (f: number, v: boolean): Cam => Object.fromEntries(PARAMS.map((p) => [p, (v ? CURVES_V : CURVES)[p](f)])) as Cam;
 
 // ───────────── 拉丝石墨桌面：demo 的 CSS 渐变 + feTurbulence 拉丝在 ~1 万 px 的平面上，软件 GL 下每帧 ~20s、渲染超时；
 // 同一套 CSS 由 capture/bake-table.mjs 预烘成贴图（拉丝 2x 平铺 · 底色与镜面带 · 远端渐隐），层序同 demo；只有顶光保持动态 ─────────────
@@ -121,7 +134,8 @@ const T = 4000; // 桌面平面外扩（页面坐标），任意斜角不穿帮
 
 export const DeckDeal: React.FC = () => {
   const frame = useCurrentFrame();
-  const cam = camAt(frame);
+  const { W, H, v } = useFmt();
+  const cam = camAt(frame, v);
 
   // 板面"灯亮"：f34→64 以牌堆为圆心的柔边光圈把暗板照亮
   const lightUp = interpolate(frame, [34, 64], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.5, 0, 0.6, 1) });
@@ -152,11 +166,11 @@ export const DeckDeal: React.FC = () => {
 
       {/* 3D 相机（PageCam2D 同款坐标数学：CSS zoom 做放大，Q2 文字按放大后尺寸栅格化） */}
       <AbsoluteFill style={{ transform: `translateX(${cam.sx.toFixed(2)}px)` }}>
-        <div style={{ position: 'absolute', inset: 0, perspective: `${persp.toFixed(2)}px`, perspectiveOrigin: '960px 540px' }}>
+        <div style={{ position: 'absolute', inset: 0, perspective: `${persp.toFixed(2)}px`, perspectiveOrigin: `${W / 2}px ${H / 2}px` }}>
           <div
             style={{
               position: 'absolute', width: 1920, height: BOARD_H, zoom: cam.zoom,
-              transform: `translate(${(960 / cam.zoom - cam.cx).toFixed(3)}px, ${(540 / cam.zoom - cam.cy).toFixed(3)}px) rotateY(${cam.rotY.toFixed(3)}deg) rotateX(${cam.rotX.toFixed(3)}deg) rotateZ(${cam.rotZ.toFixed(3)}deg)`,
+              transform: `translate(${(W / 2 / cam.zoom - cam.cx).toFixed(3)}px, ${(H / 2 / cam.zoom - cam.cy).toFixed(3)}px) rotateY(${cam.rotY.toFixed(3)}deg) rotateX(${cam.rotX.toFixed(3)}deg) rotateZ(${cam.rotZ.toFixed(3)}deg)`,
               transformOrigin: `${cam.cx.toFixed(2)}px ${cam.cy.toFixed(2)}px`,
               transformStyle: 'preserve-3d',
             }}
@@ -276,8 +290,10 @@ export const DeckDeal: React.FC = () => {
       {/* 暗角 + 颗粒（屏幕空间，全程） */}
       <AbsoluteFill style={{ pointerEvents: 'none', background: `radial-gradient(ellipse 75% 75% at 58% 46%, transparent 45%, ${alpha('#050506', 0.55)} 100%)` }} />
 
+      {/* vertical: a floor scrim under the bottom title block */}
+      {v && <AbsoluteFill style={{ pointerEvents: 'none', background: `linear-gradient(180deg, ${alpha('#08090b', 0)} 58%, ${alpha('#08090b', 0.82)} 76%, ${alpha('#08090b', 0.9)} 100%)`, opacity: statIn }} />}
       {/* 左下：标题 + 计数行 */}
-      <div style={{ position: 'absolute', left: 120, top: 664, color: L.ink }}>
+      <div style={{ position: 'absolute', left: v ? 90 : 120, top: v ? 1430 : 664, color: L.ink }}>
         <div style={{ ...type(120, 700), fontFamily: FONT.display, textTransform: 'uppercase', letterSpacing: '0.01em' }}>
           <TextReveal text="Listed by" by="word" variant="rise" start={100} each={16} gap={4} />
         </div>
@@ -290,7 +306,7 @@ export const DeckDeal: React.FC = () => {
       </div>
       <div
         style={{
-          position: 'absolute', left: 124, top: 610, display: 'flex', alignItems: 'center', gap: 16, opacity: statIn,
+          position: 'absolute', left: v ? 94 : 124, top: v ? 1376 : 610, display: 'flex', alignItems: 'center', gap: 16, opacity: statIn,
           ...type(34, 500, { mono: true }), letterSpacing: '0.14em', color: L.ink2,
         }}
       >

@@ -26,6 +26,7 @@ import { LOOKS, Stage, alpha, springAt } from '../fixtures/Look';
 import layout from '../live-layout.json';
 import { COPY } from '../fixtures/Brand';
 import { Caption } from './Caption';
+import { useFmt } from '../fmt';
 
 // LebanonTCG adaptation: the page is the real Pre-Grade page (captured in a 1560×880 window); the targets are its
 // eight guided capture slots, labelled with what each photo is for (centering / corner / surface — the page's own
@@ -40,19 +41,18 @@ const MACHINE = '#35e4ff'; // machine colour (cyan): scan line / brackets / labe
 const ON_MACHINE = '#08090b';
 const MONO = FONT.mono;
 
-// 浏览器窗（帧坐标）
-const WX = 180;
-const WY = 150;
-const WW = 1560;
-const WH = 880;
+// 浏览器窗（帧坐标）。Vertical: a 1000px window at 1.0× over the same page band (y 82.5–869.9), so every bracket
+// fires on the same frame in both cuts (SCAN_FIRES drives the shared SFX table).
+type Geo = { WX: number; WY: number; WW: number; WH: number; PS: number; OX: number; OY: number; base: number; statusTop: number };
+const GEO_H: Geo = { WX: 180, WY: 150, WW: 1560, WH: 880, PS: 1.143, OX: 97, OY: 100, base: 0.86, statusTop: 70 };
+const GEO_V: Geo = { WX: 40, WY: 560, WW: 1000, WH: 767.4, PS: 1, OX: 280, OY: 102.5, base: 1, statusTop: 470 };
+const useGeo = () => (useFmt().v ? GEO_V : GEO_H);
+const { WH, PS, OY } = GEO_H; // the scan range below is defined once, in page space, from the landscape window
 
 // 扫描线（页面坐标，窗内 y）：严格匀速
 const SCAN0 = 6;
 const SCAN1 = 80;
 // The window shows the slot area of the page, scaled up: page (OX, OY) maps to the window's top-left at PS×.
-const PS = 1.143;
-const OX = 97;
-const OY = 100;
 const Y0 = OY - 20 / PS; // scan range in PAGE coordinates (window −20 → WH)
 const Y1 = OY + WH / PS;
 const scanY = (f: number) => Y0 + (Y1 - Y0) * Math.min(1, Math.max(0, (f - SCAN0) / (SCAN1 - SCAN0)));
@@ -80,12 +80,15 @@ const Page: React.FC = () => (
   <Img src={staticFile('textures/live/pregrade-full.png')} style={{ position: 'absolute', left: 0, top: 0, width: layout.pregrade.pageW, height: layout.pregrade.pageH }} />
 );
 // page space → window space
-const PageSpace: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div style={{ position: 'absolute', left: 0, top: 0, width: layout.pregrade.pageW, height: layout.pregrade.pageH, transformOrigin: '0 0', transform: `scale(${PS}) translate(${-OX}px, ${-OY}px)` }}>
-    {children}
-  </div>
-);
-const winY = (pageY: number) => (pageY - OY) * PS;
+const PageSpace: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const g = useGeo();
+  return (
+    <div style={{ position: 'absolute', left: 0, top: 0, width: layout.pregrade.pageW, height: layout.pregrade.pageH, transformOrigin: '0 0', transform: `scale(${g.PS}) translate(${-g.OX}px, ${-g.OY}px)` }}>
+      {children}
+    </div>
+  );
+};
+const winY = (g: Geo, pageY: number) => (pageY - g.OY) * g.PS;
 
 // ───────────── 取景框 + 标签 ─────────────
 const Bracket: React.FC<{ t: Target; frame: number }> = ({ t, frame }) => {
@@ -161,12 +164,15 @@ const Label: React.FC<{ t: Target; frame: number }> = ({ t, frame }) => {
 
 export const PregradeScan: React.FC = () => {
   const frame = useCurrentFrame();
-  const ly = winY(scanY(frame)); // window-space line position
+  const g = useGeo();
+  const { v } = useFmt();
+  const { WX, WY, WW, WH } = g;
+  const ly = winY(g, scanY(frame)); // window-space line position
   const lyPage = scanY(frame);
   const lineOn = ramp(frame, SCAN0 - 4, 5, EASE.out) * (1 - ramp(frame, SCAN1, 8, EASE.exit));
   const fired = TARGETS.filter((t) => frame >= t.ft).length;
   const done = ramp(frame, LAST_FIRE + 8, 8, EASE.out);
-  const push = 0.86 * (1 + 0.035 * ramp(frame, 0, SCANLINE_ANNOTATE_FOCUS_DURATION, EASE.swift)); // window at 0.86 + the demo's slow push
+  const push = g.base * (1 + 0.035 * ramp(frame, 0, SCANLINE_ANNOTATE_FOCUS_DURATION, EASE.swift)); // window at 0.86 + the demo's slow push
   const statusIn = ramp(frame, 0, 10, EASE.out);
   const scanProg = Math.min(1, Math.max(0, (frame - SCAN0) / (SCAN1 - SCAN0)));
 
@@ -175,12 +181,12 @@ export const PregradeScan: React.FC = () => {
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.9, y: 0.95 }} vignette={0.45} />
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: '50% 10%' }}>
         {/* ── 状态行（窗外上方）── */}
-        <div style={{ position: 'absolute', left: WX, top: 70, width: WW, height: 52, opacity: statusIn, font: `600 38px ${MONO}`, color: L.ink, display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', left: WX, top: g.statusTop, width: WW, height: 52, opacity: statusIn, font: `600 ${v ? 34 : 38}px ${MONO}`, color: L.ink, display: 'flex', alignItems: 'center' }}>
           <div style={{ width: 14, height: 14, borderRadius: 7, marginRight: 16, background: done > 0.5 ? MACHINE : alpha(MACHINE, 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(frame / 3))), boxShadow: `0 0 0 6px ${alpha(MACHINE, 0.12)}` }} />
           <span style={{ color: done > 0.5 ? MACHINE : L.ink, letterSpacing: '0.06em' }}>{done > 0.5 ? 'EIGHT GUIDED PHOTOS' : 'READING'}</span>
-          <span style={{ color: L.ink3, marginLeft: 18, fontWeight: 500 }}>PRE-GRADE</span>
+          {!v && <span style={{ color: L.ink3, marginLeft: 18, fontWeight: 500 }}>PRE-GRADE</span>}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 20 }}>
-            <div style={{ width: 220, height: 6, borderRadius: 3, background: alpha(L.ink, 0.1), overflow: 'hidden' }}>
+            <div style={{ width: v ? 140 : 220, height: 6, borderRadius: 3, background: alpha(L.ink, 0.1), overflow: 'hidden' }}>
               <div style={{ width: `${(scanProg * 100).toFixed(2)}%`, height: '100%', background: MACHINE, borderRadius: 3 }} />
             </div>
             <span style={{ fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }}>
@@ -223,9 +229,9 @@ export const PregradeScan: React.FC = () => {
             <svg width={22} height={26} viewBox="0 0 22 26" style={{ position: 'absolute', left: WX + WW + 8, top: WY + ly - 13 }}>
               <path d="M20 2 L2 13 L20 24 Z" fill={MACHINE} />
             </svg>
-            <div style={{ position: 'absolute', left: WX - 150, top: WY + ly - 14, width: 112, textAlign: 'right', font: `600 22px ${MONO}`, color: MACHINE, fontVariantNumeric: 'tabular-nums' }}>
+            {!v && <div style={{ position: 'absolute', left: WX - 150, top: WY + ly - 14, width: 112, textAlign: 'right', font: `600 22px ${MONO}`, color: MACHINE, fontVariantNumeric: 'tabular-nums' }}>
               Y {String(Math.max(0, Math.round(lyPage))).padStart(4, '0')}
-            </div>
+            </div>}
           </div>
         )}
 

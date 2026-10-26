@@ -20,6 +20,7 @@ import layout from '../live-layout.json';
 import { C } from '../theme';
 import { COPY } from '../fixtures/Brand';
 import { Caption } from './Caption';
+import { useFmt } from '../fmt';
 
 // LebanonTCG adaptation: the rows are the last five bubbles of the seeded deal thread (Maya ↔ @karim_tcg) ending on the
 // OFFER · NON-BINDING card, cropped from the real chat page. Patch = the thread's sampled ground; seam = acid.
@@ -38,6 +39,11 @@ const DETAIL_CAM: CamKey2D[] = [
   { frame: 0, cx: 1150, cy: 470, zoom: 1.5 },
   { frame: 100, cx: 1150, cy: 590, zoom: 1.62 },
 ];
+// vertical: the thread (x 641–1659) spans the frame width; the same slow push + drift, with the caption band below the page
+const DETAIL_CAM_V: CamKey2D[] = [
+  { frame: 0, cx: 1150, cy: 560, zoom: 1.04 },
+  { frame: 100, cx: 1150, cy: 600, zoom: 1.08 },
+];
 
 const CUES = [20, 30, 39, 47, 54];
 const FLY = 12;
@@ -50,10 +56,11 @@ const airOf = (frame: number, cue: number) => 1 - interpolate(frame, [cue, cue +
 
 export const ChatEmbed: React.FC = () => {
   const frame = useCurrentFrame();
+  const { v } = useFmt();
 
   return (
     <AbsoluteFill>
-      <PageCam2D src="textures/live/chat-full.png" pageH={DETAIL_H} keys={DETAIL_CAM} bg={C.bg}>
+      <PageCam2D src="textures/live/chat-full.png" pageH={DETAIL_H} keys={v ? DETAIL_CAM_V : DETAIL_CAM} bg={C.bg}>
         {rows.map((r, i) => {
           const cue = CUES[i];
           const land = cue + FLY;

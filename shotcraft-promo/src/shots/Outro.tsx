@@ -15,6 +15,7 @@ import { EASE, FONT, Grain, SpeedBlur, ramp, velocity } from '../fixtures/Polish
 import layout from '../live-layout.json';
 import { BRAND, COPY, FlagMark } from '../fixtures/Brand';
 import { C } from '../theme';
+import { useFmt } from '../fmt';
 
 // LebanonTCG adaptation: every feature sends one real cutout to the group photo — the nav, the hero listing card,
 // two Browse cards, the live auction panel, a chat bubble, the non-binding offer card, a Pre-Grade slot and the
@@ -61,11 +62,25 @@ const ELS: FlyEl[] = [
   { key: 'bubble', file: 'bubble6.png', w: 643, h: 96, cx: 1540, cy: 185, scale: 0.85, rot: 2.5, dx: 360, dy: -200, radius: 16, cue: 52 },
 ];
 
+// vertical: the same nine cutouts, same cues and flights, in two clusters (y 85–634 / 1303–1805) around the stacked
+// wordmark band in the middle; boxes checked for overlap at their settled scale
+const ELS_V: FlyEl[] = [
+  { key: 'nav', file: 'nav.png', w: 1398, h: 81, cx: 540, cy: 110, scale: 0.62, rot: 0, dx: 0, dy: -200, radius: 10, cue: 12 },
+  { key: 'hero', file: 'hero-hires.png', w: 261, h: 571, cx: 205, cy: 420, scale: 0.75, rot: -5, dx: -460, dy: 0, radius: 18, cue: 17 },
+  { key: 'card6', file: 'card6.png', w: 261, h: 571, cx: 875, cy: 430, scale: 0.7, rot: 4, dx: 460, dy: 0, radius: 18, cue: 22 },
+  { key: 'auction', file: 'auction-panel.png', w: 784, h: 382, cx: 700, cy: 1420, scale: 0.6, rot: -3, dx: 420, dy: 300, radius: 16, cue: 27 },
+  { key: 'card8', file: 'card8.png', w: 260, h: 571, cx: 200, cy: 1480, scale: 0.62, rot: 3, dx: -400, dy: 300, radius: 18, cue: 32 },
+  { key: 'offer', file: 'bubble8.png', w: 300, h: 190, cx: 560, cy: 1700, scale: 1.1, rot: 2, dx: 0, dy: 360, radius: 16, cue: 37 },
+  { key: 'search', file: 'float-search.png', w: 1088, h: 48, cx: 540, cy: 175, scale: 0.42, rot: -1.5, dx: 0, dy: -260, radius: 24, cue: 42 },
+  { key: 'slot', file: 'slot1.png', w: 230, h: 231, cx: 880, cy: 1700, scale: 0.9, rot: -2, dx: 380, dy: 200, radius: 16, cue: 47 },
+  { key: 'bubble', file: 'bubble6.png', w: 643, h: 96, cx: 540, cy: 250, scale: 0.62, rot: 2.5, dx: 300, dy: -240, radius: 16, cue: 52 },
+];
+
 // 20 gold dust motes, all parameters index-derived (deterministic)
 // 质感：每颗带一圈暖光晕（亮场上才看得见"金"），另加 6 颗前景失焦大光斑（bokeh）做景深层
 const DUST = Array.from({ length: 20 }, (_, i) => ({
-  x: (i * 439 + 137) % 1920,
-  y0: (i * 613 + 271) % 1080,
+  x: i * 439 + 137, // wrapped by the frame size at render time
+  y0: i * 613 + 271,
   rise: 0.3 + (i % 5) * 0.11,
   swayAmp: 9 + (i % 4) * 5,
   swayFreq: 0.022 + (i % 3) * 0.008,
@@ -74,8 +89,8 @@ const DUST = Array.from({ length: 20 }, (_, i) => ({
   opacity: 0.35 + ((i * 7) % 5) * 0.09,
 }));
 const BOKEH = Array.from({ length: 6 }, (_, i) => ({
-  x: (i * 701 + 260) % 1920,
-  y0: (i * 389 + 640) % 1080,
+  x: i * 701 + 260,
+  y0: i * 389 + 640,
   rise: 0.55 + (i % 3) * 0.2,
   size: 14 + (i % 3) * 7,
   opacity: 0.1 + (i % 2) * 0.06,
@@ -83,6 +98,8 @@ const BOKEH = Array.from({ length: 6 }, (_, i) => ({
 
 export const Outro: React.FC = () => {
   const frame = useCurrentFrame();
+  const { W: FW, H: FH, v } = useFmt();
+  const els = v ? ELS_V : ELS;
   const duration = OUTRO_GROUP_PHOTO_LAUNCH_DURATION;
 
   const blur = interpolate(frame, [0, 40], [0, 14], {
@@ -109,7 +126,7 @@ export const Outro: React.FC = () => {
   const camTilt = 4 * (1 - craneT);
 
   // opening light sweep
-  const sweepX = interpolate(frame, [2, 14], [-700, 2020], {
+  const sweepX = interpolate(frame, [2, 14], [-700, FW + 100], {
     extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.4, 0, 0.6, 1),
   });
   const sweepOpacity = interpolate(frame, [2, 5, 11, 14], [0, 0.12, 0.12, 0], {
@@ -150,13 +167,13 @@ export const Outro: React.FC = () => {
         {/* blur 只作用背景页：PageCam2D 自闭合，飞入元素放在未过滤的兄弟层
             （屏幕空间坐标，与 template SceneOutroLive 同构）——放进 children
             会连"合影元素"一起糊掉，只剩字标清晰 */}
-        <PageCam2D src="textures/live/browse-full-1x.png" pageH={PAGE_H} keys={[{ frame: 0, cx: 960, cy: 700, zoom: 0.75 }]} blur={blur} bg={C.bg} />
+        <PageCam2D src="textures/live/browse-full-1x.png" pageH={PAGE_H} keys={[{ frame: 0, cx: 960, cy: v ? 1400 : 700, zoom: 0.75 }]} blur={blur} bg={C.bg} />
         {/* warm scrim under the flying elements */}
-        <AbsoluteFill style={{ background: 'radial-gradient(1200px 800px at 50% 48%, rgba(8,9,11,0.92), rgba(8,9,11,0.84) 60%, rgba(8,9,11,0.76))', pointerEvents: 'none' }} />
+        <AbsoluteFill style={{ background: `radial-gradient(${v ? '800px 1300px' : '1200px 800px'} at 50% 48%, rgba(8,9,11,0.92), rgba(8,9,11,0.84) 60%, rgba(8,9,11,0.76))`, pointerEvents: 'none' }} />
 
         {/* group photo: elements fly in from all sides and settle around the wordmark */}
         <AbsoluteFill style={{ pointerEvents: 'none' }}>
-          {ELS.map((el) => {
+          {els.map((el) => {
             if (frame < el.cue) return null;
             const t = interpolate(frame, [el.cue, el.cue + 12], [0, 1], {
               extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: FLY_EASE,
@@ -212,8 +229,8 @@ export const Outro: React.FC = () => {
       {/* gold dust drifting up in front of the group photo */}
       <AbsoluteFill style={{ pointerEvents: 'none' }}>
         {DUST.map((d, i) => {
-          const y = (((d.y0 - frame * d.rise) % 1080) + 1080) % 1080;
-          const x = d.x + Math.sin(frame * d.swayFreq + d.phase) * d.swayAmp;
+          const y = ((((d.y0 % FH) - frame * d.rise) % FH) + FH) % FH;
+          const x = (d.x % FW) + Math.sin(frame * d.swayFreq + d.phase) * d.swayAmp;
           const twinkle = 0.7 + 0.3 * Math.sin(frame * 0.21 + d.phase * 3);
           return (
             <div
@@ -228,12 +245,12 @@ export const Outro: React.FC = () => {
         })}
         {/* 前景失焦光斑：大而虚、上飘更快，压在合影最前面做景深 */}
         {BOKEH.map((b, i) => {
-          const y = (((b.y0 - frame * b.rise) % 1180) + 1180) % 1180 - 50;
+          const y = ((((b.y0 % FH) - frame * b.rise) % (FH + 100)) + FH + 100) % (FH + 100) - 50;
           return (
             <div
               key={`b${i}`}
               style={{
-                position: 'absolute', left: b.x, top: y, width: b.size, height: b.size, borderRadius: '50%',
+                position: 'absolute', left: b.x % FW, top: y, width: b.size, height: b.size, borderRadius: '50%',
                 background: 'radial-gradient(circle, rgba(220,228,255,0.9) 0%, rgba(220,228,255,0.35) 55%, rgba(220,228,255,0) 72%)',
                 opacity: b.opacity, filter: 'blur(2px)',
               }}
@@ -260,7 +277,7 @@ export const Outro: React.FC = () => {
         <AbsoluteFill
           style={{
             pointerEvents: 'none',
-            background: 'radial-gradient(760px 380px at 960px 470px, rgba(216,222,233,0.2), rgba(216,222,233,0.06) 55%, rgba(216,222,233,0) 75%)',
+            background: `radial-gradient(${v ? '620px 440px' : '760px 380px'} at ${FW / 2}px ${v ? 900 : 470}px, rgba(216,222,233,0.2), rgba(216,222,233,0.06) 55%, rgba(216,222,233,0) 75%)`,
             opacity: stageLight,
           }}
         />
@@ -271,7 +288,7 @@ export const Outro: React.FC = () => {
         <AbsoluteFill
           style={{
             pointerEvents: 'none',
-            background: 'radial-gradient(1400px 900px at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.7) 100%)',
+            background: `radial-gradient(${v ? '900px 1500px' : '1400px 900px'} at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.7) 100%)`,
             opacity: vignette,
           }}
         />
@@ -281,8 +298,9 @@ export const Outro: React.FC = () => {
       <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            fontFamily: BRAND.font, fontSize: 132, fontWeight: 700, lineHeight: 1.18, color: C.ink, letterSpacing: `${0.03 + wordSpacing}em`, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
+            // vertical: the flag mark stacks above a 112px wordmark (132px + the mark is wider than the frame)
+            fontFamily: BRAND.font, fontSize: v ? 112 : 132, fontWeight: 700, lineHeight: 1.18, color: C.ink, letterSpacing: `${0.03 + wordSpacing}em`, display: 'flex',
+            flexWrap: v ? 'wrap' : undefined, alignItems: 'center', justifyContent: 'center',
             // letterpress：下沿 1px 纸面高光 + 一层极软的环境影，让字标"压"在合影之上而不是浮在纸上
             textShadow: '0 2px 0 rgba(0,0,0,0.5), 0 14px 40px rgba(0,0,0,0.55)',
           }}>
@@ -293,10 +311,10 @@ export const Outro: React.FC = () => {
               });
               return (
                 <div style={{
-                  marginRight: 36, opacity: t, transform: `translateY(${(1 - t) * 28}px) scale(${1.35 - 0.35 * t})`,
+                  marginRight: v ? 0 : 36, marginBottom: v ? 26 : 0, flexBasis: v ? '100%' : undefined, display: v ? 'flex' : undefined, justifyContent: 'center', opacity: t, transform: `translateY(${(1 - t) * 28}px) scale(${1.35 - 0.35 * t})`,
                   filter: t < 0.995 ? `blur(${(1 - t) * 8}px)` : undefined,
                 }}>
-                  <FlagMark size={150} />
+                  <FlagMark size={v ? 128 : 150} />
                 </div>
               );
             })()}
@@ -333,7 +351,7 @@ export const Outro: React.FC = () => {
             ) : null}
           </div>
           <div style={{
-            fontFamily: MONO, fontSize: 32, letterSpacing: '0.16em', color: C.ink2, marginTop: 30, textTransform: 'uppercase',
+            fontFamily: MONO, fontSize: 32, letterSpacing: v ? '0.06em' : '0.16em', color: C.ink2, marginTop: 30, textTransform: 'uppercase',
             opacity: tag, transform: `translateY(${(1 - tag) * 6}px)`,
           }}>
             {COPY.description}

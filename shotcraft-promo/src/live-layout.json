@@ -1,0 +1,393 @@
+{
+  "pageW": 1920,
+  "browse": {
+    "pageH": 3952,
+    "frame": {
+      "x": 260,
+      "y": 14,
+      "w": 1400,
+      "h": 3924
+    },
+    "header": {
+      "x": 261,
+      "y": 2640,
+      "w": 1398,
+      "h": 81
+    },
+    "search": {
+      "x": 543.41,
+      "y": 182,
+      "w": 1087.59,
+      "h": 48
+    },
+    "cards": [
+      {
+        "file": "card1.png",
+        "x": 543.41,
+        "y": 252,
+        "w": 259.89,
+        "h": 570.5,
+        "title": "Venusaur Base Set Shadowless"
+      },
+      {
+        "file": "card2.png",
+        "x": 819.3,
+        "y": 252,
+        "w": 259.91,
+        "h": 570.5,
+        "title": "Trafalgar Law OP02 Secret Rare"
+      },
+      {
+        "file": "card3.png",
+        "x": 1095.2,
+        "y": 252,
+        "w": 259.89,
+        "h": 570.5,
+        "title": "Red-Eyes B. Dragon LOB 1st Edition"
+      },
+      {
+        "file": "card4.png",
+        "x": 1371.09,
+        "y": 252,
+        "w": 259.91,
+        "h": 570.5,
+        "title": "Mickey Mouse – Brave Little Tailor Enchanted"
+      },
+      {
+        "file": "card5.png",
+        "x": 543.41,
+        "y": 838.5,
+        "w": 259.89,
+        "h": 570.5,
+        "title": "Grief — Modern Horizons 2 Foil"
+      },
+      {
+        "file": "card6.png",
+        "x": 819.3,
+        "y": 838.5,
+        "w": 259.91,
+        "h": 570.5,
+        "title": "Monkey D. Luffy Leader Parallel — OP-01"
+      },
+      {
+        "file": "card7.png",
+        "x": 1095.2,
+        "y": 838.5,
+        "w": 259.89,
+        "h": 570.5,
+        "title": "Dark Magician 1st Edition — LOB"
+      },
+      {
+        "file": "card8.png",
+        "x": 1371.09,
+        "y": 838.5,
+        "w": 259.91,
+        "h": 570.5,
+        "title": "Umbreon VMAX Alt Art — Evolving Skies"
+      },
+      {
+        "file": "card9.png",
+        "x": 543.41,
+        "y": 1425,
+        "w": 259.89,
+        "h": 570.5,
+        "title": "Ragavan, Nimble Pilferer"
+      },
+      {
+        "file": "card10.png",
+        "x": 819.3,
+        "y": 1425,
+        "w": 259.91,
+        "h": 570.5,
+        "title": "Pikachu Illustrator Reprint (Celebrations)"
+      },
+      {
+        "file": "card11.png",
+        "x": 1095.2,
+        "y": 1425,
+        "w": 259.89,
+        "h": 570.5,
+        "title": "Monkey D. Luffy Leader (Alt Art)"
+      },
+      {
+        "file": "card12.png",
+        "x": 1371.09,
+        "y": 1425,
+        "w": 259.91,
+        "h": 570.5,
+        "title": "Charizard Base Set Unlimited"
+      },
+      {
+        "file": "card13.png",
+        "x": 543.41,
+        "y": 2011.5,
+        "w": 259.89,
+        "h": 570.5,
+        "title": "Blue-Eyes White Dragon (LOB 1st Ed)"
+      },
+      {
+        "file": "card14.png",
+        "x": 819.3,
+        "y": 2011.5,
+        "w": 259.91,
+        "h": 570.5,
+        "title": "Elsa – Spirit of Winter"
+      },
+      {
+        "file": "card15.png",
+        "x": 1095.2,
+        "y": 2011.5,
+        "w": 259.89,
+        "h": 570.5,
+        "title": "Ragavan, Nimble Pilferer (Showcase)"
+      },
+      {
+        "file": "card16.png",
+        "x": 1371.09,
+        "y": 2011.5,
+        "w": 259.91,
+        "h": 570.5,
+        "title": "Blastoise Base Set Shadowless"
+      },
+      {
+        "file": "card17.png",
+        "x": 543.41,
+        "y": 2598,
+        "w": 259.89,
+        "h": 552.5,
+        "title": "Wrenn and Six"
+      },
+      {
+        "file": "card18.png",
+        "x": 819.3,
+        "y": 2598,
+        "w": 259.91,
+        "h": 552.5,
+        "title": "Shanks OP01 Secret Rare"
+      },
+      {
+        "file": "card19.png",
+        "x": 1095.2,
+        "y": 2598,
+        "w": 259.89,
+        "h": 552.5,
+        "title": "Force of Negation"
+      },
+      {
+        "file": "card20.png",
+        "x": 1371.09,
+        "y": 2598,
+        "w": 259.91,
+        "h": 552.5,
+        "title": "Umbreon VMAX Alt Art"
+      },
+      {
+        "file": "card21.png",
+        "x": 543.41,
+        "y": 3166.5,
+        "w": 259.89,
+        "h": 554,
+        "title": "Nami OP01 (Japanese)"
+      },
+      {
+        "file": "card22.png",
+        "x": 819.3,
+        "y": 3166.5,
+        "w": 259.91,
+        "h": 554,
+        "title": "Dark Magician Girl (MFC 1st Ed)"
+      },
+      {
+        "file": "card23.png",
+        "x": 1095.2,
+        "y": 3166.5,
+        "w": 259.89,
+        "h": 554,
+        "title": "Liliana of the Veil"
+      },
+      {
+        "file": "card24.png",
+        "x": 1371.09,
+        "y": 3166.5,
+        "w": 259.91,
+        "h": 554,
+        "title": "Stitch – Rock Star"
+      }
+    ],
+    "heroTitle": "Red-Eyes B. Dragon LOB 1st Edition"
+  },
+  "listing": {
+    "pageH": 1620,
+    "panel": {
+      "x": 859,
+      "y": 265,
+      "w": 784,
+      "h": 381.39
+    },
+    "head": {
+      "x": 878,
+      "y": 284,
+      "w": 746,
+      "h": 74.39
+    },
+    "clock": {
+      "x": 1524.16,
+      "y": 284,
+      "w": 99.84,
+      "h": 74.39
+    },
+    "history": {
+      "x": 878,
+      "y": 460.89,
+      "w": 746,
+      "h": 166.5
+    },
+    "extendNote": {
+      "x": 878,
+      "y": 460.89,
+      "w": 746,
+      "h": 16.5
+    },
+    "countdown": "1m 36s",
+    "price": "$300"
+  },
+  "chat": {
+    "pageH": 1080,
+    "log": {
+      "x": 641,
+      "y": 185,
+      "w": 1018,
+      "h": 648
+    },
+    "thread": {
+      "x": 641,
+      "y": 96,
+      "w": 1018,
+      "h": 861
+    },
+    "head": {
+      "x": 641,
+      "y": 96,
+      "w": 1018,
+      "h": 89
+    },
+    "rows": [
+      {
+        "file": "bubble4.png",
+        "x": 994.17,
+        "y": 192.44,
+        "w": 642.83,
+        "h": 95.88,
+        "kind": "mine"
+      },
+      {
+        "file": "bubble5.png",
+        "x": 663,
+        "y": 338.81,
+        "w": 510.31,
+        "h": 74.19,
+        "kind": "theirs"
+      },
+      {
+        "file": "bubble6.png",
+        "x": 994.17,
+        "y": 425,
+        "w": 642.83,
+        "h": 95.88,
+        "kind": "mine"
+      },
+      {
+        "file": "bubble7.png",
+        "x": 663,
+        "y": 532.88,
+        "w": 315.53,
+        "h": 74.19,
+        "kind": "theirs"
+      },
+      {
+        "file": "bubble8.png",
+        "x": 663,
+        "y": 619.06,
+        "w": 299.73,
+        "h": 189.5,
+        "kind": "offer"
+      }
+    ]
+  },
+  "pregrade": {
+    "pageW": 1560,
+    "pageH": 1101,
+    "heading": {
+      "x": 300,
+      "y": 150.5,
+      "w": 960,
+      "h": 42
+    },
+    "slots": [
+      {
+        "file": "slot1.png",
+        "x": 300,
+        "y": 295,
+        "w": 229.5,
+        "h": 230.5,
+        "label": "Front · flat on"
+      },
+      {
+        "file": "slot2.png",
+        "x": 543.5,
+        "y": 295,
+        "w": 229.5,
+        "h": 230.5,
+        "label": "Back · flat on"
+      },
+      {
+        "file": "slot3.png",
+        "x": 787,
+        "y": 295,
+        "w": 229.5,
+        "h": 230.5,
+        "label": "Top-left corner"
+      },
+      {
+        "file": "slot4.png",
+        "x": 1030.5,
+        "y": 295,
+        "w": 229.5,
+        "h": 230.5,
+        "label": "Top-right corner"
+      },
+      {
+        "file": "slot5.png",
+        "x": 300,
+        "y": 539.5,
+        "w": 229.5,
+        "h": 323,
+        "label": "Bottom-right corner"
+      },
+      {
+        "file": "slot6.png",
+        "x": 543.5,
+        "y": 539.5,
+        "w": 229.5,
+        "h": 323,
+        "label": "Bottom-left corner"
+      },
+      {
+        "file": "slot7.png",
+        "x": 787,
+        "y": 539.5,
+        "w": 229.5,
+        "h": 323,
+        "label": "Front · raking light · optional"
+      },
+      {
+        "file": "slot8.png",
+        "x": 1030.5,
+        "y": 539.5,
+        "w": 229.5,
+        "h": 323,
+        "label": "Back · raking light · optional"
+      }
+    ]
+  }
+}

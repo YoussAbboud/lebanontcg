@@ -1,0 +1,62 @@
+{
+ "cuts": [
+  {
+   "name": "b8",
+   "frame": 117
+  },
+  {
+   "name": "b20",
+   "frame": 291
+  },
+  {
+   "name": "b32",
+   "frame": 465
+  },
+  {
+   "name": "b36",
+   "frame": 523
+  },
+  {
+   "name": "b46",
+   "frame": 668
+  },
+  {
+   "name": "b50",
+   "frame": 726
+  },
+  {
+   "name": "b58",
+   "frame": 842
+  },
+  {
+   "name": "b62",
+   "frame": 900
+  },
+  {
+   "name": "b72",
+   "frame": 1046
+  },
+  {
+   "name": "slam1_b38",
+   "frame": 552
+  },
+  {
+   "name": "slam2_b78",
+   "frame": 1133
+  }
+ ],
+ "probes": [
+  {
+   "src": "lock-quick.mp3",
+   "from": 549
+  },
+  {
+   "src": "switch-tap.mp3",
+   "from": 792
+  },
+  {
+   "src": "transition-snap.mp3",
+   "from": 256
+  }
+ ]
+}

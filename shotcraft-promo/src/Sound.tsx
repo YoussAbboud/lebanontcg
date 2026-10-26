@@ -36,10 +36,10 @@ export const SFX: Pin[] = [
   pin(S.deal.from + 40, 'air-whoosh-powerful.mp3', 0.48, 'pull-out + first cards dealt'),
   pin(S.deal.from + 62, 'whoosh-fast.mp3', 0.32, 'deal accelerates'),
   pin(S.deal.from + 80, 'whoosh-fast.mp3', 0.34, 'last cards blur into one swoosh'),
-  // title cards: one shared sound
-  pin(S.title1.from + 6, 'swoosh-quick.mp3', 0.34, 'title 1'),
-  pin(S.title2.from + 6, 'swoosh-quick.mp3', 0.34, 'title 2'),
-  pin(S.title3.from + 6, 'swoosh-quick.mp3', 0.55, 'title 3 (denser BGM bar than T1/T2: measured masked at 0.34)'),
+  // title cards: one shared sound (a low-band swoosh: measured −2…+0.5 dB vs the BGM at 0.34, raised 2026-10-26)
+  pin(S.title1.from + 6, 'swoosh-quick.mp3', 0.5, 'title 1'),
+  pin(S.title2.from + 6, 'swoosh-quick.mp3', 0.5, 'title 2'),
+  pin(S.title3.from + 6, 'swoosh-quick.mp3', 0.7, 'title 3 (denser BGM bar than T1/T2)'),
   // S3 crash zoom — slam #1 on b38
   pin(S.auction.from + 26 - CRASH_LEAD, 'lock-quick.mp3', 0.3, 'corners lock onto the panel'),
   pin(beatF(38) - 2, 'air-zoom-vacuum.mp3', 0.36, 'crash push'),

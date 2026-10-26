@@ -1,17 +1,17 @@
 {
  "date": "2026-10-26",
  "pipeline": {
-  "renderer": "Remotion 4.0.484, chrome-headless-shell 152, GL swiftshader, concurrency 4",
-  "video": "remotion render (h264, jpeg frames) \u2014 video stream copied",
-  "audio": "remotion render --codec=wav (48 kHz) \u2192 ffmpeg AAC 320k mux; same path for the with-BGM and no-BGM files",
-  "rejected": "Remotion's own AAC in the MP4 measured +42.7 ms (1.27 f) late for the whole mix (encoder priming); not used"
+  "renderer": "Remotion 4.0.484, chrome-headless-shell 152.0.7977.30, GL swiftshader, concurrency 4",
+  "video": "remotion render (h264, jpeg frames), stream copied into both deliveries",
+  "audio": "remotion render --codec=wav (48 kHz) \u2192 ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers \u2192 AAC 320k; same path for promo.mp4 and promo-nobgm.mp4 (render.sh)",
+  "rejected": "Remotion's own AAC in the MP4: the whole mix measured +42.7 ms (1.27 f) late (encoder priming), so it is not used"
  },
  "probes": [
   {
    "src": "lock-quick.mp3",
-   "from": 549,
-   "measured_f": -0.0,
-   "corr": 0.387
+   "from": 534,
+   "measured_f": 0.0,
+   "corr": 0.982
   },
   {
    "src": "switch-tap.mp3",
@@ -23,11 +23,12 @@
    "src": "transition-snap.mp3",
    "from": 256,
    "measured_f": -0.01,
-   "corr": 0.999
+   "corr": 1.0
   }
  ],
- "method": "normalised cross-correlation of each probe's source file against the no-BGM delivery around its pinned `from`; BGM: cross-correlation of the with-BGM delivery against bgm.mp3 trimmed at 167 f",
- "output_offset_f": -0.01,
- "bgm_lag_ms": -0.33,
- "result": "OUTPUT_AUDIO_OFFSET_F = 0 (measured, not assumed). SOURCE_BEAT0 unchanged (0.014 s, source analysis)."
+ "method": "normalised cross-correlation of each probe's source file against the no-BGM delivery around its pinned `from`; librosa beat grids fitted on the delivery and on the source window (bgm.mp3 from 167 f) give the output delay net of detector bias",
+ "output_offset_f": 0.0,
+ "output_delay_f": 0.03,
+ "detector_bias_f": 0.5,
+ "result": "OUTPUT_AUDIO_OFFSET_F = 0 (measured). SOURCE_BEAT0 = 0.014 s unchanged (source analysis only)."
 }

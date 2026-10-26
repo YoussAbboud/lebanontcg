@@ -150,7 +150,7 @@ export const Outro: React.FC = () => {
         {/* blur 只作用背景页：PageCam2D 自闭合，飞入元素放在未过滤的兄弟层
             （屏幕空间坐标，与 template SceneOutroLive 同构）——放进 children
             会连"合影元素"一起糊掉，只剩字标清晰 */}
-        <PageCam2D src="textures/live/browse-full.png" pageH={PAGE_H} keys={[{ frame: 0, cx: 960, cy: 700, zoom: 0.75 }]} blur={blur} bg={C.bg} />
+        <PageCam2D src="textures/live/browse-full-1x.png" pageH={PAGE_H} keys={[{ frame: 0, cx: 960, cy: 700, zoom: 0.75 }]} blur={blur} bg={C.bg} />
         {/* warm scrim under the flying elements */}
         <AbsoluteFill style={{ background: 'radial-gradient(1200px 800px at 50% 48%, rgba(8,9,11,0.92), rgba(8,9,11,0.84) 60%, rgba(8,9,11,0.76))', pointerEvents: 'none' }} />
 

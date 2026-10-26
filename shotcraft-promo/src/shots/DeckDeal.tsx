@@ -108,16 +108,14 @@ const hermite = (xs: number[], ys: number[]) => {
 const CURVES = Object.fromEntries(PARAMS.map((p) => [p, hermite(ANCHORS.map((k) => k.frame), ANCHORS.map((k) => k[p]))])) as Record<keyof Cam, (x: number) => number>;
 const camAt = (f: number): Cam => Object.fromEntries(PARAMS.map((p) => [p, CURVES[p](f)])) as Cam;
 
-// ───────────── 拉丝石墨桌面纹理（确定性 feTurbulence：x 极低频 / y 高频 = 横向拉丝） ─────────────
-const BRUSH_TILE = (() => {
-  const svg =
-    `<svg xmlns='http://www.w3.org/2000/svg' width='640' height='640'>` +
-    `<filter id='b' x='0' y='0' width='100%' height='100%' color-interpolation-filters='sRGB'>` +
-    `<feTurbulence type='fractalNoise' baseFrequency='0.0018 0.62' numOctaves='3' seed='11' stitchTiles='stitch'/>` +
-    `<feColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.4 0.4 0.4 0 -0.5'/>` +
-    `</filter><rect width='100%' height='100%' filter='url(#b)'/></svg>`;
-  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
-})();
+// ───────────── 拉丝石墨桌面：demo 的 CSS 渐变 + feTurbulence 拉丝在 ~1 万 px 的平面上，软件 GL 下每帧 ~20s、渲染超时；
+// 同一套 CSS 由 capture/bake-table.mjs 预烘成贴图（拉丝 2x 平铺 · 底色与镜面带 · 远端渐隐），层序同 demo；只有顶光保持动态 ─────────────
+const TEX = {
+  brush: staticFile('textures/table/brush@2x.png'),
+  base: staticFile('textures/table/base.png'),
+  fade: staticFile('textures/table/fade.png'),
+  light: staticFile('textures/table/light.png'),
+};
 
 const T = 4000; // 桌面平面外扩（页面坐标），任意斜角不穿帮
 
@@ -139,14 +137,12 @@ export const DeckDeal: React.FC = () => {
   const landed = grid.filter((c) => frame >= c.cue + 8).length;
   const statIn = ramp(frame, 90, 12, EASE.out);
 
-  const tableBg = [
-    // 顶光：落在牌堆上（开场最亮），随拉远扩大成照亮整块板的大光
-    `radial-gradient(${1100 + 1400 * lightUp}px ${800 + 1600 * lightUp}px at ${T + PILE_CX - 600 * lightUp}px ${T + PILE_CY + 900 * lightUp}px, rgba(235,232,224,${0.2 - 0.08 * lightUp}), rgba(220,216,206,0.05) 45%, transparent 70%)`,
-    // 宽幅镜面高光带
-    `linear-gradient(104deg, transparent ${T + PILE_CX - 1600}px, rgba(220,226,236,0.07) ${T + PILE_CX - 500}px, rgba(240,244,252,0.11) ${T + PILE_CX}px, rgba(220,226,236,0.05) ${T + PILE_CX + 600}px, transparent ${T + PILE_CX + 1800}px)`,
-    `${BRUSH_TILE} 0 0 / 640px 640px repeat`,
-    'linear-gradient(115deg, #1b1c1f 0%, #24262a 30%, #18191c 56%, #202226 80%, #141518 100%)',
-  ].join(', ');
+  // 顶光：落在牌堆上（开场最亮），随拉远扩大成照亮整块板的大光（demo 的径向渐变 → 烘焙光斑按同尺寸/位置/强度拉伸）
+  const light = {
+    rx: 1100 + 1400 * lightUp, ry: 800 + 1600 * lightUp,
+    x: T + PILE_CX - 600 * lightUp, y: T + PILE_CY + 900 * lightUp,
+    a: 0.2 - 0.08 * lightUp, // 烘焙光斑中心 alpha=1，按 demo 原值整体压
+  };
 
   const persp = cam.persp * cam.zoom;
 
@@ -168,11 +164,13 @@ export const DeckDeal: React.FC = () => {
             {/* 石墨桌面：远处柔边隐进暗场 */}
             <div
               style={{
-                position: 'absolute', left: -T, top: -T, width: 1920 + 2 * T, height: BOARD_H + 2 * T, background: tableBg,
-                WebkitMaskImage: `radial-gradient(ellipse ${2600}px ${3600}px at ${T + 960}px ${T + BOARD_H / 2}px, #000 40%, transparent 100%)`,
-                maskImage: `radial-gradient(ellipse ${2600}px ${3600}px at ${T + 960}px ${T + BOARD_H / 2}px, #000 40%, transparent 100%)`,
+                position: 'absolute', left: -T, top: -T, width: 1920 + 2 * T, height: BOARD_H + 2 * T, overflow: 'hidden',
+                background: `url(${TEX.brush}) 0 0 / 640px 640px repeat, url(${TEX.base}) 0 0 / 100% 100% no-repeat`,
               }}
-            />
+            >
+              <Img src={TEX.light} style={{ position: 'absolute', left: light.x - light.rx, top: light.y - light.ry, width: 2 * light.rx, height: 2 * light.ry, opacity: light.a }} />
+              <Img src={TEX.fade} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+            </div>
 
             {/* 页面板：真实截图 + 纸面延长；落在桌上的大投影 + 上沿受光 */}
             <div
@@ -182,7 +180,7 @@ export const DeckDeal: React.FC = () => {
                 boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 60px 160px rgba(0,0,0,0.7), 0 12px 40px rgba(0,0,0,0.5)',
               }}
             >
-              <Img src={staticFile('textures/live/browse-empty.png')} style={{ position: 'absolute', left: -BOARD.x, top: 0, width: 1920, height: PAGE_H }} />
+              <Img src={staticFile('textures/live/browse-empty-1x.png')} style={{ position: 'absolute', left: -BOARD.x, top: 0, width: 1920, height: PAGE_H }} />
               {/* 纸面延长段的分区小标（与截图同款排版：大写字距 + 计数） */}
               {/* 板面暗层：开场整块板在暗处，灯从牌堆处亮开（柔边光圈） */}
               {lightUp < 1 && (

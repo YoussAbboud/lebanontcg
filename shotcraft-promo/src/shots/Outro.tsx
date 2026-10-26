@@ -52,7 +52,7 @@ type FlyEl = {
 const ELS: FlyEl[] = [
   { key: 'nav', file: 'nav.png', w: 1398, h: 81, cx: 960, cy: 80, scale: 0.62, rot: 0, dx: 0, dy: -120, radius: 10, cue: 12 },
   { key: 'hero', file: 'hero-hires.png', w: 261, h: 571, cx: 250, cy: 370, scale: 0.75, rot: -5, dx: -500, dy: 0, radius: 18, cue: 17 },
-  { key: 'card6', file: 'card6.png', w: 261, h: 571, cx: 1680, cy: 380, scale: 0.7, rot: 4, dx: 500, dy: 0, radius: 18, cue: 22 },
+  { key: 'card6', file: 'card6.png', w: 261, h: 571, cx: 1680, cy: 455, scale: 0.7, rot: 4, dx: 500, dy: 0, radius: 18, cue: 22 },
   { key: 'auction', file: 'auction-panel.png', w: 784, h: 382, cx: 1470, cy: 810, scale: 0.6, rot: -3, dx: 450, dy: 260, radius: 16, cue: 27 },
   { key: 'card8', file: 'card8.png', w: 260, h: 571, cx: 240, cy: 860, scale: 0.62, rot: 3, dx: -400, dy: 300, radius: 18, cue: 32 },
   { key: 'offer', file: 'bubble8.png', w: 300, h: 190, cx: 680, cy: 935, scale: 1.1, rot: 2, dx: 0, dy: 320, radius: 16, cue: 37 },
@@ -260,7 +260,7 @@ export const Outro: React.FC = () => {
         <AbsoluteFill
           style={{
             pointerEvents: 'none',
-            background: 'radial-gradient(760px 380px at 960px 470px, rgba(123,92,255,0.55), rgba(123,92,255,0.18) 55%, rgba(123,92,255,0) 75%)',
+            background: 'radial-gradient(760px 380px at 960px 470px, rgba(216,222,233,0.2), rgba(216,222,233,0.06) 55%, rgba(216,222,233,0) 75%)',
             opacity: stageLight,
           }}
         />

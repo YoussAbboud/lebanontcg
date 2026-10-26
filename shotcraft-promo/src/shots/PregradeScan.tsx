@@ -59,12 +59,12 @@ const scanY = (f: number) => Y0 + (Y1 - Y0) * Math.min(1, Math.max(0, (f - SCAN0
 const frameAtY = (y: number) => SCAN0 + ((y - Y0) / (Y1 - Y0)) * (SCAN1 - SCAN0);
 
 // ───────────── 分析目标（页面坐标；tag = 标签相对 bbox 的放置） ─────────────
-type Tag = 'right' | 'above' | 'below' | 'belowRight' | 'inside';
+type Tag = 'right' | 'above' | 'below' | 'belowRight' | 'header';
 type Target = { key: string; x: number; y: number; w: number; h: number; head: string; detail: string; tag: Tag; ft: number };
 const PURPOSE = ['CENTERING', 'CENTERING', 'CORNER', 'CORNER', 'CORNER', 'CORNER', 'SURFACE', 'SURFACE'];
 const TARGETS: Target[] = (() => {
   const ts: Target[] = layout.pregrade.slots.map((s, i) => ({
-    key: `slot${i + 1}`, x: s.x, y: s.y, w: s.w, h: s.h, head: PURPOSE[i], detail: '', tag: 'inside' as Tag, ft: 0,
+    key: `slot${i + 1}`, x: s.x, y: s.y, w: s.w, h: s.h, head: PURPOSE[i], detail: '', tag: 'header' as Tag, ft: 0,
   }));
   let prev = -99;
   for (const t of [...ts].sort((a, b) => a.y + a.h - (b.y + b.h) || a.x - b.x)) {
@@ -116,8 +116,11 @@ const Bracket: React.FC<{ t: Target; frame: number }> = ({ t, frame }) => {
   );
 };
 
-const TAG_H = 50;
-const CHAR_W = 0.6 * 32; // 32px 等宽字步进
+// The slots sit 14px apart under a paragraph, so the card's outside placements land on content. 'header' lays the tag over
+// the slot's own 11px mono header row (texture-size text), full slot width so no fragments show; 33px page = ~32px on screen (Q11).
+const TAG_H = 44;
+const TAG_FONT = 33;
+const CHAR_W = 0.6 * TAG_FONT; // 等宽字步进
 const tagWidth = (t: Target) => Math.round((t.head.length + (t.detail ? 3 + t.detail.length : 0)) * CHAR_W + 34);
 
 const Label: React.FC<{ t: Target; frame: number }> = ({ t, frame }) => {
@@ -128,7 +131,7 @@ const Label: React.FC<{ t: Target; frame: number }> = ({ t, frame }) => {
   const full = t.detail ? `${t.head} · ${t.detail}` : t.head;
   const typedF = Math.min(full.length, (frame - s0) * 2.2 + 1); // 机器在写：~2 字/帧
   const typed = Math.floor(typedF);
-  const w = tagWidth(t); // 定位用的最终宽度
+  const w = t.tag === 'header' ? t.w - 16 : tagWidth(t); // 定位用的最终宽度
   const wNow = Math.min(w, typedF * CHAR_W + 34); // 签条随字长出来（右缘略领先于字）
   const typing = typed < full.length;
   let x = t.x;
@@ -137,7 +140,7 @@ const Label: React.FC<{ t: Target; frame: number }> = ({ t, frame }) => {
   if (t.tag === 'above') { x = t.x; y = t.y - TAG_H - 10; }
   if (t.tag === 'below') { x = t.x; y = t.y + t.h + 12; }
   if (t.tag === 'belowRight') { x = t.x + t.w - w; y = t.y + t.h + 10; }
-  if (t.tag === 'inside') { x = t.x + (t.w - w) / 2; y = t.y + t.h * 0.42; }
+  if (t.tag === 'header') { x = t.x + 8; y = t.y + 3; }
   const head = full.slice(0, Math.min(typed, t.head.length));
   const rest = typed > t.head.length ? full.slice(t.head.length, typed) : '';
   return (
@@ -147,11 +150,11 @@ const Label: React.FC<{ t: Target; frame: number }> = ({ t, frame }) => {
       opacity: pop, overflow: 'hidden',
       transform: `translateY(${((1 - rise) * 8).toFixed(2)}px)`,
       display: 'flex', alignItems: 'center', paddingLeft: 17, boxSizing: 'border-box',
-      font: `600 32px ${MONO}`, letterSpacing: 0, whiteSpace: 'pre', color: ON_MACHINE,
+      font: `600 ${TAG_FONT}px ${MONO}`, letterSpacing: 0, whiteSpace: 'pre', color: ON_MACHINE,
     }}>
       <span style={{ fontWeight: 750 }}>{head}</span>
       <span style={{ color: 'rgba(8,9,11,0.7)', fontWeight: 500 }}>{rest}</span>
-      {typing && <span style={{ display: 'inline-block', width: 14, height: 30, marginLeft: 2, background: 'rgba(8,9,11,0.8)' }} />}
+      {typing && <span style={{ display: 'inline-block', width: 14, height: 28, marginLeft: 2, background: 'rgba(8,9,11,0.8)' }} />}
     </div>
   );
 };
@@ -172,7 +175,7 @@ export const PregradeScan: React.FC = () => {
       <Stage look={L} keyLight={{ x: 0.3, y: 0.05 }} fill={{ x: 0.9, y: 0.95 }} vignette={0.45} />
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: '50% 10%' }}>
         {/* ── 状态行（窗外上方）── */}
-        <div style={{ position: 'absolute', left: WX, top: 70, width: WW, height: 48, opacity: statusIn, font: `600 30px ${MONO}`, color: L.ink, display: 'flex', alignItems: 'center' }}>
+        <div style={{ position: 'absolute', left: WX, top: 70, width: WW, height: 52, opacity: statusIn, font: `600 38px ${MONO}`, color: L.ink, display: 'flex', alignItems: 'center' }}>
           <div style={{ width: 14, height: 14, borderRadius: 7, marginRight: 16, background: done > 0.5 ? MACHINE : alpha(MACHINE, 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(frame / 3))), boxShadow: `0 0 0 6px ${alpha(MACHINE, 0.12)}` }} />
           <span style={{ color: done > 0.5 ? MACHINE : L.ink, letterSpacing: '0.06em' }}>{done > 0.5 ? 'EIGHT GUIDED PHOTOS' : 'READING'}</span>
           <span style={{ color: L.ink3, marginLeft: 18, fontWeight: 500 }}>PRE-GRADE</span>

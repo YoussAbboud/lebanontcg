@@ -114,19 +114,19 @@ The BGM carries the drums; SFX only pin picture-specific actions. Planned: trans
 
 ## Final storyboard (as built)
 
-Frames: cut at beatF(n) = round((0.014 + n·60/123.992)·30) → 0, 117, 291, 465, 523, 668, 726, 842, 900, 1046; end 1220 (40.7 s). Slams: frame 552 (b38), frame 1133 (b78).
+Frames: cut at beatF(n) = round((0.014 + n·60/123.992)·30) on beats 0, 8, 20, 31, 35, 46, 50, 58, 62, 72 → 0, 117, 291, 450, 509, 668, 726, 842, 900, 1046; end 1220 (40.7 s). Slams: frame 552 (b38, crash HIT), frame 1133 (b78, stamp).
 
 | Shot | Frames | On-screen copy |
 |---|---|---|
 | S0 Brand open | 0–116 | LEBANONTCG. · WE CONNECT COLLECTORS. YOU HANDLE THE DEAL. |
 | S1 The listing | 117–290 | note: "List what / *you own.*" |
-| S2 The deal | 291–464 | counter "NN CARDS LISTED" · "Listed by / *collectors.*" · "Pokémon, Magic, Yu-Gi-Oh! and One Piece." |
-| T1 | 465–522 | Live auctions. Nobody gets *sniped.* |
-| S3 Anti-snipe | 523–667 | crash target: the whole auction panel (late bid captured: "+60s — bid in the final minute.") · readout: the Terms sentence on three lines |
+| S2 The deal | 291–449 | counter "NN CARDS LISTED" · "Listed by / *collectors.*" · "Pokémon, Magic, Yu-Gi-Oh! and One Piece." |
+| T1 | 450–508 | Live auctions. Nobody gets *sniped.* |
+| S3 Anti-snipe | 509–667 | crash target: the whole auction panel (late bid captured: "+60s — bid in the final minute.") · hit at 552 · readout: "+60s" + the Terms sentence on three lines |
 | T2 | 668–725 | Winning opens a *chat* with the seller. |
 | S4 Chat | 726–841 | five rows (last five bubbles of the seeded thread, ending on the offer card) · caption: No checkout, no fees, you agree the terms yourselves. |
 | T3 | 842–899 | *Pre-Grade* before you list. |
-| S5 Pre-Grade | 900–1045 | real Pre-Grade page (slots empty); each slot gets corners + label (CENTERING / CORNER / SURFACE …); status ends on "EIGHT GUIDED PHOTOS" · caption: A centering report, a defect read, an estimated PSA band. |
+| S5 Pre-Grade | 900–1045 | real Pre-Grade page (slots empty); each slot gets corners + a label over its header row (CENTERING / CORNER / SURFACE …); status ends on "EIGHT GUIDED PHOTOS" · caption: You get centering, defects and an estimated PSA band. |
 | S6 Finale | 1046–1219 | flying elements + wordmark stamp at frame 1133 · eyebrow + www.lebanontcg.com |
 
 Other recorded production facts:

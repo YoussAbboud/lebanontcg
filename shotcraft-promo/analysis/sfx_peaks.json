@@ -1,4 +1,10 @@
 {
+ "_method": "peak_lag_f = frames from file start to the loudest point. Entries added 2026-10-26 (air-whoosh-powerful, shimmer-sparkle-sweep, swoosh-slow) were measured with sfx_peaks.py (33 ms mean-|x| envelope argmax). Earlier entries kept as measured: the independent review (2026-10-26) cross-correlated every pin on the rendered file and found each within ~1 f of its picture action.",
+ "air-whoosh-powerful.mp3": {
+  "dur_s": 1.84,
+  "peak_db": -3.0,
+  "peak_lag_f": 6.7
+ },
  "air-zoom-vacuum.mp3": {
   "dur_s": 1.27,
   "peak_db": -0.9,
@@ -24,20 +30,15 @@
   "peak_db": -0.3,
   "peak_lag_f": 0.5
  },
- "riser-cine.mp3": {
-  "dur_s": 4.81,
-  "peak_db": -0.1,
-  "peak_lag_f": 35.0
+ "shimmer-sparkle-sweep.mp3": {
+  "dur_s": 3.0,
+  "peak_db": -2.0,
+  "peak_lag_f": 27.6
  },
  "sparkle-touch.mp3": {
   "dur_s": 2.33,
   "peak_db": -5.2,
   "peak_lag_f": 14.3
- },
- "sparkle.mp3": {
-  "dur_s": 4.55,
-  "peak_db": -8.2,
-  "peak_lag_f": 42.8
  },
  "switch-click-quick.mp3": {
   "dur_s": 1.04,
@@ -59,6 +60,11 @@
   "peak_db": -3.9,
   "peak_lag_f": 10.1
  },
+ "swoosh-slow.mp3": {
+  "dur_s": 5.5,
+  "peak_db": -2.6,
+  "peak_lag_f": 63.8
+ },
  "transition-snap.mp3": {
   "dur_s": 0.57,
   "peak_db": -5.6,
@@ -68,11 +74,6 @@
   "dur_s": 1.27,
   "peak_db": -0.9,
   "peak_lag_f": 13.6
- },
- "whoosh-big.mp3": {
-  "dur_s": 2.32,
-  "peak_db": -1.5,
-  "peak_lag_f": 21.6
  },
  "whoosh-fast.mp3": {
   "dur_s": 1.76,

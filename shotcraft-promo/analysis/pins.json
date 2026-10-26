@@ -9,12 +9,12 @@
    "frame": 291
   },
   {
-   "name": "b32",
-   "frame": 465
+   "name": "b31",
+   "frame": 450
   },
   {
-   "name": "b36",
-   "frame": 523
+   "name": "b35",
+   "frame": 509
   },
   {
    "name": "b46",
@@ -35,20 +35,12 @@
   {
    "name": "b72",
    "frame": 1046
-  },
-  {
-   "name": "slam1_b38",
-   "frame": 552
-  },
-  {
-   "name": "slam2_b78",
-   "frame": 1133
   }
  ],
  "probes": [
   {
    "src": "lock-quick.mp3",
-   "from": 549
+   "from": 534
   },
   {
    "src": "switch-tap.mp3",
@@ -57,6 +49,24 @@
   {
    "src": "transition-snap.mp3",
    "from": 256
+  }
+ ],
+ "events": [
+  {
+   "name": "crash_hit_b38",
+   "beat": 38,
+   "detect": "luma_peak",
+   "window": [
+    530,
+    600
+   ],
+   "note": "S3 HIT flash, measured on the picture"
+  },
+  {
+   "name": "stamp_b78",
+   "beat": 78,
+   "frame": 1133,
+   "note": "S6 wordmark stamp cue (Outro.tsx)"
   }
  ]
 }

@@ -34,9 +34,9 @@ import { C } from '../theme';
 // final minute (history shows "+60s — bid in the final minute.", clock 1m 37s). The panel is wider than the demo's card,
 // so REST/PEAK are rescaled to give it the same screen share; the window is the site's own dark frame.
 // Look moved from ember to the product's graphite + acid (backlight = the brand violet). Timings are the demo's minus 2f
-// so the hit lands on b38 — the strongest kick near the shot (slam #1). Slot is 145f; the tail hold is longer.
+// so the hit lands on b38 — the strongest kick near the shot (slam #1). Slot is 159f (b35→b46); the tail hold is longer.
 // Readout copy = the Terms sentence, split: "+60s" / "bid in the final minute" / "extends the clock so nobody is sniped."
-export const CRASHZOOM_DUR = 145;
+export const CRASHZOOM_DUR = 159;
 
 const L = LOOKS.ltcg;
 const CARD = layout.listing.panel;
@@ -51,7 +51,10 @@ const WIN_R = 18;
 const WIN_C = { x: WIN.x + WIN.w / 2, y: (WIN.y - CHROME + WIN.y + WIN.h) / 2 }; // 窗口几何中心
 
 const PUSH = 38; // crash start
-const HIT = 44; // hit frame (6f crash) = b38
+const HIT = 44; // hit frame (6f crash)
+// The slot starts at b35 (frame 509); entering the demo timeline one frame in puts HIT on 509 + 43 = 552 = b38, the
+// strongest kick near the shot (b39, where it landed before, is a weak one). Pre-push wide hold stays 37f (card: ≥30f).
+export const LEAD = 1;
 const REST = 1.46; // panel ≈ 1145×557 on screen
 const PEAK = REST * 1.06; // +6% overshoot, the card's upper bound
 const SHIFT = 54; // follow-left start
@@ -184,7 +187,7 @@ const smearAt = (f: number, n: number) => {
 };
 
 export const CrashAuction: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useCurrentFrame() + LEAD;
   const lock = ramp(frame, 12, 16, EASE.snappy);
   const breath = ramp(frame, 32, 6, EASE.smooth) * (1 - ramp(frame, PUSH, 4, EASE.exit));
   const lift = ramp(frame, HIT + 1, 16, EASE.out);
@@ -203,7 +206,7 @@ export const CrashAuction: React.FC = () => {
   return (
     <Stage look={L} keyLight={{ x: 0.5, y: 0.0 }} fill={{ x: 0.5, y: 1.05 }} horizon={0.86} intensity={0.9} breathe={0.5} vignette={mix(0.1, 0.5, wideFade)}>
       {/* 背光：窗口身后一圈橙色光晕，勾出轮廓；地面反光椭圆 */}
-      <div style={{ position: 'absolute', inset: 0, opacity: wideFade, background: `radial-gradient(ellipse 38% 44% at 50% 46%, ${alpha(L.accent2, 0.34)}, ${alpha(L.accent2, 0)} 70%)` }} />
+      <div style={{ position: 'absolute', inset: 0, opacity: wideFade, background: `radial-gradient(ellipse 38% 44% at 50% 46%, ${alpha(L.accent2, 0.11)}, ${alpha(L.accent2, 0)} 70%)` }} />
       <div style={{ position: 'absolute', left: 360, right: 360, top: 900, height: 160, opacity: wideFade, borderRadius: '50%', background: `radial-gradient(closest-side, ${alpha('#9d86ff', 0.26)}, ${alpha('#9d86ff', 0)})`, filter: 'blur(8px)' }} />
       <div style={{ position: 'absolute', inset: 0, opacity: wideFade }}>
         <Dust look={L} count={34} seed={7} drift={0.3} opacity={0.5} color="#c9d2ff" />
@@ -229,13 +232,13 @@ export const CrashAuction: React.FC = () => {
         <>
           <div style={{ position: 'absolute', inset: 0, opacity: scrim, background: `linear-gradient(90deg, ${alpha('#08090b', 0)} ${scrimX.toFixed(1)}px, ${alpha('#08090b', 0.96)} ${(scrimX + 90).toFixed(1)}px, ${alpha('#08090b', 0.97)} 100%)` }} />
           <div style={{ position: 'absolute', left: 1300, top: 270, width: 580, color: L.ink }}>
-            <div style={{ ...type(28, 650, { caps: true }), letterSpacing: '0.2em', color: L.accent, display: 'flex', alignItems: 'center', gap: 16, opacity: ramp(frame, 66, 10, EASE.out), transform: `translateY(${(14 * (1 - ramp(frame, 66, 14, EASE.snappy))).toFixed(2)}px)`, fontFamily: FONT.mono }}>
+            <div style={{ ...type(34, 650, { caps: true }), letterSpacing: '0.2em', color: L.accent, display: 'flex', alignItems: 'center', gap: 16, opacity: ramp(frame, 66, 10, EASE.out), transform: `translateY(${(14 * (1 - ramp(frame, 66, 14, EASE.snappy))).toFixed(2)}px)`, fontFamily: FONT.mono }}>
               <span style={{ width: 12, height: 12, borderRadius: 6, background: L.accent, boxShadow: `0 0 14px ${alpha(L.accent, 0.8)}` }} />
               Live auction
             </div>
             {/* clipPath 只裁掉行框下沿以外：逐字从线下升起时，未升起的字形不会从遮罩的内边距里露头 */}
             <div style={{ ...type(232, 700), fontFamily: FONT.display, color: L.accent, letterSpacing: '-0.02em', marginTop: 26, marginLeft: -10, clipPath: 'inset(-40px -60px 0 -60px)' }}>
-              <TextReveal text="+60S" by="char" variant="rise" start={69} each={18} gap={2.2} ease={EASE.snappy} />
+              <TextReveal text="+60s" by="char" variant="rise" start={69} each={18} gap={2.2} ease={EASE.snappy} />
             </div>
             <div style={{ height: 2, width: 520, marginTop: 30, background: alpha(L.ink, 0.16), transform: `scaleX(${ramp(frame, 74, 22, EASE.snappy).toFixed(4)})`, transformOrigin: '0 50%' }} />
             <div style={{ ...type(52, 600), marginTop: 30 }}>

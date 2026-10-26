@@ -36,7 +36,7 @@ export const LOOKS: Record<LookName, Look> = {
   ltcg: {
     name: 'ltcg', dark: true, bg: ['#121318', '#0b0c0f', '#08090b'], light: '#c9d2ff',
     surface: '#16191e', surface2: '#1c2026', line: 'rgba(255,255,255,0.08)',
-    ink: '#f2f5f7', ink2: '#b9c2cc', ink3: '#7b8590', accent: '#d6ff3f', accent2: '#7b5cff', onAccent: '#08090b', shadow: '#000000',
+    ink: '#f2f5f7', ink2: '#b9c2cc', ink3: '#7b8590', accent: '#d6ff3f', accent2: '#d8dee9', onAccent: '#08090b', shadow: '#000000', // accent2 = neutral key/fill light (tokens: single acid key, otherwise neutral white)
   },
   // 深蓝夜：科技产品、AI、数据——冷静、电光蓝
   midnight: {

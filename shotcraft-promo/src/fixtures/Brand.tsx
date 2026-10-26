@@ -21,7 +21,7 @@ export const COPY = {
   antiSnipe: 'A bid in the final minute extends the clock so nobody is sniped.', // Terms
   description: "Lebanon's peer-to-peer card marketplace", // site description (trimmed)
   games: 'Pokémon, Magic, Yu-Gi-Oh! and One Piece.', // site description
-  pregrade: 'A centering report, a defect read, an estimated PSA band.', // Pre-Grade lede (trimmed)
+  pregrade: 'You get centering, defects and an estimated PSA band.', // Pre-Grade lede, condensed to one 56px line: what the eight photos on screen produce
 } as const;
 
 export const FlagMark: React.FC<{ size?: number; style?: React.CSSProperties }> = ({ size = 96, style }) => (

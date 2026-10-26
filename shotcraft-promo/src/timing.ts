@@ -14,9 +14,9 @@ const span = (a: number, b: number) => ({ from: beatF(a), dur: beatF(b) - beatF(
 export const SHOTS = {
   open: span(0, 8),
   hero: span(8, 20),
-  deal: span(20, 32),
-  title1: span(32, 36),
-  auction: span(36, 46),
+  deal: span(20, 31),
+  title1: span(31, 35),
+  auction: span(35, 46), // starts one beat early so the crash (local 44, LEAD 1) hits b38 = frame 552
   title2: span(46, 50),
   chat: span(50, 58),
   title3: span(58, 62),

@@ -34,8 +34,8 @@ import { C } from '../theme';
 // LebanonTCG adaptation: the 24 real listing cards of the Browse page (cutouts + the hidden-card backplate) are the deck;
 // the board is the site's own dark frame (x 260–1660), so no extra rows are needed (24 cards, not 26). The pile sits on
 // the table right of the board. Camera anchors, deal cue formula, anticipation (48/30px), dive/settle/press and the
-// drag hierarchy are the demo's. Copy: product line + games list; counter uses the flag mark. Slot is 174f (b20→b32):
-// the extra 24f extend the full-board hold (R2: rest after the flood).
+// drag hierarchy are the demo's. Copy: product line + games list; counter uses the flag mark. Slot is 160f (b20→b31):
+// the extra 10f extend the full-board hold (R2: rest after the flood). The camera's last key stays at 174 (slow creep).
 export const DECK_DEAL_FLYIN_DURATION = 174;
 
 const L = LOOKS.ltcg;
@@ -284,14 +284,14 @@ export const DeckDeal: React.FC = () => {
         <div style={{ ...type(120, 700), fontFamily: FONT.display, textTransform: 'uppercase', letterSpacing: '0.01em', color: L.accent, marginTop: 4 }}>
           <TextReveal text="collectors." by="word" variant="rise" start={106} each={16} gap={4} />
         </div>
-        <div style={{ ...type(40, 500), color: L.ink2, marginTop: 22 }}>
+        <div style={{ ...type(40, 500), fontVariantNumeric: 'normal', color: L.ink2, marginTop: 22 }}>{/* tnum widens Inter's hyphen (Yu-Gi-Oh!) */}
           <TextReveal text={COPY.games} by="word" variant="blur" start={114} each={14} gap={3} />
         </div>
       </div>
       <div
         style={{
           position: 'absolute', left: 124, top: 610, display: 'flex', alignItems: 'center', gap: 16, opacity: statIn,
-          ...type(30, 500, { mono: true }), letterSpacing: '0.14em', color: L.ink2,
+          ...type(34, 500, { mono: true }), letterSpacing: '0.14em', color: L.ink2,
         }}
       >
         <FlagMark size={38} style={{ margin: '-6px 0' }} />

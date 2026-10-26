@@ -31,7 +31,7 @@ export const BrandOpen: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg, justifyContent: 'center', alignItems: 'center' }}>
-      <AbsoluteFill style={{ background: 'radial-gradient(1100px 620px at 50% 46%, rgba(123,92,255,0.16), rgba(123,92,255,0) 70%)' }} />
+      <AbsoluteFill style={{ background: 'radial-gradient(1100px 620px at 50% 46%, rgba(216,222,233,0.06), rgba(216,222,233,0) 70%)' }} />
       <div style={{ textAlign: 'center', opacity: 1 - brandOut, transform: `translateY(${-brandOut * 40}px) scale(${1 - brandOut * 0.12})` }}>
         <svg width={64} height={64} viewBox="0 0 64 64" style={{ display: 'block', margin: '0 auto 34px', opacity: crossFade }}>
           <line x1={32} y1={2} x2={32} y2={62} stroke={C.acid} strokeWidth={5} strokeLinecap="round" pathLength={100} strokeDasharray={100} strokeDashoffset={vDraw} />

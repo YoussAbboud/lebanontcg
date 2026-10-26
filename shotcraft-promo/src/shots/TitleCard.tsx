@@ -27,7 +27,7 @@ export const TitleCard: React.FC<{ text: string; duration: number }> = ({ text, 
   const underline = interpolate(frame, [16, 34], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.3, 0, 0.2, 1) });
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg, justifyContent: 'center', alignItems: 'center' }}>
-      <AbsoluteFill style={{ background: 'radial-gradient(1100px 700px at 50% 44%, rgba(123,92,255,0.14), rgba(123,92,255,0) 68%)' }} />
+      <AbsoluteFill style={{ background: 'radial-gradient(1100px 700px at 50% 44%, rgba(216,222,233,0.055), rgba(216,222,233,0) 68%)' }} />
       <div style={{ textAlign: 'center', maxWidth: 1600, opacity: fadeOut }}>
         <div style={{ fontFamily: FONT.display, fontSize: 124, fontWeight: 700, lineHeight: 1.08, color: C.ink, textTransform: 'uppercase', letterSpacing: '0.01em', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', columnGap: '0.26em' }}>
           {words.map((w, i) => {

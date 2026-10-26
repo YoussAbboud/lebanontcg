@@ -1,0 +1,56 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"color-ground","type":"color","label":"Background","default":"#08090b"},
+    {"id":"color-ink","type":"color","label":"Text","default":"#f2f5f7"},
+    {"id":"color-accent","type":"color","label":"Accent","default":"#d6ff3f"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>LebanonTCG brag (vertical)</title>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #08090b; }
+      #root { position: relative; width: 100%; height: 100%; background: #08090b; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="22.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Scenes. 120 BPM: a beat is 0.5 s, a bar 2 s. Every seam is a downbeat. -->
+      <div id="open" data-composition-id="open" data-composition-src="compositions/open.html"
+        data-start="0" data-duration="8" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+      <div id="auction" data-composition-id="auction" data-composition-src="compositions/auction.html"
+        data-start="8" data-duration="4" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+      <div id="chat" data-composition-id="chat" data-composition-src="compositions/chat.html"
+        data-start="12" data-duration="6" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+      <div id="pregrade" data-composition-id="pregrade" data-composition-src="compositions/pregrade.html"
+        data-start="18" data-duration="2" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+      <div id="outro" data-composition-id="outro" data-composition-src="compositions/outro.html"
+        data-start="20" data-duration="2.5" data-track-index="1" data-track-kind="graphics"
+        data-width="1080" data-height="1920"></div>
+
+      <!-- One soundtrack: music and effects synthesized together on the same grid (work/synth.py). -->
+      <audio id="soundtrack" class="clip" data-start="0" data-duration="22.5" data-track-index="2"
+        data-volume="1" src="assets/audio/soundtrack.wav"></audio>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

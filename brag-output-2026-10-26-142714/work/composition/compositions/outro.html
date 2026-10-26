@@ -1,0 +1,63 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+
+    #root { position: absolute; inset: 0; overflow: hidden; background: #08090b; color: #f2f5f7; }
+    #e-halo {
+      position: absolute; left: 0; right: 0; top: 420px; height: 900px;
+      background:
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(123, 92, 255, 0.34), rgba(123, 92, 255, 0) 70%),
+        radial-gradient(ellipse 30% 30% at 62% 52%, rgba(214, 255, 63, 0.14), rgba(214, 255, 63, 0) 70%);
+    }
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    #e-logo { position: absolute; left: 0; right: 0; top: 560px; display: flex; flex-direction: column; align-items: center; gap: 40px; }
+    #e-flag { width: 220px; height: 220px; }
+    #e-word { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 124px; letter-spacing: 0.04em; line-height: 1; white-space: nowrap; text-transform: uppercase; }
+    #e-word .dot { color: #d6ff3f; margin-left: 0.18em; }
+
+    #e-tag { position: absolute; left: 0; right: 0; top: 1050px; text-align: center; font-size: 40px; line-height: 1.5; letter-spacing: 0.18em; color: #c9d0d7; }
+    #e-url { position: absolute; left: 0; right: 0; top: 1220px; text-align: center; font-size: 56px; letter-spacing: 0.06em; color: #d6ff3f; text-transform: none; }
+  </style>
+
+  <div id="root" data-composition-id="outro" data-width="1080" data-height="1920">
+    <div id="e-halo"></div>
+    <div id="e-logo">
+      <img id="e-flag" src="assets/img/flag.png" alt="" />
+      <div id="e-word">LebanonTCG<span class="dot">.</span></div>
+    </div>
+    <div id="e-tag" class="mono">We connect collectors.<br />You handle the deal.</div>
+    <div id="e-url" class="mono">www.lebanontcg.com</div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const RMS = [0.68, 0.43, 0.16, 0.19, 0.3, 0.5, 0.54, 0.36, 0.36, 0.38, 0.52, 0.51, 0.32, 0.33, 0.33, 0.33, 0.33, 0.32, 0.32, 0.45, 0.84, 1.0, 0.81, 0.67, 0.58, 0.61, 0.66, 0.64, 0.63, 0.58, 0.61, 0.64, 0.63, 0.64, 0.6, 0.62, 0.66, 0.64, 0.63, 0.59, 0.61, 0.64, 0.61, 0.62, 0.57, 0.61, 0.66, 0.63, 0.62, 0.57, 0.61, 0.64, 0.62, 0.62, 0.55, 0.6, 0.66, 0.64, 0.63, 0.58, 0.68, 0.73, 0.63, 0.56, 0.49, 0.51, 0.56, 0.54, 0.52, 0.48, 0.48, 0.51, 0.52, 0.51, 0.46, 0.52, 0.57, 0.52, 0.51, 0.48, 0.5, 0.51, 0.51, 0.54, 0.49, 0.49, 0.54, 0.53, 0.52, 0.51, 0.58, 0.65, 0.64, 0.64, 0.59, 0.63, 0.67, 0.64, 0.63, 0.58, 0.8, 0.87, 0.59, 0.52, 0.44, 0.43, 0.42, 0.37, 0.29, 0.15, 0.04, 0.01, 0.0];
+      const RATE = 5;
+      const START = 20.0; // this scene's place on the soundtrack
+
+      // beat-locked: 20.0s (local 0) — the lockup lands on the final chord and the bell
+      tl.fromTo('#e-halo', { opacity: 0, scale: 0.9 }, { opacity: 0.8, scale: 1, duration: 0.6, ease: 'power2.out' }, 0);
+      tl.fromTo('#e-flag', { opacity: 0, scale: 0.7, rotation: -8 },
+        { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.4)' }, 0);
+      tl.fromTo('#e-word', { opacity: 0, clipPath: 'inset(0% 100% 0% 0%)', filter: 'blur(6px)' },
+        { opacity: 1, clipPath: 'inset(0% 0% 0% 0%)', filter: 'blur(0px)', duration: 0.4, ease: 'power4.out' }, 0.02);
+      // 20.2s (local 0.2) — the footer line and the address, held 2.3 s
+      tl.fromTo('#e-tag', { opacity: 0, filter: 'blur(8px)' },
+        { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out' }, 0.18);
+      
+      tl.fromTo('#e-url', { opacity: 0, filter: 'blur(8px)' },
+        { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out' }, 0.24);
+
+      // Audio-reactive: the halo behind the lockup breathes with the bed while it fades.
+      for (let i = Math.ceil((START + 0.6) * RATE); i < Math.floor((START + 2.45) * RATE); i++) {
+        const v = RMS[i] == null ? 0.5 : RMS[i];
+        tl.to('#e-halo', { opacity: 0.55 + 0.4 * v, duration: 1 / RATE, ease: 'sine.inOut' }, i / RATE - START);
+      }
+
+      window.__timelines['outro'] = tl;
+    })();
+  </script>
+</template>

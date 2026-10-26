@@ -1,0 +1,103 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 400; src: url('assets/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0b0c10; font-family: 'LTCG Sans', sans-serif; color: #f2f5f7; }
+    #p-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 900px 800px at 50% -10%, rgba(123, 92, 255, 0.24), rgba(123, 92, 255, 0) 70%), #0b0c10;
+    }
+    #p-stage { position: absolute; inset: 0; }
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+    .display { font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+
+    #p-eyebrow { position: absolute; left: 60px; top: 214px; font-size: 32px; color: #d6ff3f; }
+    #p-head { position: absolute; left: 60px; right: 60px; top: 266px; font-size: 104px; line-height: 1.04; }
+    #p-lede { position: absolute; left: 60px; top: 512px; font-size: 62px; line-height: 1.1; color: #d6ff3f; }
+
+    .tile {
+      position: absolute; width: 470px; height: 240px; border-radius: 22px; background: #16191e;
+      border: 2px solid rgba(255, 255, 255, 0.09);
+    }
+    .c1 { left: 60px; } .c2 { left: 550px; }
+    .r1 { top: 636px; } .r2 { top: 896px; } .r3 { top: 1156px; } .r4 { top: 1416px; }
+    .tile .lab { position: absolute; left: 24px; top: 20px; font-size: 24px; color: #b9c2cc; }
+    .tile .box {
+      position: absolute; left: 24px; right: 24px; top: 64px; bottom: 22px; border-radius: 14px; overflow: hidden;
+      border: 2px dashed rgba(255, 255, 255, 0.14); background: #0f1114;
+      display: flex; align-items: center; justify-content: center; font-size: 24px; color: #b9c2cc;
+    }
+    .tile .ring { position: absolute; inset: -2px; border-radius: 22px; border: 2px solid #d6ff3f; }
+    .photo { position: absolute; inset: 0; background: #23201a; }
+    .photo .pic {
+      position: absolute; border-radius: 12px; border: 5px solid #ffc83d;
+      background: radial-gradient(circle at 35% 20%, #b07a22, #5c3a14 80%);
+    }
+    .photo .flat { left: 158px; top: -8px; width: 104px; height: 146px; }
+    .photo .back { background: radial-gradient(circle at 50% 50%, #3f57c9, #1b2560 80%); border-color: #c9a646; }
+    .photo .corner { width: 380px; height: 380px; border-width: 9px; border-radius: 30px; }
+    .photo .tl { left: 60px; top: 34px; } .photo .tr { left: -22px; top: 34px; }
+    .photo .br { left: -22px; top: -268px; } .photo .bl { left: 60px; top: -268px; }
+    .photo.rake { background: linear-gradient(100deg, #3a2f1c, #14110c 70%); }
+    .photo.rake .pic { filter: brightness(0.75); }
+    .check { position: absolute; right: 12px; top: 12px; width: 42px; height: 42px; border-radius: 50%; background: #d6ff3f; }
+    .check b { position: absolute; left: 15px; top: 7px; width: 11px; height: 21px; border: solid #08090b; border-width: 0 4px 4px 0; transform: rotate(45deg); }
+  </style>
+
+  <div id="root" data-composition-id="pregrade" data-width="1080" data-height="1920">
+    <div id="p-bg"></div>
+    <div id="p-stage">
+      <div id="p-eyebrow" class="mono">Pre-Grade · Decision support</div>
+      <div id="p-head" class="display">Is this card worth grading?</div>
+      <div id="p-lede" class="display">Eight guided photos.</div>
+
+      <!-- The eight capture slots, in the page's order; each fills with a shot of the card. -->
+      <div id="p-t1" class="tile c1 r1"><div class="lab mono" data-layout-ignore>Front · flat on</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="pic flat"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t2" class="tile c2 r1"><div class="lab mono" data-layout-ignore>Back · flat on</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="pic flat back"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t3" class="tile c1 r2"><div class="lab mono" data-layout-ignore>Top-left corner</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="pic corner tl"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t4" class="tile c2 r2"><div class="lab mono" data-layout-ignore>Top-right corner</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="pic corner tr"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t5" class="tile c1 r3"><div class="lab mono" data-layout-ignore>Bottom-right corner</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="pic corner br"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t6" class="tile c2 r3"><div class="lab mono" data-layout-ignore>Bottom-left corner</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="pic corner bl"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t7" class="tile c1 r4"><div class="lab mono" data-layout-ignore>Front · raking light</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo rake"><i class="pic flat"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t8" class="tile c2 r4"><div class="lab mono" data-layout-ignore>Back · raking light</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo rake"><i class="pic flat back"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // Arrive on the chat's upward whip.
+      tl.fromTo('#p-stage', { y: 220, opacity: 0, filter: 'blur(14px)' },
+        { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.36, ease: 'power3.out' }, 0);
+
+      tl.set('.tile .photo, .tile .check, .tile .ring', { opacity: 0 }, 0);
+
+      // beat-grid: slot pairs fill on eighths at 18.5 / 18.75 / 19.0 / 19.25 (local 0.5 / 0.75 / 1.0 / 1.25)
+      [[0.5, ['#p-t1', '#p-t2']], [0.75, ['#p-t3', '#p-t4']], [1.0, ['#p-t5', '#p-t6']], [1.25, ['#p-t7', '#p-t8']]]
+        .forEach(function (step) {
+          step[1].forEach(function (id, k) {
+            const at = step[0] + k * 0.04;
+            tl.fromTo(id + ' .photo', { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 0.28, ease: 'expo.out' }, at);
+            tl.fromTo(id + ' .check', { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.28, ease: 'back.out(1.7)' }, at + 0.06);
+            tl.fromTo(id + ' .ring', { opacity: 1 }, { opacity: 0.35, duration: 0.5, ease: 'power2.out' }, at);
+          });
+        });
+
+      // Exit: blur swap onto the logo
+      tl.to('#p-stage', { opacity: 0, filter: 'blur(10px)', duration: 0.18, ease: 'power3.in' }, 1.8);
+
+      window.__timelines['pregrade'] = tl;
+    })();
+  </script>
+</template>

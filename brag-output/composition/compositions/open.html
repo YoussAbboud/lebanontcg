@@ -1,0 +1,218 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Chakra Petch'; font-weight: 600; src: url('assets/fonts/chakra-petch-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 400; src: url('assets/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 600; src: url('assets/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0b0c10; font-family: 'LTCG Sans', sans-serif; color: #f2f5f7; }
+    #o-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 1300px 620px at 50% -10%, rgba(123, 92, 255, 0.30), rgba(123, 92, 255, 0) 70%),
+        radial-gradient(ellipse 760px 320px at 50% 92%, rgba(214, 255, 63, 0.10), rgba(214, 255, 63, 0) 70%),
+        #0b0c10;
+    }
+    #o-stage { position: absolute; inset: 0; }
+
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+    .display { font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+
+    #o-eyebrow { position: absolute; left: 0; right: 0; top: 124px; text-align: center; font-size: 32px; letter-spacing: 0.32em; color: #b9c2cc; }
+    #o-eyebrow b { color: #d6ff3f; font-weight: 500; }
+
+    .hl { position: absolute; left: 0; right: 0; text-align: center; font-size: 176px; line-height: 1; letter-spacing: 0.01em; }
+    #o-we { top: 196px; color: #f2f5f7; }
+    #o-col { top: 372px; }
+    #o-col span {
+      background: linear-gradient(90deg, #7b5cff 0%, #35e4ff 50%, #d6ff3f 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    #o-sub { position: absolute; left: 0; right: 0; top: 590px; text-align: center; font-size: 40px; color: #b9c2cc; }
+
+    #o-fan { position: absolute; inset: 0; }
+    .slot { position: absolute; left: 780px; top: 296px; width: 360px; height: 540px; }
+    .card {
+      position: absolute; inset: 0; border-radius: 24px; background: #16191e;
+      border: 2px solid var(--edge); overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+    }
+    .cface {
+      position: absolute; left: 12px; right: 12px; top: 12px; height: 352px; border-radius: 16px; overflow: hidden;
+      background: radial-gradient(circle at 30% 18%, var(--hi), var(--lo) 78%);
+    }
+    .cframe { position: absolute; inset: 18px; border: 3px solid var(--rim); border-radius: 14px; }
+    .cframe2 { position: absolute; inset: 40px; border: 2px solid var(--rim); border-radius: 10px; opacity: 0.55; }
+    .orb { position: absolute; border-radius: 50%; background: var(--mist); }
+    .dia { position: absolute; background: var(--mist); transform: rotate(45deg); }
+    .glyph { position: absolute; left: 50%; top: 50%; width: 132px; height: 132px; margin: -66px 0 0 -66px; transform: rotate(45deg); background: var(--deep); }
+    .glyph b { position: absolute; inset: 24px; border: 22px solid var(--rim2); }
+    .pill { position: absolute; top: 22px; left: 22px; background: #d6ff3f; color: #08090b; font-size: 27px; padding: 8px 16px; border-radius: 999px; }
+    .cbody { position: absolute; left: 22px; right: 22px; top: 380px; }
+    .ctitle { font-size: 28px; line-height: 1.12; letter-spacing: 0.02em; color: #f2f5f7; }
+    .cmeta { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 22px; font-weight: 600; color: #f2f5f7; }
+    .cdot { width: 24px; height: 24px; border-radius: 50%; background: var(--rim2); }
+    .cbid { display: flex; gap: 16px; align-items: baseline; margin-top: 12px; }
+    .cbid .k { font-size: 18px; color: #d6ff3f; }
+    .cbid .v { font-family: 'LTCG Mono', monospace; font-size: 28px; color: #f2f5f7; }
+
+    .c-crimson { --edge: rgba(255, 92, 120, 0.55); --hi: #8f2234; --lo: #2a0d14; --rim: rgba(255, 110, 130, 0.65); --rim2: #ff6e82; --deep: #3a0e17; --mist: rgba(255, 140, 160, 0.16); }
+    .c-amber   { --edge: rgba(255, 196, 60, 0.6);  --hi: #a8741c; --lo: #2e1f08; --rim: rgba(255, 205, 80, 0.7);  --rim2: #ffcb45; --deep: #3d2a07; --mist: rgba(255, 220, 140, 0.18); }
+    .c-violet  { --edge: #d6ff3f;                  --hi: #7a3fd1; --lo: #261046; --rim: rgba(190, 150, 255, 0.7); --rim2: #b48cff; --deep: #2b1352; --mist: rgba(200, 170, 255, 0.18); }
+    .c-blue    { --edge: rgba(90, 160, 255, 0.6);  --hi: #2b5bb8; --lo: #0c1a36; --rim: rgba(110, 170, 255, 0.7); --rim2: #6aa8ff; --deep: #0f2247; --mist: rgba(140, 190, 255, 0.16); }
+    .c-orange  { --edge: rgba(255, 140, 60, 0.6);  --hi: #b4561c; --lo: #2f1407; --rim: rgba(255, 150, 80, 0.7);  --rim2: #ff9a52; --deep: #3f1a07; --mist: rgba(255, 180, 130, 0.16); }
+
+    #o-glow {
+      position: absolute; left: -70px; right: -70px; top: -70px; bottom: -70px; border-radius: 60px;
+      background: radial-gradient(ellipse at 50% 50%, rgba(214, 255, 63, 0.55), rgba(214, 255, 63, 0) 68%);
+    }
+  </style>
+
+  <div id="root" data-composition-id="open" data-width="1920" data-height="1080">
+    <div id="o-bg"></div>
+    <div id="o-stage">
+      <div id="o-eyebrow" class="mono">Lebanon <b>·</b> Peer-to-peer</div>
+
+      <div id="o-fan" data-layout-allow-overlap data-layout-allow-overflow>
+        <!-- outer-left -->
+        <div id="o-s1" class="slot" style="z-index: 1">
+          <div class="card c-crimson">
+            <div class="cface">
+              <i class="orb" style="left: 30px; top: 40px; width: 90px; height: 90px"></i>
+              <i class="dia" style="left: 220px; top: 60px; width: 56px; height: 56px"></i>
+              <i class="orb" style="left: 200px; top: 250px; width: 70px; height: 70px"></i>
+              <div class="cframe"></div><div class="cframe2"></div>
+              <div class="glyph"><b></b></div>
+            </div>
+            <div class="cbody" data-layout-ignore><div class="ctitle display">Ragavan, Nimble Pilferer</div></div>
+          </div>
+        </div>
+        <!-- outer-right -->
+        <div id="o-s5" class="slot" style="z-index: 1">
+          <div class="card c-orange">
+            <div class="cface">
+              <i class="dia" style="left: 40px; top: 70px; width: 60px; height: 60px"></i>
+              <i class="orb" style="left: 210px; top: 30px; width: 100px; height: 100px"></i>
+              <i class="orb" style="left: 50px; top: 250px; width: 60px; height: 60px"></i>
+              <div class="cframe"></div><div class="cframe2"></div>
+              <div class="glyph"><b></b></div>
+            </div>
+            <div class="cbody" data-layout-ignore><div class="ctitle display">Charizard Base Set Unlimited</div></div>
+          </div>
+        </div>
+        <!-- inner-left -->
+        <div id="o-s2" class="slot" style="z-index: 2">
+          <div class="card c-amber">
+            <div class="cface">
+              <i class="orb" style="left: 190px; top: 40px; width: 110px; height: 110px"></i>
+              <i class="dia" style="left: 50px; top: 230px; width: 70px; height: 70px"></i>
+              <i class="orb" style="left: 40px; top: 50px; width: 50px; height: 50px"></i>
+              <div class="cframe"></div><div class="cframe2"></div>
+              <div class="glyph"><b></b></div>
+            </div>
+            <div class="cbody" data-layout-ignore><div class="ctitle display">Shanks OP01 Secret Rare</div></div>
+          </div>
+        </div>
+        <!-- inner-right -->
+        <div id="o-s4" class="slot" style="z-index: 2">
+          <div class="card c-blue">
+            <div class="cface">
+              <i class="orb" style="left: 30px; top: 30px; width: 96px; height: 96px"></i>
+              <i class="dia" style="left: 230px; top: 240px; width: 54px; height: 54px"></i>
+              <i class="orb" style="left: 220px; top: 70px; width: 44px; height: 44px"></i>
+              <div class="cframe"></div><div class="cframe2"></div>
+              <div class="glyph"><b></b></div>
+            </div>
+            <div class="cbody" data-layout-ignore><div class="ctitle display">Blue-Eyes White Dragon (LOB 1st Ed)</div></div>
+          </div>
+        </div>
+        <!-- hero: the live auction, acid edge -->
+        <div id="o-s3" class="slot" style="z-index: 3">
+          <div id="o-glow"></div>
+          <div class="card c-violet">
+            <div class="cface">
+              <i class="dia" style="left: 50px; top: 60px; width: 70px; height: 70px"></i>
+              <i class="orb" style="left: 200px; top: 40px; width: 90px; height: 90px"></i>
+              <i class="orb" style="left: 230px; top: 240px; width: 66px; height: 66px"></i>
+              <i class="orb" style="left: 40px; top: 250px; width: 40px; height: 40px"></i>
+              <div class="cframe"></div><div class="cframe2"></div>
+              <div class="glyph"><b></b></div>
+              <span class="pill mono">Live · 1d 15h</span>
+            </div>
+            <div class="cbody">
+              <div class="ctitle display">Red-Eyes B. Dragon LOB 1st Edition</div>
+              <div class="cmeta" data-layout-ignore><span class="cdot"></span>@linacollects</div>
+              <div class="cbid" data-layout-ignore><span class="k mono">Current bid</span><span class="v">$300</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="o-we" class="hl display">We connect</div>
+      <div id="o-col" class="hl display"><span>Collectors</span></div>
+      <div id="o-sub">List what you own, message the person who has what you want.</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // Smoothed music RMS at 5 Hz (0..1), extracted from the bed with media-use's extract-audio-data.py.
+      const RMS = [0.36, 0.35, 0.34, 0.37, 0.23, 0.3, 0.29, 0.25, 0.29, 0.26, 0.26, 0.3, 0.29, 0.42, 0.27, 0.36, 0.21, 0.04, 0.31, 0.2, 0.0, 0.34, 0.79, 0.7, 0.63, 0.51, 0.52, 0.46, 0.42, 0.43, 0.42, 0.41, 0.5, 0.55, 0.6, 0.44, 0.5, 0.43, 0.29, 0.31, 0.26, 0.17, 0.31, 0.33, 0.34, 0.34, 0.16, 0.29, 0.27, 0.18, 0.29, 0.33, 0.32, 0.49, 0.57, 0.53, 0.39, 0.54, 0.43, 0.35, 0.43, 0.35, 0.08, 0.29, 0.57, 0.57, 0.46, 0.29, 0.39, 0.34, 0.21, 0.34, 0.39, 0.26, 0.5, 0.74, 0.54, 0.24, 0.28, 0.23, 0.26, 0.2, 0.09, 0.08, 0.45, 0.52, 0.56, 0.54, 0.46, 0.61, 0.66, 0.45, 0.62, 0.66, 0.56, 0.54, 0.63, 0.77, 0.76, 0.88, 0.95, 0.93, 0.85, 0.72, 0.77, 0.97, 0.9, 0.88, 0.77, 0.75, 0.9, 0.94, 0.84, 0.83, 0.7, 0.69, 0.75, 0.88, 1.0, 0.89, 0.79, 0.79, 0.85, 0.81];
+      const RATE = 5;
+
+      // ---- Hook: the pile arrives, the hero card already on top ----------------------------
+      tl.fromTo('#o-fan', { y: 70 }, { y: 0, duration: 0.9, ease: 'expo.out' }, 0);
+
+      // Pile: every card stacked near centre with a little hand-dealt jitter.
+      const pile = {
+        '#o-s1': { x: -16, y: 10, rotation: -5, scale: 0.92 },
+        '#o-s5': { x: 18, y: 12, rotation: 6, scale: 0.92 },
+        '#o-s2': { x: 10, y: 4, rotation: 3, scale: 0.92 },
+        '#o-s4': { x: -8, y: 6, rotation: -3, scale: 0.92 },
+        '#o-s3': { x: 0, y: 0, rotation: 0, scale: 0.94 },
+      };
+      const fan = {
+        '#o-s1': { x: -600, y: 74, rotation: -12, scale: 0.74 },
+        '#o-s5': { x: 600, y: 74, rotation: 12, scale: 0.74 },
+        '#o-s2': { x: -312, y: 28, rotation: -6, scale: 0.87 },
+        '#o-s4': { x: 312, y: 28, rotation: 6, scale: 0.87 },
+        '#o-s3': { x: 0, y: -12, rotation: 0, scale: 1 },
+      };
+      Object.keys(pile).forEach(function (id) { tl.set(id, pile[id], 0); });
+
+      // beat-grid: card 1 at 1.07s, card 2 at 1.59s, card 3 at 2.12s, card 4 at 2.65s, hero 3.18s
+      [['#o-s1', 1.07], ['#o-s5', 1.59], ['#o-s2', 2.12], ['#o-s4', 2.65]].forEach(function (d) {
+        tl.fromTo(d[0], pile[d[0]], Object.assign({ duration: 0.55, ease: 'expo.out' }, fan[d[0]]), d[1] - 0.06);
+      });
+      tl.fromTo('#o-s3', pile['#o-s3'], Object.assign({ duration: 0.5, ease: 'expo.out' }, fan['#o-s3']), 3.12);
+      tl.fromTo('#o-glow', { opacity: 0 }, { opacity: 0.9, duration: 0.3, ease: 'power2.out' }, 3.14);
+
+      // ---- WE CONNECT / COLLECTORS ----------------------------------------------------------
+      // The fan steps down to the lower third and dims as the headline takes the frame.
+      tl.to('#o-fan', { y: 430, scale: 0.84, opacity: 0.6, duration: 0.6, ease: 'power3.inOut' }, 3.5);
+      tl.to('#o-eyebrow', { y: -22, duration: 0.6, ease: 'power3.inOut' }, 3.5);
+      // beat-locked: 3.70s
+      tl.fromTo('#o-we', { opacity: 0, scale: 1.2, filter: 'blur(12px)' },
+        { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.22, ease: 'expo.out' }, 3.64);
+      // beat-locked: 4.23s (gradient word wipes in left to right)
+      tl.fromTo('#o-col', { opacity: 0, clipPath: 'inset(0% 100% 0% 0%)' },
+        { opacity: 1, clipPath: 'inset(0% 0% 0% 0%)', duration: 0.34, ease: 'power4.out' }, 4.17);
+      tl.fromTo('#o-sub', { opacity: 0, filter: 'blur(8px)' },
+        { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out' }, 4.75);
+
+      // ---- Audio-reactive: the hero's acid glow breathes with the bed -------------------------
+      for (let i = Math.ceil(3.5 * RATE); i < Math.floor(7.5 * RATE); i++) {
+        const v = RMS[i] == null ? 0.5 : RMS[i];
+        tl.to('#o-glow', { opacity: 0.45 + 0.5 * v, duration: 1 / RATE, ease: 'sine.inOut' }, i / RATE);
+      }
+
+      // ---- Exit: whip up, the auction scene arrives on the same upward motion -----------------
+      tl.to('#o-stage', { y: -150, opacity: 0, filter: 'blur(14px)', duration: 0.3, ease: 'power3.in' }, 7.6);
+
+      window.__timelines['open'] = tl;
+    })();
+  </script>
+</template>

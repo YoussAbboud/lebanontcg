@@ -1,0 +1,99 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 400; src: url('assets/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0b0c10; font-family: 'LTCG Sans', sans-serif; color: #f2f5f7; }
+    #p-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 1300px 560px at 50% -12%, rgba(123, 92, 255, 0.22), rgba(123, 92, 255, 0) 70%), #0b0c10;
+    }
+    #p-stage { position: absolute; inset: 0; }
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+    .display { font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+
+    #p-eyebrow { position: absolute; left: 124px; top: 86px; font-size: 30px; color: #d6ff3f; }
+    #p-head { position: absolute; left: 124px; top: 134px; font-size: 92px; line-height: 1.05; }
+    #p-lede { position: absolute; left: 124px; top: 262px; font-size: 54px; line-height: 1.1; color: #d6ff3f; font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+
+    .tile {
+      position: absolute; width: 400px; height: 280px; border-radius: 20px; background: #16191e;
+      border: 2px solid rgba(255, 255, 255, 0.09);
+    }
+    .tile .lab { position: absolute; left: 24px; top: 20px; font-size: 22px; color: #b9c2cc; }
+    .tile .box {
+      position: absolute; left: 24px; right: 24px; top: 64px; bottom: 24px; border-radius: 14px; overflow: hidden;
+      border: 2px dashed rgba(255, 255, 255, 0.14); background: #0f1114;
+      display: flex; align-items: center; justify-content: center; font-size: 22px; color: #b9c2cc;
+    }
+    .tile .ring { position: absolute; inset: -2px; border-radius: 20px; border: 2px solid #d6ff3f; }
+    .photo { position: absolute; inset: 0; background: #23201a; }
+    .photo .cardpic {
+      position: absolute; width: 150px; height: 210px; border-radius: 12px;
+      background: radial-gradient(circle at 35% 20%, #b07a22, #5c3a14 80%); border: 5px solid #ffc83d;
+    }
+    .check {
+      position: absolute; right: 12px; top: 12px; width: 40px; height: 40px; border-radius: 50%; background: #d6ff3f;
+    }
+    .check b { position: absolute; left: 14px; top: 7px; width: 11px; height: 20px; border: solid #08090b; border-width: 0 4px 4px 0; transform: rotate(45deg); }
+  </style>
+
+  <div id="root" data-composition-id="pregrade" data-width="1920" data-height="1080">
+    <div id="p-bg"></div>
+    <div id="p-stage">
+      <div id="p-eyebrow" class="mono">Pre-Grade · Decision support</div>
+      <div id="p-head" class="display">Is this card worth grading?</div>
+      <div id="p-lede">Eight guided photos.</div>
+
+      <!-- The eight capture slots, in the page's order. Each fills with a shot of the card. -->
+      <div id="p-t1" class="tile" style="left: 124px; top: 420px"><div class="lab mono" data-layout-ignore>Front · flat on</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="cardpic" style="left: 101px; top: -18px"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t2" class="tile" style="left: 548px; top: 420px"><div class="lab mono" data-layout-ignore>Back · flat on</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="cardpic" style="left: 101px; top: -18px; background: radial-gradient(circle at 50% 50%, #3f57c9, #1b2560 80%); border-color: #c9a646"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t3" class="tile" style="left: 972px; top: 420px"><div class="lab mono" data-layout-ignore>Top-left corner</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="cardpic" style="left: 60px; top: 40px; width: 400px; height: 400px; border-width: 9px; border-radius: 30px"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t4" class="tile" style="left: 1396px; top: 420px"><div class="lab mono" data-layout-ignore>Top-right corner</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="cardpic" style="left: -110px; top: 40px; width: 400px; height: 400px; border-width: 9px; border-radius: 30px"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t5" class="tile" style="left: 124px; top: 724px"><div class="lab mono" data-layout-ignore>Bottom-right corner</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="cardpic" style="left: -110px; top: -260px; width: 400px; height: 400px; border-width: 9px; border-radius: 30px"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t6" class="tile" style="left: 548px; top: 724px"><div class="lab mono" data-layout-ignore>Bottom-left corner</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo"><i class="cardpic" style="left: 60px; top: -260px; width: 400px; height: 400px; border-width: 9px; border-radius: 30px"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t7" class="tile" style="left: 972px; top: 724px"><div class="lab mono" data-layout-ignore>Front · raking light</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo" style="background: linear-gradient(100deg, #3a2f1c, #14110c 70%)"><i class="cardpic" style="left: 101px; top: -18px; filter: brightness(0.75)"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+      <div id="p-t8" class="tile" style="left: 1396px; top: 724px"><div class="lab mono" data-layout-ignore>Back · raking light</div>
+        <div class="box" data-layout-ignore>+ Shoot / choose photo<div class="photo" style="background: linear-gradient(100deg, #2c2a3a, #111018 70%)"><i class="cardpic" style="left: 101px; top: -18px; background: radial-gradient(circle at 50% 50%, #3f57c9, #1b2560 80%); border-color: #c9a646; filter: brightness(0.75)"></i></div><i class="check"><b></b></i></div><i class="ring"></i></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // Arrive on the chat's upward whip.
+      tl.fromTo('#p-stage', { y: 160, opacity: 0, filter: 'blur(14px)' },
+        { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.4, ease: 'power3.out' }, 0);
+      tl.fromTo('#p-lede', { opacity: 0, filter: 'blur(8px)' },
+        { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out' }, 0.3);
+
+      tl.set('.tile .photo, .tile .check, .tile .ring', { opacity: 0 }, 0);
+
+      // beat-grid: slot pairs fill at 20.02 / 20.54 / 21.06 / 21.59 (local 0.54 / 1.06 / 1.58 / 2.11)
+      [[0.54, ['#p-t1', '#p-t2']], [1.06, ['#p-t3', '#p-t4']], [1.58, ['#p-t5', '#p-t6']], [2.11, ['#p-t7', '#p-t8']]]
+        .forEach(function (step) {
+          const t = step[0];
+          step[1].forEach(function (id, k) {
+            const at = t + k * 0.05;
+            tl.fromTo(id + ' .photo', { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'expo.out' }, at);
+            tl.fromTo(id + ' .check', { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.7)' }, at + 0.08);
+            tl.fromTo(id + ' .ring', { opacity: 1 }, { opacity: 0.35, duration: 0.6, ease: 'power2.out' }, at);
+          });
+        });
+
+      // Exit: blur swap onto the logo
+      tl.to('#p-stage', { opacity: 0, filter: 'blur(10px)', duration: 0.2, ease: 'power3.in' }, 2.44);
+
+      window.__timelines['pregrade'] = tl;
+    })();
+  </script>
+</template>

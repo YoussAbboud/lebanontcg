@@ -1,0 +1,85 @@
+<!doctype html>
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"color-ground","type":"color","label":"Background","default":"#08090b"},
+    {"id":"color-ink","type":"color","label":"Text","default":"#f2f5f7"},
+    {"id":"color-accent","type":"color","label":"Accent","default":"#d6ff3f"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>LebanonTCG brag</title>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #08090b; }
+      #root { position: relative; width: 100%; height: 100%; background: #08090b; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="25"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- Scenes. Each seam sits on a beat of the bed (114.84 BPM). -->
+      <div id="open" data-composition-id="open" data-composition-src="compositions/open.html"
+        data-start="0" data-duration="7.92" data-track-index="1" data-track-kind="graphics"
+        data-width="1920" data-height="1080"></div>
+      <div id="auction" data-composition-id="auction" data-composition-src="compositions/auction.html"
+        data-start="7.92" data-duration="5.26" data-track-index="1" data-track-kind="graphics"
+        data-width="1920" data-height="1080"></div>
+      <div id="chat" data-composition-id="chat" data-composition-src="compositions/chat.html"
+        data-start="13.18" data-duration="6.30" data-track-index="1" data-track-kind="graphics"
+        data-width="1920" data-height="1080"></div>
+      <div id="pregrade" data-composition-id="pregrade" data-composition-src="compositions/pregrade.html"
+        data-start="19.48" data-duration="2.64" data-track-index="1" data-track-kind="graphics"
+        data-width="1920" data-height="1080"></div>
+      <div id="outro" data-composition-id="outro" data-composition-src="compositions/outro.html"
+        data-start="22.12" data-duration="2.88" data-track-index="1" data-track-kind="graphics"
+        data-width="1920" data-height="1080"></div>
+
+      <!-- Music bed: ducks under the chat so the bubbles read, fades over the last 1.4s. -->
+      <audio id="music" class="clip" data-start="0" data-duration="25" data-track-index="2"
+        data-volume="0.8" data-fade-in="0.05" data-fade-out="1.4"
+        data-automation="{&quot;version&quot;:1,&quot;lanes&quot;:[{&quot;target&quot;:&quot;volume&quot;,&quot;points&quot;:[{&quot;t&quot;:0,&quot;v&quot;:1},{&quot;t&quot;:13.0,&quot;v&quot;:1},{&quot;t&quot;:13.6,&quot;v&quot;:0.62},{&quot;t&quot;:19.2,&quot;v&quot;:0.62},{&quot;t&quot;:19.6,&quot;v&quot;:1}]}]}"
+        src="assets/music/happy-beats-business-moves-vol-9-by-ende-dot-app.mp3"></audio>
+
+      <!-- SFX, each on the frame its motion lands. -->
+      <!-- beat-grid: fan cards at 1.07 / 1.59 / 2.12 / 2.65, hero lift 3.18 -->
+      <audio id="sfx-fan-1" class="clip" data-start="1.07" data-duration="0.69" data-track-index="3" data-volume="0.45" src="assets/sfx/card-place-1.ogg"></audio>
+      <audio id="sfx-fan-2" class="clip" data-start="1.59" data-duration="0.46" data-track-index="4" data-volume="0.45" src="assets/sfx/card-place-2.ogg"></audio>
+      <audio id="sfx-fan-3" class="clip" data-start="2.12" data-duration="0.89" data-track-index="3" data-volume="0.45" src="assets/sfx/card-place-3.ogg"></audio>
+      <audio id="sfx-fan-4" class="clip" data-start="2.65" data-duration="0.61" data-track-index="4" data-volume="0.45" src="assets/sfx/card-place-4.ogg"></audio>
+      <audio id="sfx-hero" class="clip" data-start="3.18" data-duration="0.61" data-track-index="3" data-volume="0.55" src="assets/sfx/card-slide-1.ogg"></audio>
+      <!-- beat-locked: 3.70s WE CONNECT, 4.23s COLLECTORS -->
+      <audio id="sfx-we" class="clip" data-start="3.70" data-duration="0.51" data-track-index="4" data-volume="0.9" src="assets/sfx/impactSoft_heavy_000.ogg"></audio>
+      <audio id="sfx-col" class="clip" data-start="4.23" data-duration="0.19" data-track-index="3" data-volume="0.7" src="assets/sfx/impactSoft_medium_001.ogg"></audio>
+      <!-- beat-grid: bids at 8.96 / 9.50, clock extends 10.01 -->
+      <audio id="sfx-bid-1" class="clip" data-start="8.96" data-duration="0.02" data-track-index="4" data-volume="0.7" src="assets/sfx/click_003.ogg"></audio>
+      <audio id="sfx-bid-2" class="clip" data-start="9.50" data-duration="0.02" data-track-index="3" data-volume="0.7" src="assets/sfx/click_002.ogg"></audio>
+      <audio id="sfx-extend" class="clip" data-start="10.01" data-duration="0.62" data-track-index="4" data-volume="0.6" src="assets/sfx/switch_002.ogg"></audio>
+      <!-- beat-locked: 13.18s Won at $300 lands in the chat header -->
+      <audio id="sfx-won" class="clip" data-start="13.18" data-duration="0.15" data-track-index="3" data-volume="0.85" src="assets/sfx/impactSoft_medium_004.ogg"></audio>
+      <audio id="sfx-msg-1" class="clip" data-start="13.70" data-duration="0.11" data-track-index="4" data-volume="0.7" src="assets/sfx/drop_001.ogg"></audio>
+      <audio id="sfx-msg-2" class="clip" data-start="14.76" data-duration="0.2" data-track-index="3" data-volume="0.7" src="assets/sfx/drop_002.ogg"></audio>
+      <audio id="sfx-offer" class="clip" data-start="15.81" data-duration="0.14" data-track-index="4" data-volume="0.8" src="assets/sfx/impactSoft_medium_002.ogg"></audio>
+      <!-- beat-grid: Pre-Grade slot pairs at 20.02 / 20.54 / 21.06 / 21.59 -->
+      <audio id="sfx-slot-1" class="clip" data-start="20.02" data-duration="0.55" data-track-index="3" data-volume="0.4" src="assets/sfx/impactPlate_light_000.ogg"></audio>
+      <audio id="sfx-slot-2" class="clip" data-start="20.54" data-duration="0.66" data-track-index="4" data-volume="0.4" src="assets/sfx/impactPlate_light_001.ogg"></audio>
+      <audio id="sfx-slot-3" class="clip" data-start="21.06" data-duration="0.49" data-track-index="3" data-volume="0.4" src="assets/sfx/impactPlate_light_002.ogg"></audio>
+      <audio id="sfx-slot-4" class="clip" data-start="21.59" data-duration="0.53" data-track-index="4" data-volume="0.4" src="assets/sfx/impactPlate_light_003.ogg"></audio>
+      <!-- beat-grid: 22.12s. The only bell: logo lands and rings over the fade. -->
+      <audio id="sfx-bell" class="clip" data-start="22.12" data-duration="1.49" data-track-index="3" data-volume="0.7" src="assets/sfx/impactBell_heavy_000.ogg"></audio>
+    </div>
+    <script>
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = gsap.timeline({ paused: true });
+    </script>
+  </body>
+</html>

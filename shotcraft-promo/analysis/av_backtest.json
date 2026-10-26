@@ -1,0 +1,79 @@
+{
+ "date": "2026-10-26",
+ "file": "out/promo.mp4",
+ "render_grid": {
+  "bpm": 124.003,
+  "t0": 1.9684,
+  "maxres_ms": 17.0
+ },
+ "cuts": [
+  {
+   "name": "b8",
+   "frame": 117,
+   "nearest_beat_frame": 117.12,
+   "err_f": -0.12
+  },
+  {
+   "name": "b20",
+   "frame": 291,
+   "nearest_beat_frame": 291.3,
+   "err_f": -0.3
+  },
+  {
+   "name": "b32",
+   "frame": 465,
+   "nearest_beat_frame": 465.49,
+   "err_f": -0.49
+  },
+  {
+   "name": "b36",
+   "frame": 523,
+   "nearest_beat_frame": 523.56,
+   "err_f": -0.56
+  },
+  {
+   "name": "b46",
+   "frame": 668,
+   "nearest_beat_frame": 668.72,
+   "err_f": -0.72
+  },
+  {
+   "name": "b50",
+   "frame": 726,
+   "nearest_beat_frame": 726.78,
+   "err_f": -0.78
+  },
+  {
+   "name": "b58",
+   "frame": 842,
+   "nearest_beat_frame": 842.9,
+   "err_f": -0.9
+  },
+  {
+   "name": "b62",
+   "frame": 900,
+   "nearest_beat_frame": 900.97,
+   "err_f": -0.97
+  },
+  {
+   "name": "b72",
+   "frame": 1046,
+   "nearest_beat_frame": 1046.13,
+   "err_f": -0.13
+  },
+  {
+   "name": "slam1_b38",
+   "frame": 552,
+   "nearest_beat_frame": 552.59,
+   "err_f": -0.59
+  },
+  {
+   "name": "slam2_b78",
+   "frame": 1133,
+   "nearest_beat_frame": 1133.22,
+   "err_f": -0.22
+  }
+ ],
+ "max_abs_err_f": 0.97,
+ "note": "librosa on the delivery fits 124.003 BPM vs the source fit 123.992; errors grow linearly with time (detector tempo), no constant offset."
+}

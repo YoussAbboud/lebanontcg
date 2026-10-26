@@ -7,7 +7,7 @@ import { Audio, Sequence, interpolate, staticFile } from 'remotion';
 import { BGM_START_FRAMES, SHOTS, TOTAL, beatF } from './timing';
 import { SCAN_FIRES } from './shots/PregradeScan';
 
-export const OUTPUT_AUDIO_OFFSET_F = 0; // set from the post-render cross-correlation (see analysis/av_offset.json)
+export const OUTPUT_AUDIO_OFFSET_F = 0; // measured 0.0 f on the delivery path (render.sh: WAV → ffmpeg AAC), analysis/av_offset.json
 
 const PEAK_F: Record<string, number> = {
   'air-zoom-vacuum.mp3': 13.6, 'data-scan.mp3': 3.7, 'impact-deep-whoosh.mp3': 19.0, 'impact-zoom-quick.mp3': 15.5,

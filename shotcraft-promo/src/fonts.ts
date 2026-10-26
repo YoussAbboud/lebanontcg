@@ -1,4 +1,5 @@
 // Load the product's fonts from public/fonts before any frame is captured.
+import { useEffect, useState } from 'react';
 import { cancelRender, continueRender, delayRender, staticFile } from 'remotion';
 
 const FACES: [string, string, string, string][] = [
@@ -35,13 +36,26 @@ const loadFace = async ([family, file, weight, style]: [string, string, string, 
   throw last instanceof Error ? last : new Error(`font ${file} failed to load`);
 };
 
-let started = false;
+// Loading starts once per tab at module scope, with no delayRender handle: a handle held from module load outlives
+// the renderer's own handle bookkeeping and its timer was never cleared (renders died one timeout after start, at
+// whatever frame). The composition waits with a short-lived handle instead (useFontsReady, Remotion's in-component pattern).
+let ready = false;
+let loading: Promise<void> | null = null;
 export const loadFonts = () => {
-  if (started || typeof document === 'undefined') return;
-  started = true;
-  const handle = delayRender('fonts', { timeoutInMilliseconds: ATTEMPTS * ATTEMPT_MS + 30000 });
-  Promise.all(FACES.map(loadFace)).then(
-    () => continueRender(handle),
-    (e) => cancelRender(e),
-  );
+  if (loading || typeof document === 'undefined') return loading;
+  loading = Promise.all(FACES.map(loadFace)).then(() => {
+    ready = true;
+  });
+  return loading;
+};
+
+export const useFontsReady = () => {
+  const [handle] = useState(() => (ready ? null : delayRender('fonts')));
+  useEffect(() => {
+    if (handle === null) return;
+    loadFonts()!.then(
+      () => continueRender(handle),
+      (e) => cancelRender(e),
+    );
+  }, [handle]);
 };

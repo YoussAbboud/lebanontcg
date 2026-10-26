@@ -12,8 +12,11 @@ import { PregradeScan } from './shots/PregradeScan';
 import { Outro } from './shots/Outro';
 import { C } from './theme';
 import { Sound } from './Sound';
+import { useFontsReady } from './fonts';
 
-export const Main: React.FC<{ bgm: boolean }> = ({ bgm }) => (
+export const Main: React.FC<{ bgm: boolean }> = ({ bgm }) => {
+  useFontsReady();
+  return (
   <AbsoluteFill style={{ backgroundColor: C.bg }}>
     <Sequence from={SHOTS.open.from} durationInFrames={SHOTS.open.dur}><BrandOpen /></Sequence>
     <Sequence from={SHOTS.hero.from} durationInFrames={SHOTS.hero.dur}><HeroCard /></Sequence>
@@ -27,4 +30,5 @@ export const Main: React.FC<{ bgm: boolean }> = ({ bgm }) => (
     <Sequence from={SHOTS.outro.from} durationInFrames={SHOTS.outro.dur}><Outro /></Sequence>
     <Sound bgm={bgm} />
   </AbsoluteFill>
-);
+  );
+};

@@ -5,8 +5,9 @@ Skill root: `/home/user/lebanontcg/.agents/skills/video-shotcraft` (= `$SK`).
 
 ## Deliverables under review
 - `out/promo.mp4`: with BGM. `out/promo-nobgm.mp4`: same timeline, SFX only.
-- Key frames: `review/frames/f<frame>.png` (every shot: in / mid / landing / out points) and `review/sheets/*.png` (contact sheets per shot, frame numbers burned in).
-- Reference frames: `review/ref/<card>/f<NNN>.png` + `review/ref/<card>-sheet.png`, rendered from the **exact demo TSX** of each card. The Gallery reference clips (github.io) are unreachable from this environment, so no Gallery clip is available.
+- Key frames: `review/frames/f<frame>.png` (8 per shot, evenly spaced from in to out, plus 552/553, 1133/1134, 1219) and `review/sheets/<shot>.png` (contact sheets per shot, frame numbers burned in). Extract any other frame from `out/promo.mp4` with ffmpeg as needed.
+- Delivery audio path and measurements: `render.sh`, `analysis/av_offset.json`, `analysis/av_backtest.json`, `analysis/sfx_peaks.json`.
+- Reference renders: `review/ref/<card>.mp4` (half scale, full demo length), `review/ref/<card>/f<NNN>.png` and `review/ref/<card>-sheet.png`, all rendered from the **exact demo TSX** of each card with the demo's own textures. The Gallery reference clips (github.io) are unreachable from this environment, so no Gallery clip is available.
 
 ## Basis documents
 - Production spec, stages 0–3 (inlined below).

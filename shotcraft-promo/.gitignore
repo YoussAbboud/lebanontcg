@@ -5,3 +5,4 @@ out/*.mp4
 !out/promo-nobgm.mp4
 out/render-*.log
 review/ref/
+out/*.wav

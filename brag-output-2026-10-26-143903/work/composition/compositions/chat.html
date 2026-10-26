@@ -1,0 +1,127 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 400; src: url('assets/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 600; src: url('assets/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0b0c10; font-family: 'LTCG Sans', sans-serif; color: #f2f5f7; }
+    #c-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 1300px 560px at 50% -12%, rgba(123, 92, 255, 0.20), rgba(123, 92, 255, 0) 70%),
+        radial-gradient(ellipse 900px 420px at 20% 100%, rgba(214, 255, 63, 0.06), rgba(214, 255, 63, 0) 70%),
+        #0b0c10;
+    }
+    #c-stage { position: absolute; inset: 0; }
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+    .display { font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+
+    /* Thread header: who you're talking to, and how the auction ended */
+    #c-head { position: absolute; left: 60px; top: 66px; display: flex; align-items: center; gap: 26px; }
+    #c-thumb {
+      width: 84px; height: 84px; border-radius: 14px; position: relative; overflow: hidden;
+      background: radial-gradient(circle at 35% 20%, #b07a22, #5c3a14 80%); border: 2px solid rgba(255, 200, 61, 0.6);
+    }
+    #c-thumb b { position: absolute; left: 25px; top: 25px; width: 34px; height: 34px; transform: rotate(45deg); border: 8px solid #ffc83d; background: #4a3608; }
+    #c-who { font-size: 40px; font-weight: 600; display: flex; align-items: center; gap: 16px; }
+    #c-dot { width: 18px; height: 18px; border-radius: 50%; background: #34d399; box-shadow: 0 0 14px rgba(52, 211, 153, 0.7); }
+    #c-sub { font-size: 28px; color: #b9c2cc; margin-top: 6px; }
+    /* The auction panel's outcome line, beat-locked */
+    #c-won { position: absolute; left: 60px; top: 176px; font-size: 92px; line-height: 1; color: #d6ff3f; white-space: nowrap; }
+    #c-thread { position: absolute; inset: 0; }
+    #c-rule { position: absolute; left: 60px; right: 60px; top: 290px; height: 2px; background: rgba(255, 255, 255, 0.08); }
+
+    .bub { position: absolute; border-radius: 24px; padding: 22px 30px 20px; font-size: 32px; line-height: 1.32; }
+    .bub .t { font-size: 22px; margin-top: 12px; }
+    #c-m1 { left: 60px; top: 316px; width: 760px; background: #16191e; border: 2px solid rgba(255, 255, 255, 0.1); }
+    #c-m1 .t { color: #b9c2cc; }
+    #c-m2 { right: 60px; top: 520px; width: 780px; background: #d6ff3f; color: #08090b; }
+    #c-m2 .t { color: #2b3307; }
+
+    #c-offer {
+      position: absolute; left: 60px; top: 752px; width: 720px; border-radius: 24px; padding: 24px 30px;
+      background: #121418; border: 2px solid #d6ff3f; box-shadow: 0 0 40px -12px rgba(214, 255, 63, 0.6);
+    }
+    #c-offer .k { font-size: 28px; color: #d6ff3f; }
+    #c-offer .v { font-size: 66px; line-height: 1; margin-top: 10px; }
+    #c-offer .n { font-size: 28px; margin-top: 12px; color: #e6eaee; }
+    #c-offer .btns { display: flex; gap: 14px; margin-top: 18px; }
+    #c-offer .btn { font-size: 20px; padding: 14px 26px; border-radius: 999px; }
+    #c-offer .ok { background: #d6ff3f; color: #08090b; }
+    #c-offer .no { border: 2px solid rgba(255, 92, 138, 0.5); color: #ff5c8a; }
+
+    #c-cap { position: absolute; left: 60px; right: 60px; top: 864px; font-size: 44px; line-height: 1.18; font-weight: 600; color: #f2f5f7; }
+  </style>
+
+  <div id="root" data-composition-id="chat" data-width="1080" data-height="1080">
+    <div id="c-bg"></div>
+    <div id="c-stage">
+      <div id="c-head">
+        <div id="c-thumb"><b></b></div>
+        <div>
+          <div id="c-who">@karim_tcg <span id="c-dot"></span></div>
+          <div id="c-sub" class="mono">Umbreon VMAX Alt Art</div>
+        </div>
+      </div>
+      <div id="c-won" class="display">Won at $300</div>
+      <div id="c-rule"></div>
+
+      <div id="c-thread">
+      <div id="c-m1" class="bub">
+        Deal at 300 with the promos. Saturday afternoon somewhere near AUB?
+        <div class="t mono" data-layout-ignore>1:28 pm</div>
+      </div>
+      <div id="c-m2" class="bub">
+        Saturday works. Caribou on Bliss street, 3pm? I'll bring a loupe so you can check it properly.
+        <div class="t mono" data-layout-ignore>1:43 pm · Seen</div>
+      </div>
+
+      <div id="c-offer">
+        <div class="k mono">Offer · Non-binding</div>
+        <div class="v display">$300</div>
+        <div class="n">Cash on collection Saturday — locking it in.</div>
+        <div class="btns" data-layout-ignore><span class="btn ok mono">Accept</span><span class="btn no mono">Decline</span></div>
+      </div>
+
+      </div>
+
+      <div id="c-cap">No checkout, no fees, you agree the terms yourselves.</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // Arrive on the auction's blur swap: the thread header settles in.
+      tl.fromTo('#c-head', { opacity: 0, filter: 'blur(8px)' }, { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out' }, 0);
+      tl.fromTo('#c-rule', { scaleX: 0, transformOrigin: '0% 50%' }, { scaleX: 1, duration: 0.5, ease: 'power3.out' }, 0);
+      tl.fromTo('#c-dot', { scale: 0 }, { scale: 1, duration: 0.4, ease: 'back.out(1.6)' }, 0.25);
+      // beat-locked: 12.0s (local 0) — how the auction ended, in the auction panel's own words
+      tl.fromTo('#c-won', { opacity: 0, scale: 1.25, filter: 'blur(10px)', transformOrigin: '0% 50%' },
+        { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.24, ease: 'expo.out' }, -0.04);
+
+      // 12.5s (local 0.5) — their message
+      tl.fromTo('#c-m1', { opacity: 0, y: 26, scale: 0.97, transformOrigin: '0% 100%' },
+        { opacity: 1, y: 0, scale: 1, duration: 0.38, ease: 'expo.out' }, 0.5);
+      // 13.5s (local 1.5) — the reply
+      tl.fromTo('#c-m2', { opacity: 0, y: 26, scale: 0.97, transformOrigin: '100% 100%' },
+        { opacity: 1, y: 0, scale: 1, duration: 0.38, ease: 'expo.out' }, 1.5);
+      // 14.5s (local 2.5) — the thread scrolls up as a real chat does, and the non-binding offer card lands
+      tl.to('#c-thread', { y: -222, duration: 0.45, ease: 'power3.inOut' }, 2.42);
+      tl.to('#c-m1', { opacity: 0, duration: 0.25, ease: 'power2.in' }, 2.42);
+      tl.fromTo('#c-offer', { opacity: 0, scale: 1.08, filter: 'blur(6px)', transformOrigin: '0% 50%' },
+        { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.42, ease: 'expo.out' }, 2.5);
+
+      // 15.0s (local 3.0) — the line from the home page, held to the cut
+      tl.fromTo('#c-cap', { opacity: 0, filter: 'blur(8px)' },
+        { opacity: 1, filter: 'blur(0px)', duration: 0.2, ease: 'power4.out' }, 3.0);
+
+      // Exit: vertical whip
+      tl.to('#c-stage', { y: -160, opacity: 0, filter: 'blur(14px)', duration: 0.3, ease: 'power3.in' }, 5.7);
+
+      window.__timelines['chat'] = tl;
+    })();
+  </script>
+</template>

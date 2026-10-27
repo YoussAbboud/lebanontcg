@@ -7,6 +7,12 @@
       "skillPath": "skills/brag/SKILL.md",
       "computedHash": "917eba27222a174bd05088df28a155c8e43a28be611d3694d409790adcc082d0"
     },
+    "static-ads": {
+      "source": "byextremeai/static-ads",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "464aa07bb4c42462240137941d3584de5f6e6e6d6cf709fa63f7115107d4ee8b"
+    },
     "video-shotcraft": {
       "source": "Vincentwei1021/video-shotcraft",
       "sourceType": "github",

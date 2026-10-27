@@ -67,3 +67,31 @@ Beat frames: b0 1 · b3 45 · b4 60 · b8 119 · b12 178 · b13 192 · b14 207 �
 | S4 | 310–450 | b21–end | End card | The page dissolves to `#2a2f38` as the listing's card floats to centre (310–328) with an anticipation wiggle. It flips flat (328–340, thinnest on b23) and blooms into the flag-card logo (spring). The logo rises; "LEBANONTCG." sets letter by letter (344–370). **BUY.** b25 · **SELL.** b26 · **TRADE.** b27 (accent periods). **lebanontcg.com** b28 (414). A 36 f sign-off hold with a 1.5% push | LEBANONTCG. · BUY. SELL. TRADE. · lebanontcg.com | swish on the flip, soft hit on the bloom, a typewriter tap per word, a click on the URL |
 
 Brand hold: the logo + wordmark are fully set from 370 to 450 (80 f ≥ 30 f, R1); the URL holds 36 f. Whole-frame shocks: 0 (the drop is carried by the reveal, not a flash).
+
+## As built (after the independent review)
+
+Changes from the storyboard above, with reasons:
+
+- **Opening cards are trading-card objects.** Each listing's own card-shaped photo (Venusaur · Dark Magician · Grief), not the full listing tiles. The brief's "trading cards enter the frame" needs card objects. The stack sits ~120 px above centre, clear of Instagram's caption overlay.
+- **Portal coverage.** The page inside the window starts at max(card/frame) ≈ 0.66, not the demo's 0.42. The vertical window starts at the card's full size, so 0.42 left it part-empty: the back cards showed through and the page's square corners were visible.
+- **Browse target.** Red-Eyes B. Dragon (a different seller and colour from the first card), ~2 frame heights down, not the far-down Umbreon auction. The old target looked like the first card again, and the 6-frame-height run was an unreadable smear. Timeline: hold 119–149 (30 f after the portal), scroll 149–199 (stops off-beat by design so the hold is ≥30 f), lift 199–213, tap on b15 (222), open 224–251.
+- **Shared-element open.** It flies the card's own art crop (`target-face-3x.png`). The Browse page fades to the page ground first, and the listing page arrives only once the art is over its photo slot, so nothing crosses the flying art.
+- **Stop highlight and tap.** The accent outline is offset 6 px on a dark rim (a 2 px lime-on-lime outline didn't read). The tap ring has a dark rim and a white core.
+- **Listing.** The glide is 251–279 and the hold ≥31 f. The end scroll is derived from the bid panel's position.
+- **End card re-time.**
+  - Flight 310–324.
+  - Anticipation 323–343 (no longer overlapping the flight).
+  - Flip thinnest on b24 (355).
+  - Settle 360–378, in-out (no velocity jump).
+  - Wordmark letters 362–396 at the card's 2.4 f stagger.
+  - BUY. b27 (399) · SELL. half-beat (406) · TRADE. b28 (414), all only after the wordmark has set.
+  - lebanontcg.com at 421, 84 px (the slogan's size), holding 29 f.
+  - The ending is deliberately calm: a premium sign-off on the groove, not the film's energy peak.
+- **Header captures.** The mock-only user switcher is removed from layout (`display: none`), so the search button no longer overlaps the wordmark. The header's animated logo is pinned to its own face-on first frame (`capture/logo-frame0.png`, frame 0 of `src/assets/flag.gif`).
+- **Audio.**
+  - BGM 0.38 (from 0.5). It is ducked ~5 dB under the portal sweep, the paging bed and the open swoosh, and ~2.5 dB under the tagline keys (they land on kick beats).
+  - The paging bed is `paper-browse-bed.mp3`: the traced `paper-book-browse-fast.mp3` trimmed to 1.533–3.267 s and normalised to −2.9 dBFS.
+  - SELL uses `typewriter-hit-hard` (traced) between two soft keys.
+  - Every effect measured on the PCM stems clears the BGM in at least one band (`analysis/` measurement notes in the review record). Mix peak −3.2 dBFS.
+- **A/V.** Output offset 0.0 f; BGM lag −0.33 ms; every cut/event within 0.43 f of its beat (`analysis/av_offset.json`, `analysis/av_backtest.json`).
+- **Imagery licence.** Unchanged and open: no official card art is used (no licence held). The cards show the site's placeholder art. This is flagged to the client; licensed or seller-permitted listing photos can be dropped in by re-capturing from the live site.

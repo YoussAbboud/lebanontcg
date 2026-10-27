@@ -11,10 +11,12 @@
 //
 // Local timeline (abs = local + 310):
 //   0–14   page dissolves; the card flies from its place on the page to centre
-//   6–18   anticipation wobble        18–30  flip flat (thinnest at 30 = b23)
-//   30–    mark blooms (spring)       44–62  mark settles up into the lockup
-//   46–70  wordmark letters           59 / 74 / 89  BUY. / SELL. / TRADE. (b25 b26 b27)
-//   104    lebanontcg.com (b28)       104–140 sign-off hold with a 1.5% push
+//   13–33  anticipation wobble        33–45  flip flat (thinnest at 45 = b24, abs 355)
+//   45–    mark blooms (spring)       50–68  mark settles up into the lockup (in-out)
+//   52–86  wordmark letters (2.4f stagger, 10f each)
+//   89 / 96 / 104  BUY. (b27) / SELL. (half-beat) / TRADE. (b28) — only after the wordmark has set
+//   111    lebanontcg.com (84px, the slogan's size)    111–140 sign-off hold with a 1.5% push
+// The ending is deliberately calm (a premium sign-off on the groove), not the film's energy peak — recorded in the spec.
 import React from 'react';
 import { AbsoluteFill, Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { EASE, mix, ramp } from '../fixtures/Polish';
@@ -25,11 +27,13 @@ import { ListingPage, rectOnScreen } from './Page';
 import { LISTING_END_SCROLL } from './Listing';
 
 const FLIGHT = [0, 14] as const;
-const FLIP = [18, 30] as const;
-const SETTLE = [44, 62] as const;
-const WORD0 = 46;
-const WORDS = [{ t: 'BUY', at: 59 }, { t: 'SELL', at: 74 }, { t: 'TRADE', at: 89 }];
-const URL_AT = 104;
+const WOBBLE = [13, 33] as const; // after the flight, not over it (the demo's 22f, 2f shorter)
+const FLIP = [33, 45] as const; // thinnest on b24 (abs 355)
+const SETTLE = [50, 68] as const;
+const WORD0 = 52;
+const STAGGER = 2.4; // the card's minimum legible per-letter stagger
+const WORDS = [{ t: 'BUY', at: 89 }, { t: 'SELL', at: 96 }, { t: 'TRADE', at: 104 }]; // b27 · half-beat · b28 (wordmark set at 86)
+const URL_AT = 111;
 const CL = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 
 const CARD_H = 760; // centre stage size of the card / mark (1:1.4)
@@ -53,7 +57,8 @@ export const EndCard: React.FC = () => {
   };
 
   // 2 · anticipation + flip flat
-  const wobble = interpolate(frame, [6, 9, 12, 15, FLIP[0]], [0, -8, 10, -13, 0], { ...CL, easing: Easing.inOut(Easing.sin) });
+  const wb = (k: number) => WOBBLE[0] + ((WOBBLE[1] - WOBBLE[0]) * k) / 4;
+  const wobble = interpolate(frame, [wb(0), wb(1), wb(2), wb(3), wb(4)], [0, -8, 10, -12, 0], { ...CL, easing: Easing.inOut(Easing.sin) });
   const flipIn = interpolate(frame, [FLIP[0], FLIP[1]], [0, 1], { ...CL, easing: Easing.in(Easing.cubic) });
   const cardScaleX = mix(1, 0.04, flipIn);
   const ghosts = frame >= FLIP[0] && frame < FLIP[1] ? [0.12, 0.24] : [];
@@ -61,7 +66,7 @@ export const EndCard: React.FC = () => {
   // 3 · bloom into the mark, then settle up into the lockup
   const bloom = frame < FLIP[1] ? 0 : spring({ frame: frame - FLIP[1], fps, config: { damping: 11, stiffness: 130, mass: 0.9 } });
   const markScaleX = mix(0.04, 1, bloom);
-  const settle = ramp(frame, SETTLE[0], SETTLE[1] - SETTLE[0], EASE.out);
+  const settle = ramp(frame, SETTLE[0], SETTLE[1] - SETTLE[0], EASE.smooth); // in-out: no velocity jump as it starts
   const markH = mix(CARD_H, MARK_H, settle);
   const markCY = mix(STAGE_CY, LOCK_CY, settle);
 
@@ -107,7 +112,7 @@ export const EndCard: React.FC = () => {
         {/* wordmark: letter by letter, big+soft → set (pivot on the baseline) */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: LOCK_CY + MARK_H / 2 + 56, display: 'flex', justifyContent: 'center', fontFamily: FONT.display, fontWeight: 700, fontSize: 112, lineHeight: 1, letterSpacing: '0.03em', color: C.ink }}>
           {[...WORDMARK, '.'].map((ch, i) => {
-            const t = ramp(frame, WORD0 + i * 1.4, 12, EASE.snappy);
+            const t = ramp(frame, WORD0 + i * STAGGER, 10, EASE.snappy);
             return (
               <span key={i} style={{
                 display: 'inline-block', opacity: t, transform: `scale(${mix(1.9, 1, t).toFixed(4)})`, transformOrigin: '50% 100%',
@@ -130,7 +135,7 @@ export const EndCard: React.FC = () => {
         </div>
 
         {/* URL */}
-        <div style={{ position: 'absolute', left: 0, right: 0, top: LOCK_CY + MARK_H / 2 + 360, textAlign: 'center', fontFamily: FONT.mono, fontWeight: 700, fontSize: 56, letterSpacing: '0.02em', color: C.accent, opacity: url, transform: `translateY(${((1 - url) * 14).toFixed(2)}px)` }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: LOCK_CY + MARK_H / 2 + 356, textAlign: 'center', fontFamily: FONT.mono, fontWeight: 700, fontSize: 84, letterSpacing: '0', color: C.accent, opacity: url, transform: `translateY(${((1 - url) * 14).toFixed(2)}px)` }}>
           lebanontcg.com
         </div>
       </AbsoluteFill>

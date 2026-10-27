@@ -29,13 +29,25 @@ const VH = 693; // 1920 / (1080 / 390): the CSS height one reel frame shows
 fs.mkdirSync(OUT, { recursive: true });
 const out = (f) => path.join(OUT, f);
 
-// cards: one per franchise for the opening; the scroll target (live auction) opens into its listing page
-const OPENING = ['Venusaur Base Set Shadowless', 'Red-Eyes B. Dragon LOB 1st Edition', 'Ragavan, Nimble Pilferer'];
-const TARGET = 'Umbreon VMAX Alt Art — Evolving Skies';
-const TARGET_ID = 'l-auc-1';
+// opening: one card per game, captured as each listing's own card-shaped photo (front card first: it is also the first
+// listing on Browse, where the portal opens). The scroll target is a different seller and colour from the first card,
+// ~2 frame heights down the feed; it opens into its listing page.
+const OPENING = [
+  { id: 'l-auc-8', title: 'Venusaur Base Set Shadowless' }, // Pokémon
+  { id: 'l-auc-2', title: 'Dark Magician 1st Edition — LOB' }, // Yu-Gi-Oh!
+  { id: 'l-auc-4', title: 'Grief — Modern Horizons 2 Foil' }, // Magic: The Gathering
+];
+const TARGET = 'Red-Eyes B. Dragon LOB 1st Edition';
+const TARGET_ID = 'l-auc-6';
 
-const HIDE = `.uswitch, .uswitch-btn, [class*="uswitch"] { visibility: hidden !important; }
+// display:none (not visibility): the mock-only user switcher must not take header space the live site doesn't give it
+const HIDE = `.uswitch, .uswitch-btn, [class*="uswitch"] { display: none !important; }
 .lcard { content-visibility: visible !important; contain-intrinsic-size: auto !important; }`;
+
+// the header logo is an animated GIF (a spinning flag card): pin it to its own face-on first frame so no capture
+// catches it edge-on
+const LOGO_FRAME0 = 'data:image/png;base64,' + fs.readFileSync(path.join(HERE, 'logo-frame0.png')).toString('base64');
+const pinLogo = (page) => page.evaluate((src) => document.querySelectorAll('.shell-logo-gif').forEach((i) => { i.src = src; }), LOGO_FRAME0);
 
 async function newPage(browser, dsf) {
   const ctx = await browser.newContext({ viewport: { width: VW, height: VH }, deviceScaleFactor: dsf, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
@@ -44,6 +56,7 @@ async function newPage(browser, dsf) {
   await page.goto(BASE + '/');
   await page.waitForSelector('.shell-header');
   await page.addStyleTag({ content: HIDE });
+  await pinLogo(page);
   return { ctx, page };
 }
 const settle = async (page, ms = 700) => {
@@ -55,6 +68,7 @@ const go = async (page, url) => {
   await page.evaluate((u) => { history.pushState({}, '', u); dispatchEvent(new PopStateEvent('popstate')); }, url);
   await settle(page);
   await page.addStyleTag({ content: HIDE });
+  await pinLogo(page);
 };
 // card art is drawn when a card enters the viewport: walk the page once so every card has painted
 const warmScroll = async (page) => {
@@ -74,24 +88,10 @@ const signIn = async (page, handle) => {
   await page.evaluate((h) => [...document.querySelectorAll('.uswitch-item')].find((e) => e.textContent?.includes(h))?.click(), handle);
   await settle(page, 400);
 };
-// The same auction history in every capture context (each starts from fresh mock state), so the Browse card and the
-// listing it opens into show the same price and clock. Ends signed in as a third collector.
+// Every capture context starts from the same fresh mock state, signed in as a collector (header shows an avatar).
 const prepState = async (page) => {
-  await page.clock.runFor(2 * 60_000); // the mock auction ends 6 min after load: 4:00 left
-  if (!MOCK) return;
-  await signIn(page, '@karim_tcg');
-  await go(page, `/listing/${TARGET_ID}`);
-  await page.locator('.aucpanel-bidrow input').fill('275');
-  await page.locator('.aucpanel-bidrow button').first().click();
-  await settle(page, 400);
-  await page.clock.runFor(40_000);
-  await signIn(page, '@linacollects');
-  await go(page, `/listing/${TARGET_ID}`);
-  await page.locator('.aucpanel-bidrow input').fill('300');
-  await page.locator('.aucpanel-bidrow button').first().click();
-  await settle(page, 600);
   await signIn(page, '@ritacollects');
-  await go(page, '/browse'); // remount: no stale input or "someone bid first" notice from the scripted bids
+  await go(page, '/browse');
 };
 const box = (loc) => loc.evaluate((e) => {
   const r = e.getBoundingClientRect();
@@ -132,16 +132,19 @@ for (const dsf of [1, 3, 4]) {
     await clipShot(page, 'browse-top-3x.png', 0, topH);
     await clipShot(page, 'browse-target-3x.png', t0, t1);
     await cards.nth(target.i).screenshot({ path: out('target-card-3x.png') });
+    await cards.nth(target.i).locator('.lcard-facewrap').screenshot({ path: out('target-face-3x.png') });
     layout.browse.tiles = { top: { y: 0, h: topH }, target: { y: t0, h: t1 - t0 } };
   }
   if (dsf === 4) {
-    // opening cards: hi-res cutouts (shown up to ~2× their CSS size)
+    // opening cards: each listing's card-shaped photo, hi-res (shown up to ~2× its CSS size)
     layout.opening = [];
-    for (const title of OPENING) {
-      const c = all.find((k) => k.title === title);
+    for (const o of OPENING) {
+      await go(page, `/listing/${o.id}`);
+      const face = page.locator('.livebid-face');
       const file = `open-${layout.opening.length + 1}.png`;
-      await cards.nth(c.i).screenshot({ path: out(file) });
-      layout.opening.push({ file, title, w: c.w, h: c.h, face: { x: c.face.x - c.x, y: c.face.y - c.y, w: c.face.w, h: c.face.h } });
+      await face.screenshot({ path: out(file) });
+      const b = await box(face);
+      layout.opening.push({ file, title: o.title, w: b.w, h: b.h });
     }
   }
   await ctx.close();

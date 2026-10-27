@@ -24,6 +24,6 @@ export const WORKBENCH = {
   captions: [],
   overlays: [],
   sfx: SFX.map((s) => ({ from: s.from, duration: s.dur ?? 60, src: `sfx/${s.src}`, volume: typeof s.volume === 'number' ? s.volume : 0.5 })),
-  bgm: [{ from: 0, duration: TOTAL, src: 'audio/bgm.mp3', volume: 0.5 }],
+  bgm: [{ from: 0, duration: TOTAL, src: 'audio/bgm.mp3', volume: 0.38 }],
   original: Main,
 };

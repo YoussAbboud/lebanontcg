@@ -5,15 +5,15 @@
  "probes": [
   {
    "src": "lock-quick.mp3",
-   "from": 191
+   "from": 197
   },
   {
    "src": "switch-tap.mp3",
-   "from": 207
+   "from": 222
   },
   {
    "src": "switch-click-quick.mp3",
-   "from": 413
+   "from": 420
   }
  ],
  "cuts": [
@@ -45,15 +45,9 @@
    "frame": 119
   },
   {
-   "name": "scroll_stops_b13",
-   "beat": 13,
-   "frame": 192,
-   "note": "from the scroll curve (Browse.tsx scrollAt): 5.5 px/f at 191, 1.8 at 192, 0 from 193; the lift/dim starting on the same frame keeps a picture-diff detector from seeing the stop"
-  },
-  {
-   "name": "tap_b14",
-   "beat": 14,
-   "frame": 207
+   "name": "tap_b15",
+   "beat": 15,
+   "frame": 222
   },
   {
    "name": "open_lands_b17",
@@ -61,29 +55,32 @@
    "frame": 251
   },
   {
-   "name": "flip_thinnest_b23",
-   "beat": 23,
-   "frame": 340
+   "name": "flip_thinnest_b24",
+   "beat": 24,
+   "frame": 355
   },
   {
-   "name": "BUY_b25",
-   "beat": 25,
-   "frame": 369
-  },
-  {
-   "name": "SELL_b26",
-   "beat": 26,
-   "frame": 384
-  },
-  {
-   "name": "TRADE_b27",
+   "name": "BUY_b27",
    "beat": 27,
    "frame": 399
   },
   {
-   "name": "url_b28",
+   "name": "SELL_b27.5",
+   "beat": 27.5,
+   "frame": 406
+  },
+  {
+   "name": "TRADE_b28",
    "beat": 28,
    "frame": 414
+  },
+  {
+   "name": "url_b28.5",
+   "beat": 28.5,
+   "frame": 421
   }
- ]
+ ],
+ "notes": {
+  "scroll_stop": "abs 199 (Browse.tsx SCROLL1 = local 80): off-beat by design; it lands between b13 (192) and b14 (207) so the post-portal hold is \u226530f"
+ }
 }

@@ -7,10 +7,12 @@
 // Not used (brief bans glows/decoration): backdrop word wall, aurora light, collapse, core flash, smoke ring, giant type.
 // Re-posed for 9:16: the staircase spreads vertically (y ±200) and is ~1.22× the demo's scale (the front card fills ~2/3
 // of the frame width) so each card's game and art reads; the cards are the
-// site's real listing cards (4× captures), one per game, Venusaur in front.
+// site's real listings, one per game, as each listing's card-shaped photo (4× captures), Venusaur in front; the stack
+// sits ~120px above centre, clear of Instagram's caption overlay.
 //
 // Kept from the portal wipe (C): the target hovers first (−10px · 1.03× while neighbours dim), then the window grows over
-// 40f with bezier(0.7,0,0.3,1); the world inside grows 0.42→1 on the SAME t; the card face fades out by t≈0.28
+// 40f with bezier(0.7,0,0.3,1); the world inside grows on the SAME t (from max(card/frame) rather than the demo's 0.42,
+// so it always fills the window — the vertical window starts at the card's full size); the card face fades out by t≈0.28
 // (opacity 1 − 3.6t); one layer inside (the page), no blur. The world here is the real Browse page — where this card is
 // the first listing — so the portal lands on the exact first frame of S2 (drop, b8).
 //
@@ -30,6 +32,7 @@ import { H, W } from '../timing';
 const FLIGHT = [-6, 45] as const;
 const HOVER = [63, 79] as const;
 const PORTAL = [79, 119] as const;
+const RADIUS = 16 * 1.07; // the listing photo's own corner radius, at base size
 const K = 1.07; // card base size = CSS size × K (pose scale s then sizes it on screen; 4× texture stays sharp)
 const PAGE_S = W / layout.vw; // 2.769: the mobile page fills the frame width
 
@@ -52,27 +55,27 @@ const lerpPose = (a: Pose, b: Pose, t: number): Pose => {
   return o;
 };
 
-// back → front: Ragavan (Magic), Red-Eyes B. Dragon (Yu-Gi-Oh!), Venusaur (Pokémon)
-const ORDER = [2, 1, 0]; // indices into layout.opening (captured as Venusaur, Red-Eyes, Ragavan)
+// back → front: Grief (Magic), Dark Magician (Yu-Gi-Oh!), Venusaur (Pokémon) — each listing's own card-shaped photo
+const ORDER = [2, 1, 0]; // indices into layout.opening (captured as Venusaur, Dark Magician, Grief)
 const POSES: [Pose, Pose, Pose][] = [
   [
-    { x: -10, y: -24, rx: 9, ry: 88, rz: 12, s: 1.28 },
-    { x: -175, y: -270, rx: 16, ry: 44, rz: -8, s: 1.59 },
-    { x: -150, y: -225, rx: 4, ry: 13, rz: -2, s: 1.83 },
+    { x: -10, y: -144, rx: 9, ry: 88, rz: 12, s: 1.28 },
+    { x: -175, y: -390, rx: 16, ry: 44, rz: -8, s: 1.59 },
+    { x: -150, y: -345, rx: 4, ry: 13, rz: -2, s: 1.83 },
   ],
   [
-    { x: 0, y: 0, rx: 8, ry: 89, rz: 12, s: 1.22 },
-    { x: -30, y: -50, rx: 13, ry: 38, rz: -7, s: 1.66 },
-    { x: -20, y: -35, rx: 3, ry: 11, rz: -2, s: 1.93 },
+    { x: 0, y: -120, rx: 8, ry: 89, rz: 12, s: 1.22 },
+    { x: -30, y: -170, rx: 13, ry: 38, rz: -7, s: 1.66 },
+    { x: -20, y: -155, rx: 3, ry: 11, rz: -2, s: 1.93 },
   ],
   [
-    { x: 10, y: 24, rx: 7, ry: 90, rz: 12, s: 1.16 },
-    { x: 140, y: 205, rx: 11, ry: 34, rz: -6, s: 1.73 },
-    { x: 120, y: 170, rx: 2, ry: 9, rz: -1, s: 2.03 },
+    { x: 10, y: -96, rx: 7, ry: 90, rz: 12, s: 1.16 },
+    { x: 140, y: 85, rx: 11, ry: 34, rz: -6, s: 1.73 },
+    { x: 120, y: 50, rx: 2, ry: 9, rz: -1, s: 2.03 },
   ],
 ];
 // the front card's flat, centred hover pose (the portal opens from here)
-const HOVER_POSE: Pose = { x: 0, y: -10, rx: 0, ry: 0, rz: 0, s: 1.9 * 1.03 };
+const HOVER_POSE: Pose = { x: 0, y: -130, rx: 0, ry: 0, rz: 0, s: 1.9 * 1.03 }; // stays raised clear of the caption overlay
 
 // idle drift after landing (the demo's rates, slowed to 0.25°/f for this longer 70f hold; never stops)
 const idleAt = (f: number) => {
@@ -115,9 +118,11 @@ export const Opening: React.FC = () => {
   const front = layout.opening[ORDER[2]];
   const fw = front.w * K * HOVER_POSE.s;
   const fh = front.h * K * HOVER_POSE.s;
-  const c0 = { x: W / 2 - fw / 2, y: H / 2 - fh / 2 - 10, w: fw, h: fh, r: 18 * K * HOVER_POSE.s };
+  const c0 = { x: W / 2 - fw / 2 + HOVER_POSE.x, y: H / 2 - fh / 2 + HOVER_POSE.y, w: fw, h: fh, r: RADIUS * HOVER_POSE.s };
   const win = { x: mix(c0.x, 0, t), y: mix(c0.y, 0, t), w: mix(c0.w, W, t), h: mix(c0.h, H, t), r: mix(c0.r, 0, t) };
-  const innerScale = mix(0.42, 1, t);
+  // the page inside always covers the window (vertical frame: the window starts at the card's full size, so the demo's
+  // 0.42 start would leave the window part-empty and let the back cards show through the fading face)
+  const innerScale = mix(Math.max(c0.w / W, c0.h / H), 1, t);
 
   return (
     <AbsoluteFill style={{ background: C.stage, overflow: 'hidden' }}>
@@ -134,7 +139,7 @@ export const Opening: React.FC = () => {
               position: 'absolute', left: '50%', top: '50%', zIndex: 10 + i,
               transform: `translate(-50%, -50%) translate3d(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px, 0) rotateX(${p.rx.toFixed(3)}deg) rotateY(${p.ry.toFixed(3)}deg) rotateZ(${p.rz.toFixed(3)}deg) scale(${p.s.toFixed(4)})`,
             }}>
-              <Card n={ORDER[i]} dark={isFront ? 0 : Math.min(0.6, dark + neighbours)} radius={18 * K} />
+              <Card n={ORDER[i]} dark={isFront ? 0 : Math.min(0.6, dark + neighbours)} radius={RADIUS} />
             </div>
           );
         })}
@@ -154,7 +159,7 @@ export const Opening: React.FC = () => {
           </div>
           {t < 0.3 && (
             <div style={{ position: 'absolute', inset: 0, opacity: Math.max(0, 1 - t * 3.6) }}>
-              <Img src={staticFile(`textures/${front.file}`)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+              <Img src={staticFile(`textures/${front.file}`)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', borderRadius: win.r }} />
             </div>
           )}
         </div>

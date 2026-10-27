@@ -1,0 +1,93 @@
+{
+ "date": "2026-10-27",
+ "file": "out/lebanontcg-reel.mp4",
+ "cuts": [
+  {
+   "name": "b8",
+   "frame": 119,
+   "err_vs_design_f": 0.43
+  },
+  {
+   "name": "b17",
+   "frame": 251,
+   "err_vs_design_f": -0.35
+  },
+  {
+   "name": "b21",
+   "frame": 310,
+   "err_vs_design_f": -0.37
+  }
+ ],
+ "events": [
+  {
+   "name": "stack_lands_b3",
+   "picture_frame": 45,
+   "design_beat_frame": 44.8,
+   "err_f": 0.2
+  },
+  {
+   "name": "portal_done_b8",
+   "picture_frame": 119,
+   "design_beat_frame": 118.57,
+   "err_f": 0.43
+  },
+  {
+   "name": "tap_b15",
+   "picture_frame": 222,
+   "design_beat_frame": 221.85,
+   "err_f": 0.15
+  },
+  {
+   "name": "open_lands_b17",
+   "picture_frame": 251,
+   "design_beat_frame": 251.35,
+   "err_f": -0.35
+  },
+  {
+   "name": "flip_thinnest_b24",
+   "picture_frame": 355,
+   "design_beat_frame": 354.63,
+   "err_f": 0.37
+  },
+  {
+   "name": "BUY_b27",
+   "picture_frame": 399,
+   "design_beat_frame": 398.89,
+   "err_f": 0.11
+  },
+  {
+   "name": "SELL_b27.5",
+   "picture_frame": 406,
+   "design_beat_frame": 406.27,
+   "err_f": -0.27
+  },
+  {
+   "name": "TRADE_b28",
+   "picture_frame": 414,
+   "design_beat_frame": 413.65,
+   "err_f": 0.35
+  },
+  {
+   "name": "url_b28.5",
+   "picture_frame": 421,
+   "design_beat_frame": 421.02,
+   "err_f": -0.02
+  }
+ ],
+ "max_abs_err_f": 0.43,
+ "librosa": {
+  "source_window": {
+   "bpm": 122.064,
+   "t0": 1.024
+  },
+  "bgm_stem_ducked": {
+   "bpm": 122.064,
+   "t0": 1.024
+  },
+  "full_mix": {
+   "bpm": 124.096,
+   "t0": 1.0865
+  },
+  "note": "av_check.py reports output_delay_f = 1.88 from librosa on the full mix; that fit is pulled by the SFX onsets (124.1 vs 122.06 BPM). The exact BGM stem gives the identical grid to the source and cross-correlates at \u22120.33 ms, so the real output delay is 0. Detector bias on the source: 0.67 f."
+ }
+}

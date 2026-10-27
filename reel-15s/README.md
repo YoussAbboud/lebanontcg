@@ -24,17 +24,18 @@ npm run render        # → out/lebanontcg-reel.mp4 and out/lebanontcg-reel-nobg
 | Cut points (all on the music's beat grid) | `src/timing.ts` (`SHOTS`, `beatF(n)`) |
 | Sound effects and their volumes | `src/Sound.tsx` (`SFX`; each pin lands the file's peak on a named frame) |
 | Music level / start point in the track | `src/Sound.tsx` (BGM volume), `src/timing.ts` (`BGM_START_FRAMES`) |
-| Which cards open the reel | `src/shots/Opening.tsx` (`ORDER`, `POSES`) + `capture/capture.mjs` (`OPENING`) |
+| Which cards open the reel | `capture/capture.mjs` (`OPENING`: listing ids), then re-capture; poses in `src/shots/Opening.tsx` |
 | Which listing the scroll stops on and opens | `capture/capture.mjs` (`TARGET`, `TARGET_ID`), then re-capture |
 
 ## Screenshots and card imagery
 
 Everything on screen is a real page of the site in its mobile layout: Browse and a live-auction listing page, plus the
-site's own listing cards and its flag-card logo (`public/brand-card.svg` = the site favicon).
+listings' own card-shaped photos and the site's flag-card logo (`public/brand-card.svg` = the site favicon).
 
 **Where the screenshots came from.** The build environment could not reach lebanontcg.com, so the pages were captured
 from this repository's own build in mock mode.
-- The UI is exactly the deployed site.
+- The UI is the deployed site's code. Two capture-only adjustments: the mock-only user switcher is removed from the
+  layout, and the header's animated logo is pinned to its own first frame.
 - Every handle, price and bid is fictional seed data.
 - The card art is the site's placeholder art.
 
@@ -48,13 +49,14 @@ BASE=https://www.lebanontcg.com CHROME=/path/to/chromium npm run capture   # wri
 npm run render
 ```
 
-The capture picks cards by listing title, so change `OPENING`, `TARGET` and `TARGET_ID` in `capture/capture.mjs` to
-listings that exist on the live site. Only use card photos you have the rights to show in an ad.
+The capture picks the opening cards by listing id and the scroll target by title and id, so change `OPENING`, `TARGET`
+and `TARGET_ID` in `capture/capture.mjs` to listings that exist on the live site. Only use card photos you have the rights to show in an ad.
 
 ## Sound and music licences
 
 - **Music:** `house-vibez.mp3` by Lily J, Mixkit Stock Music Free License.
-- **Sound effects:** Mixkit Sound Effects Free License.
+- **Sound effects:** Mixkit Sound Effects Free License. `paper-browse-bed.mp3` is derived from the traced
+  `paper-book-browse-fast.mp3` (trimmed and normalised; see `analysis/sfx_peaks.json`).
 
 All sources are traced in the video-shotcraft skill's `assets/audio/ATTRIBUTION.md`. The renderer is Remotion; check
 [its licence](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md) for company use.

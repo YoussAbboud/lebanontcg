@@ -1,4 +1,5 @@
 {
+ "_derived": "paper-browse-bed.mp3 = paper-book-browse-fast.mp3 (Mixkit, traced: https://assets.mixkit.co/active_storage/sfx/1102/1102-preview.mp3) trimmed to 1.533\u20133.267 s and normalised +10.8 dB to \u22122.9 dBFS peak (its quiet paging was masked by the BGM in review).",
  "hit-weak.mp3": {
   "dur_s": 0.59,
   "peak_db": -5.6,
@@ -9,10 +10,10 @@
   "peak_db": -0.3,
   "peak_lag_f": 0.8
  },
- "paper-book-browse-fast.mp3": {
-  "dur_s": 9.28,
-  "peak_db": -4.1,
-  "peak_lag_f": 213.7
+ "paper-browse-bed.mp3": {
+  "dur_s": 1.73,
+  "peak_db": -7.2,
+  "peak_lag_f": 3.7
  },
  "paper-move-quick.mp3": {
   "dur_s": 0.9,
@@ -48,6 +49,11 @@
   "dur_s": 0.57,
   "peak_db": -5.6,
   "peak_lag_f": 3.5
+ },
+ "typewriter-hit-hard.mp3": {
+  "dur_s": 1.1,
+  "peak_db": -0.9,
+  "peak_lag_f": 1.5
  },
  "typewriter-hit-soft.mp3": {
   "dur_s": 0.53,

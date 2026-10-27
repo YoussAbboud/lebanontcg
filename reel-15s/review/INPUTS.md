@@ -3,7 +3,7 @@
 Paths are relative to `/home/user/lebanontcg/reel-15s` unless absolute. Skill root: `/home/user/lebanontcg/.agents/skills/video-shotcraft` (= `$SK`).
 
 ## Deliverables under review
-- `out/qa/draft2-reel.mp4` (with BGM) and `out/qa/draft2-reel-nobgm.mp4` (SFX only, same timeline). 1080×1920, 30 fps, 450 frames.
+- `out/lebanontcg-reel.mp4` (with BGM) and `out/lebanontcg-reel-nobgm.mp4` (SFX only, same timeline). 1080×1920, 30 fps, 450 frames.
 - Key frames: `review/frames/f<NNNN>.png` (frame index = Remotion frame) and per-shot contact sheets `review/sheets/*.png`.
 - Reference renders from the **exact demo TSX** of each card (half scale): `review/ref/<card>.mp4`, `review/ref/<card>/f*.png`, `review/ref/<card>-sheet.png` (card-flock-tumble, scroll-brake-moves [ChangelogScrollBrake], shot-transitions-portal [PortalWipeV2], ui-to-brand-morph [IconFlipBloomLogo]). The Gallery reference clips (github.io) are unreachable from this environment.
 

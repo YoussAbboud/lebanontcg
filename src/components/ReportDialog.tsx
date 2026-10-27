@@ -67,6 +67,12 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
           <>
             <h2 id="rdlg-title" className="display rdlg-title">Report {targetType}</h2>
             <p className="rdlg-sub">You&apos;re reporting <strong>{targetLabel}</strong>.</p>
+            {targetType === 'message' && (
+              <p className="rdlg-sub">
+                A moderator will see this message, and only this message. The rest of the
+                conversation stays private.
+              </p>
+            )}
 
             {!user && <p className="field-error">Sign in to submit a report.</p>}
 

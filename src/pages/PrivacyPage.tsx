@@ -72,7 +72,7 @@ const SECTIONS: LegalSection[] = [
         <ul>
           <li>No advertising trackers, no analytics scripts, no third-party cookies.</li>
           <li>We do not sell, rent or trade your data, and we do not send it to anyone for marketing.</li>
-          <li>We do not read private messages unless a message is reported, and then only the reported message is shown to a moderator.</li>
+          <li>Moderators and administrators do not access or read your messages. The only exception is a message someone reports: a moderator then sees that one message, never the rest of the conversation. Reporting a person or a listing does not open anyone’s messages. This is enforced by the database’s access rules, not just by policy.</li>
           <li>We do not take or store payment card details.</li>
         </ul>
       </>

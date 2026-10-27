@@ -19,5 +19,5 @@ export const LISTING_QUOTA_DEFAULT = false;
  * nothing depends on a mailbox. The effective date moves whenever the
  * Terms or the Privacy Policy change in substance.
  */
-export const LEGAL_EFFECTIVE_DATE = '2026-10-19';
+export const LEGAL_EFFECTIVE_DATE = '2026-10-27';
 export const OPERATOR_NAME = 'LebanonTCG';

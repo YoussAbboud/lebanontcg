@@ -828,6 +828,9 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
         <div className="chat-safety">
           Never send payment before you&apos;ve agreed terms.{' '}
           <Link to="/safety">How to trade safely</Link>
+          <br />
+          This chat is private: moderators can&apos;t read it. They only see a message if someone
+          reports it.
         </div>
       </div>
 

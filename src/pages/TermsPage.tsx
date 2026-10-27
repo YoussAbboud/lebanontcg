@@ -180,6 +180,13 @@ const SECTIONS: LegalSection[] = [
           Blocking another user ends your conversations with them and prevents new ones. Reports
           are read by moderators and never shown to the person reported.
         </p>
+        <p>
+          <strong>Your conversations are private.</strong> Moderators and administrators do not
+          access or read messages between users. The one exception is a reported message: when
+          someone reports a message, a moderator sees that message, and only that message, so the
+          report can be handled. Reporting a person or a listing does not open anyone&apos;s
+          conversations.
+        </p>
       </>
     ),
   },

@@ -47,12 +47,8 @@
   {
    "name": "scroll_stops_b13",
    "beat": 13,
-   "detect": "motion_stop",
-   "window": [
-    170,
-    200
-   ],
-   "thr": 0.6
+   "frame": 192,
+   "note": "from the scroll curve (Browse.tsx scrollAt): 5.5 px/f at 191, 1.8 at 192, 0 from 193; the lift/dim starting on the same frame keeps a picture-diff detector from seeing the stop"
   },
   {
    "name": "tap_b14",

@@ -15,7 +15,7 @@
 // the first listing — so the portal lands on the exact first frame of S2 (drop, b8).
 //
 // Timeline (local = absolute; 0–119):
-//   1–45    flight (lands b3)        45–119  idle drift (back cards)
+//   −6–45   flight (pre-rolled; lands b3)        45–119  idle drift (back cards)
 //   63–79   front card turns flat, centres and lifts (hover)
 //   79–119  portal: window card-rect → full frame, Browse page inside, done on b8 (the drop)
 import React from 'react';
@@ -25,7 +25,9 @@ import layout from '../layout.json';
 import { C } from '../theme';
 import { H, W } from '../timing';
 
-const FLIGHT = [1, 45] as const;
+// the flight starts 6f before the film so frame 0 (the Reel's hook / cover) already shows the cards a third into their
+// tumble rather than an edge-on sliver; 51f, lands on b3
+const FLIGHT = [-6, 45] as const;
 const HOVER = [63, 79] as const;
 const PORTAL = [79, 119] as const;
 const K = 1.07; // card base size = CSS size × K (pose scale s then sizes it on screen; 4× texture stays sharp)

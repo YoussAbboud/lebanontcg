@@ -1,0 +1,47 @@
+{
+  "language": "en",
+  "angles": [
+    {
+      "name": "hero",
+      "kicker": "PEER-TO-PEER · LEBANON",
+      "headline": "Your binder has buyers.",
+      "headline_options": [
+        { "text": "Your binder has buyers.", "formula": "two-word value statement, possessive", "why": "Speaks to the seller's own pile of duplicates and flips it into demand. Chosen: short, concrete, collector language." },
+        { "text": "Every duplicate has a collector.", "formula": "universal claim on a specific object", "why": "Echoes the site's 'We connect collectors' line; slightly longer." },
+        { "text": "Cards you don't play. Collectors who want them.", "formula": "problem flip", "why": "Clear, but two sentences and 8 words: too long for 9:16." }
+      ],
+      "subhead": "List what you own. Collectors in Lebanon message you directly.",
+      "proof_point": "NO COMMISSION",
+      "cta": "Start selling",
+      "notes": "Brand-led. The subhead adapts the site's own 'List what you own, message the person who has what you want'."
+    },
+    {
+      "name": "benefit",
+      "kicker": "LIST A CARD · 01 / 04",
+      "headline": "Listed in about a minute.",
+      "headline_options": [
+        { "text": "Listed in about a minute.", "formula": "time + outcome", "why": "Uses the site's own claim ('it takes about a minute'); kept the 'about' so it stays honest. Chosen." },
+        { "text": "Photos. Card. Price. Done.", "formula": "staccato steps", "why": "Mirrors the 4-step form; punchy but less specific." },
+        { "text": "Snap it. Price it. List it.", "formula": "imperative triplet", "why": "Energetic; generic for the category." }
+      ],
+      "subhead": "Four steps: add photos, name the card, set your price, review.",
+      "proof_point": "4 STEPS",
+      "cta": "Start selling",
+      "notes": "Ease of listing. Every number is from the sell page (01 / 04 steps, 'about a minute')."
+    },
+    {
+      "name": "benefit-2",
+      "kicker": "NO CHECKOUT · NO CUT",
+      "headline": "Keep every dollar you sell for.",
+      "headline_options": [
+        { "text": "Keep every dollar you sell for.", "formula": "outcome in money", "why": "The money axis, distinct from the ease axis. True because nothing is taken out of sales. Chosen." },
+        { "text": "Your price. Your deal.", "formula": "two-part ownership", "why": "Captures 'you agree the terms yourselves'; softer on the money point." },
+        { "text": "Nothing taken out of your sales.", "formula": "negation", "why": "The site's exact wording; reads like terms rather than an ad." }
+      ],
+      "subhead": "You agree the price with the buyer yourselves. We never take a cut.",
+      "proof_point": "0% COMMISSION",
+      "cta": "Start selling",
+      "notes": "Replaces the Offer angle: there is no real promotion to advertise. Avoids 'no fees' and 'free listing', which may stop being true when paid plans launch."
+    }
+  ]
+}

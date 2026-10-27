@@ -1,0 +1,94 @@
+{
+  "shared_principles": {
+    "typographic_system": {
+      "display": "Chakra Petch Bold-style squared techy sans, ALL CAPS, tight leading (0.95), slight negative tracking.",
+      "accent": "JetBrains Mono-style monospace, uppercase, wide tracking (+15%), small: kicker and proof chip.",
+      "body": "Inter-style neutral sans, regular weight, sentence case, soft grey #b9c2cc.",
+      "case_rules": "Headline ALL CAPS. Kicker and CTA uppercase mono. Subhead sentence case.",
+      "scale_ratio_descriptor": "Headline : subhead : CTA = 6 : 2 : 1"
+    },
+    "brand_motif_options": [
+      "Acid-lime #d6ff3f pill button with near-black mono text (the site's own button)",
+      "Mono status chip with a small lime dot (the site's LIVE AUCTION chip)",
+      "Thin 4-segment progress bar, first segment lime (the sell form's step bars)"
+    ],
+    "product_rule": "The 'product' is the real mobile UI in the reference screenshots. Show it inside a plain modern black smartphone or as a clean rounded-corner crop. Reproduce the screen pixel-faithfully: no redrawn text, no invented prices, names or cards."
+  },
+  "angles": [
+    {
+      "name": "hero",
+      "big_idea": "Your duplicates are someone's want-list",
+      "composition": {
+        "rule": "Asymmetric balance: phone tilted 8° on the right two-thirds, type stacked on the left third",
+        "anchor_point": "Phone screen (home page, 'WE CONNECT COLLECTORS' hero and card fan) at the right golden-ratio line",
+        "reading_flow": "Kicker -> headline -> subhead -> phone -> CTA",
+        "negative_space_strategy": "Upper-left 35% stays near-black around the headline"
+      },
+      "color_system": { "dominant": "#08090b", "secondary": "#f2f5f7", "accent": "#d6ff3f", "ratio": "70/25/5", "rules": "Lime only on the CTA and the proof chip dot" },
+      "typographic_treatment": {
+        "headline": "Heavy squared ALL CAPS, 2 lines, left-aligned. Weight 6.",
+        "subhead": "Regular grey sentence case, max 2 lines. Weight 2.",
+        "cta": "Lime pill, near-black uppercase mono text. Weight 1."
+      },
+      "product_treatment": { "lighting": "Soft key from upper-left, faint cool rim on the phone's right edge", "shadow": "Long soft contact shadow falling lower-right", "reflection": "None", "surface": "Matte graphite #2a2f38 floor plane fading to black", "atmosphere": "Clean, still" },
+      "graphic_motif": "Mono proof chip 'NO COMMISSION' with a small lime dot, like the site's LIVE chip, under the subhead",
+      "background_treatment": "Near-black #08090b with a very subtle graphite #2a2f38 floor gradient in the lower third",
+      "format_adaptations": {
+        "1:1": "Type left 45%, phone right 55% tilted, CTA bottom-left under the subhead",
+        "4:5": "Type block top-left, phone lower-right breaking the bottom edge slightly, CTA bottom-left",
+        "9:16": "Kicker and headline in the top third, phone centred and upright in the middle, subhead and CTA in the lower area above the bottom 14% (IG UI)"
+      },
+      "reference_to_brand_assets": "Home page hero type and chips; the lime button style"
+    },
+    {
+      "name": "benefit",
+      "big_idea": "Four steps and you're listed",
+      "composition": {
+        "rule": "Central anchor with a strong vertical axis: phone upright, flat-on, perfectly centred",
+        "anchor_point": "Sell page ('LIST A CARD 01 / 04', step bars, Photos panel)",
+        "reading_flow": "Headline above the phone -> phone -> four step labels -> CTA",
+        "negative_space_strategy": "Even dark margins on both sides of the phone, a calm editorial frame"
+      },
+      "color_system": { "dominant": "#0e1013", "secondary": "#f2f5f7", "accent": "#d6ff3f", "ratio": "75/20/5", "rules": "Lime only on the first step segment and the CTA" },
+      "typographic_treatment": {
+        "headline": "Heavy squared ALL CAPS, centred, one or two lines. Weight 6.",
+        "subhead": "Regular grey, centred. Weight 2.",
+        "cta": "Lime pill centred under the phone. Weight 1."
+      },
+      "product_treatment": { "lighting": "Even, frontal, soft", "shadow": "Tight soft drop shadow under the phone", "reflection": "None", "surface": "Floating over a flat dark field, grounded by the shadow", "atmosphere": "Clean, calm" },
+      "graphic_motif": "A large 4-segment progress bar (first segment lime, others graphite) running across the frame, echoing the sell form",
+      "background_treatment": "Flat #0e1013 with a faint 1px graphite grid at 4% opacity",
+      "format_adaptations": {
+        "1:1": "Headline top centre, phone centred and cropped at the bottom edge, step bar across the middle behind the phone, CTA bottom right",
+        "4:5": "Headline top, phone centre, step bar under the headline, CTA bottom centre",
+        "9:16": "Headline top 20%, step bar, phone centre, subhead and CTA above the bottom 14%"
+      },
+      "reference_to_brand_assets": "Sell page step bars and the 01 / 04 counter"
+    },
+    {
+      "name": "benefit-2",
+      "big_idea": "The whole price is yours",
+      "composition": {
+        "rule": "Diagonal: a listing card crop rises from lower-left to upper-right, headline counterweights top-left",
+        "anchor_point": "A crop of the listing page showing the card photo and title",
+        "reading_flow": "Headline (top-left) -> proof chip -> listing crop -> CTA (bottom-right)",
+        "negative_space_strategy": "Top-right and left edge kept dark, ~30%"
+      },
+      "color_system": { "dominant": "#08090b", "secondary": "#d6ff3f", "accent": "#f2f5f7", "ratio": "65/25/10", "rules": "Lime used larger here: the proof chip '0% COMMISSION' is a solid lime block" },
+      "typographic_treatment": {
+        "headline": "Heavy squared ALL CAPS, 3 lines, left-aligned, the word 'EVERY' in lime. Weight 6.",
+        "subhead": "Regular grey, left-aligned. Weight 2.",
+        "cta": "Outlined lime pill with lime mono text (contrast with the solid chip). Weight 1."
+      },
+      "product_treatment": { "lighting": "Directional key from upper-right", "shadow": "Crisp drop shadow down-left under the tilted listing crop", "reflection": "None", "surface": "Dark graphite card table texture, very subtle", "atmosphere": "Clean" },
+      "graphic_motif": "Solid lime rectangular chip with near-black mono text '0% COMMISSION', set like a price tag",
+      "background_treatment": "Near-black with a soft graphite vignette, no gradient colours",
+      "format_adaptations": {
+        "1:1": "Headline top-left 55% width, listing crop lower-right tilted -6°, chip overlapping its top-left corner, CTA bottom-left",
+        "4:5": "Headline top, listing crop mid-right, chip, CTA bottom-left",
+        "9:16": "Headline top third, listing crop large in the middle, chip on its corner, subhead and CTA above the bottom 14%"
+      },
+      "reference_to_brand_assets": "Listing page photo and title; the lime/near-black button colours"
+    }
+  ]
+}

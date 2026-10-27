@@ -1,0 +1,18 @@
+{
+  "product": "LebanonTCG marketplace — selling side",
+  "goal": "Recruit sellers: get collectors in Lebanon to list their first card",
+  "cta": "Start selling",
+  "language": "en",
+  "offer": null,
+  "audience": "Trading-card collectors in Lebanon with duplicates or cards to sell",
+  "must_include": [],
+  "must_avoid": ["free forever", "guaranteed", "safe payments", "escrow", "best prices", "lowest fees"],
+  "facts": [
+    "Peer-to-peer: buyers message the seller directly; no checkout",
+    "Nothing is taken out of a sale (no commission)",
+    "Listing is free for now; paid plans are planned",
+    "The site says listing a first card takes about a minute; the sell form has 4 steps: Photos, The card, The deal, Review; 1-8 photos",
+    "Games: Pokémon, Magic, Yu-Gi-Oh!, One Piece, Lorcana",
+    "Fixed-price listings and live auctions"
+  ]
+}

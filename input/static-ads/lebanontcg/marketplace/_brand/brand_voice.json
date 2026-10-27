@@ -1,0 +1,46 @@
+{
+  "brand": "LebanonTCG",
+  "url": "https://www.lebanontcg.com",
+  "source_note": "Built from the site's source (src/styles/tokens.css, page copy) and mobile screenshots of the offline mock build; lebanontcg.com itself is not reachable from the build environment.",
+  "typography": {
+    "display_feel": "Chakra Petch: a squared-off, techy display sans set in heavy-weight ALL CAPS with tight leading. Reads like a card-game UI or a trading terminal, not a luxury brand.",
+    "body_feel": "Inter regular in soft grey on dark; short, plain sentences.",
+    "label_feel": "JetBrains Mono, uppercase, wide letter-spacing, small: used for eyebrows, prices and status chips (LIVE AUCTION, CURRENT BID, 01 / 04).",
+    "recommended_fonts_for_ads": ["Chakra Petch Bold", "Inter Regular", "JetBrains Mono Medium"]
+  },
+  "color_palette": {
+    "primary": "#08090b",
+    "secondary": "#f2f5f7",
+    "accent": "#d6ff3f",
+    "neutral_bg": "#16191e",
+    "frame": "#0e1013",
+    "muted_text": "#b9c2cc",
+    "brand_graphite": "#2a2f38",
+    "rules": "Near-black ground with graphite panels. One acid-lime accent (#d6ff3f) for buttons, live chips and a single highlighted word or card. Text on lime is near-black #08090b. The home hero runs one word through a violet-to-lime gradient; use that gradient at most once per ad, on one word. No other hues except the card art itself."
+  },
+  "copy_tone": {
+    "voice": "Plain, peer-to-peer, collector-to-collector. Short declarative sentences. States what happens, not how amazing it is. Honest about how the site works (you handle the deal).",
+    "examples_from_brand": [
+      "We connect Collectors",
+      "We connect collectors. You handle the deal.",
+      "List what you own, message the person who has what you want. No checkout, no fees, you agree the terms yourselves.",
+      "List your first card — it takes about a minute.",
+      "Is this card worth grading?"
+    ],
+    "signature_moves": "ALL-CAPS display headlines of 2-6 words; a lowercase grey sentence underneath that explains the mechanism; mono uppercase eyebrow above the headline (PEER-TO-PEER · 42 CARDS LISTED); acid-lime pill buttons with uppercase mono text."
+  },
+  "dos": [
+    "Say what the seller does: list, price, message, meet",
+    "Name the real games (Pokémon, Magic, Yu-Gi-Oh!, One Piece, Lorcana) only as text",
+    "Use the lime accent on exactly one element besides the CTA",
+    "Show the real mobile UI from the screenshots, unaltered"
+  ],
+  "donts": [
+    "No claims of payment protection, escrow, shipping or buyer guarantees: the site has no checkout",
+    "Do not promise free listing forever: listing is free 'for now' and paid plans are planned. 'No commission' / 'nothing taken out of your sales' stays true",
+    "No official Pokémon / Yu-Gi-Oh! / MTG card art or logos (not licensed)",
+    "No neon glow, lens flares, holographic rainbow effects or random gradients",
+    "No fake UI: never redraw or invent screens, prices or usernames"
+  ],
+  "visual_register": "Dark product-UI editorial: a phone or a clean crop of the real app on a near-black stage, precise lime accents, a lot of quiet dark space."
+}

@@ -1,0 +1,49 @@
+{
+  "angles": [
+    {
+      "name": "hero",
+      "palette_anchor": ["#08090b", "#d6ff3f"],
+      "background": "Near-black #08090b, graphite #2a2f38 floor gradient in the lower third.",
+      "product_placement": "Black smartphone showing reference 02-home-page.png exactly, tilted 8°, right side, ~55% of width.",
+      "text_zones": { "headline": "Upper-left, 2 lines", "subhead": "Under the headline, max 2 lines", "cta": "Lime pill under the proof chip, left", "tags": "Kicker above the headline; proof chip under the subhead" },
+      "hierarchy": "Headline, then phone, then CTA.",
+      "tone": "Confident, quiet, collector-to-collector",
+      "typography_note": "Squared heavy ALL CAPS headline; mono uppercase kicker/chip/CTA; grey regular subhead",
+      "formats": {
+        "1:1": "Text left 45%, phone right 55%.",
+        "4:5": "Text top-left, phone lower-right bleeding off the bottom edge.",
+        "9:16": "Text top third, phone centre, subhead + CTA above the bottom 14%."
+      }
+    },
+    {
+      "name": "benefit",
+      "palette_anchor": ["#0e1013", "#d6ff3f"],
+      "background": "Flat #0e1013 with a faint graphite grid; 4-segment progress bar motif.",
+      "product_placement": "Black smartphone, upright, centred, showing reference 01-sell-page.png exactly.",
+      "text_zones": { "headline": "Top centre", "subhead": "Under the headline or under the phone", "cta": "Bottom centre (1:1: bottom right)", "tags": "Kicker above the headline; '4 STEPS' chip near the step bar" },
+      "hierarchy": "Headline and phone share weight; step bar connects them.",
+      "tone": "Calm, editorial, clear",
+      "typography_note": "Centred heavy ALL CAPS; mono labels",
+      "formats": {
+        "1:1": "Phone cropped at the bottom edge, bar across the middle.",
+        "4:5": "Headline, bar, phone, CTA stacked.",
+        "9:16": "Headline top 20%, bar, phone, subhead and CTA above the bottom 14%."
+      }
+    },
+    {
+      "name": "benefit-2",
+      "palette_anchor": ["#08090b", "#d6ff3f"],
+      "background": "Near-black with graphite vignette.",
+      "product_placement": "Rounded-corner crop of reference 03-listing-page.png (card photo + title), tilted -6°, lower right.",
+      "text_zones": { "headline": "Top-left, 3 lines, 'EVERY' in lime", "subhead": "Under the headline", "cta": "Outlined lime pill, bottom-left", "tags": "Solid lime '0% COMMISSION' chip overlapping the crop's corner" },
+      "hierarchy": "Headline, chip, crop, CTA.",
+      "tone": "Direct, money-focused",
+      "typography_note": "Squared heavy ALL CAPS; mono chip",
+      "formats": {
+        "1:1": "Headline 55% width top-left, crop lower-right.",
+        "4:5": "Headline top, crop mid-right.",
+        "9:16": "Headline top third, crop large centre, CTA above the bottom 14%."
+      }
+    }
+  ]
+}

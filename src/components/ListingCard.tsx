@@ -9,6 +9,7 @@ import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { Avatar } from './Avatar';
 import { CardFace } from './CardFace';
+import { LikeButton } from './LikeButton';
 import './listingcard.css';
 
 export function listingEyebrow(l: ListingWithSeller): string {
@@ -25,7 +26,7 @@ function oneLinerOf(l: ListingWithSeller): string {
 }
 
 // Grid listing card — the Sleeved design's article card, wired to real
-// data: seller dot + handle, ♡ like count, watch star (favorite), title,
+// data: seller dot + handle, ♡ like count (the watch toggle, live), title,
 // asking/listed columns, Message seller CTA. The acid treatment is the
 // hover/press state (CSS); `pinned` keeps one card permanently acid with
 // a breathing glow (the home page pins its most-liked card).
@@ -36,10 +37,9 @@ export const ListingCard = memo(function ListingCard({
   listing: ListingWithSeller;
   pinned?: boolean;
 }) {
-  const { favoriteIds, toggleFavorite, user, client } = useApp();
+  const { user, client } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
-  const watched = favoriteIds.has(listing.id);
   const isOwner = user?.id === listing.sellerId;
   const handle = listing.seller.username
     ? `@${listing.seller.username}`
@@ -54,16 +54,6 @@ export const ListingCard = memo(function ListingCard({
   const livePill = auction ? auctionPillLabel(auction, now) : null;
 
   const open = () => navigate(`/listing/${listing.id}`);
-
-  const watch = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!user) {
-      navigate('/signin');
-      return;
-    }
-    await toggleFavorite(listing.id);
-    toast(watched ? 'Removed from watchlist' : 'Added to watchlist');
-  };
 
   const message = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -93,7 +83,7 @@ export const ListingCard = memo(function ListingCard({
       <div className="lcard-top">
         <Avatar profile={listing.seller} size={22} />
         <div className="lcard-handle">{handle}</div>
-        <div className="lcard-likes">♡ {listing.likes}</div>
+        <LikeButton listingId={listing.id} likes={listing.likes} className="lcard-likes" />
       </div>
 
       <div className="lcard-facewrap">
@@ -102,15 +92,6 @@ export const ListingCard = memo(function ListingCard({
           <div className="lcard-status mono-label">{listing.status}</div>
         )}
         {live && livePill && <div className="lcard-live mono-label">{livePill}</div>}
-        <button
-          type="button"
-          aria-label={watched ? 'Remove from watchlist' : 'Watch this card'}
-          aria-pressed={watched}
-          className={`lcard-watch ${watched ? 'lcard-watch-on' : ''}`}
-          onClick={(e) => void watch(e)}
-        >
-          {watched ? '★' : '☆'}
-        </button>
       </div>
 
       <div className="lcard-body">

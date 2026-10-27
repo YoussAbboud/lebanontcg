@@ -7,6 +7,8 @@ import { avatarBackground, faceBackground, glyphOf } from '../lib/face';
 import { formatPrice, memberSince } from '../lib/format';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
+import { LikeButton } from '../components/LikeButton';
+import { useLikeCount } from '../lib/likeCounts';
 import { Avatar } from '../components/Avatar';
 import { ReportDialog } from '../components/ReportDialog';
 import { PregradeListingPanel } from '../components/pregrade/PregradeListingPanel';
@@ -20,7 +22,7 @@ type LoadState = 'loading' | 'ready' | 'error' | 'missing';
 
 export function ListingPage() {
   const { id } = useParams<{ id: string }>();
-  const { client, user, favoriteIds, toggleFavorite } = useApp();
+  const { client, user } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
   const [listing, setListing] = useState<ListingWithSeller | null>(null);
@@ -28,6 +30,7 @@ export function ListingPage() {
   const [photo, setPhoto] = useState(0);
   const [busy, setBusy] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const watching = useLikeCount(client, id ?? '', listing?.likes ?? 0);
   const [lightbox, setLightbox] = useState(false);
   // Desktop hover zoom: the cursor drives transform-origin so the point
   // under the pointer stays put while the photo scales.
@@ -102,7 +105,6 @@ export function ListingPage() {
   }
 
   const isOwner = user?.id === listing.sellerId;
-  const watched = favoriteIds.has(listing.id);
   const cover = listing.images[photo] ?? listing.images[0];
   const sellerHandle = listing.seller.username
     ? `@${listing.seller.username}`
@@ -134,15 +136,6 @@ export function ListingPage() {
     } finally {
       setBusy(false);
     }
-  };
-
-  const watch = async () => {
-    if (!user) {
-      navigate('/signin');
-      return;
-    }
-    await toggleFavorite(listing.id);
-    toast(watched ? 'Removed from watchlist' : 'Added to watchlist');
   };
 
   const changeStatus = async (status: ListingStatus) => {
@@ -284,15 +277,11 @@ export function ListingPage() {
                     ? 'Unavailable'
                     : 'Message seller'}
               </button>
-              <button
-                type="button"
-                aria-label={watched ? 'Remove from watchlist' : 'Watch'}
-                aria-pressed={watched}
-                className="btn-icon ldetail-icon"
-                onClick={() => void watch()}
-              >
-                {watched ? '★' : '☆'}
-              </button>
+              <LikeButton
+                listingId={listing.id}
+                likes={listing.likes}
+                className="btn-icon btn-like ldetail-icon"
+              />
               <button
                 type="button"
                 aria-label="Report listing"
@@ -351,7 +340,7 @@ export function ListingPage() {
               </div>
               <div>
                 <div className="mono-label">Watching</div>
-                <div className="mono-value ldetail-seller-stat">{listing.likes}</div>
+                <div className="mono-value ldetail-seller-stat">{watching}</div>
               </div>
               <div>
                 <div className="mono-label">Listings</div>

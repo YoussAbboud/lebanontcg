@@ -1343,6 +1343,23 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     }
   }
 
+  subscribeToLikeCounts(cb: (listingId: string, likes: number) => void): Unsubscribe {
+    // listing_like_counts (0023) is public and trigger-maintained; 0027 puts
+    // it on the realtime publication. Rows only ever go up and down.
+    const channel = this.sb
+      .channel(`like-counts-${Math.random().toString(36).slice(2)}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'listing_like_counts' },
+        (payload) => {
+          const row = payload.new as { listing_id?: string; likes?: number } | null;
+          if (row?.listing_id && typeof row.likes === 'number') cb(row.listing_id, row.likes);
+        },
+      )
+      .subscribe();
+    return () => void this.sb.removeChannel(channel);
+  }
+
   // ---- Chat ---------------------------------------------------------------
 
   private async summarizeConversations(rows: ConversationRow[]): Promise<ConversationSummary[]> {

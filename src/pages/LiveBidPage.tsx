@@ -8,6 +8,7 @@ import { glyphOf } from '../lib/face';
 import { useNow } from '../lib/useNow';
 import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
+import { LikeButton } from '../components/LikeButton';
 import { Avatar } from '../components/Avatar';
 import { AuctionPanel } from '../components/AuctionPanel';
 import { AuctionPriceChart } from '../components/AuctionPriceChart';
@@ -30,7 +31,7 @@ export function LiveBidPage({
   listing: ListingWithSeller;
   onReload(): void;
 }) {
-  const { client, user, favoriteIds, toggleFavorite } = useApp();
+  const { client, user } = useApp();
   const toast = useToast();
   const navigate = useNavigate();
   const now = useNow(1000);
@@ -67,7 +68,6 @@ export function LiveBidPage({
   const over = isEffectivelyOver(auction, now);
   const soon = isEndingSoon(auction.endsAt, now);
   const isOwner = user?.id === listing.sellerId;
-  const watched = favoriteIds.has(listing.id);
   const cover = listing.images[photo] ?? listing.images[0];
   const sellerHandle = listing.seller.username
     ? `@${listing.seller.username}`
@@ -212,21 +212,7 @@ export function LiveBidPage({
                 <button type="button" className="btn-outline" disabled={busy} onClick={() => void askQuestion()}>
                   Ask a question
                 </button>
-                <button
-                  type="button"
-                  aria-label={watched ? 'Remove from watchlist' : 'Watch'}
-                  aria-pressed={watched}
-                  className="btn-icon"
-                  onClick={() => {
-                    if (!user) {
-                      navigate('/signin');
-                      return;
-                    }
-                    void toggleFavorite(listing.id);
-                  }}
-                >
-                  {watched ? '★' : '☆'}
-                </button>
+                <LikeButton listingId={listing.id} likes={listing.likes} className="btn-icon btn-like" />
                 <button
                   type="button"
                   aria-label="Report listing"

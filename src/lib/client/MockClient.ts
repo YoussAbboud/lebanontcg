@@ -218,6 +218,7 @@ export class MockClient implements MarketplaceClient {
   // ---- Notifications (mirrors migration 0024) ------------------------------
   private notifications: StoredNotification[] = structuredClone(seedNotifications);
   private notificationListeners = new Set<() => void>();
+  private likeListeners = new Set<(listingId: string, likes: number) => void>();
 
   // ---- Paywall (mirrors migration 0019) ----------------------------------
   private plans: Plan[] = structuredClone(seedPlans);
@@ -410,6 +411,7 @@ export class MockClient implements MarketplaceClient {
         if (!this.favorites.has(patch.userId)) this.favorites.set(patch.userId, new Set());
         if (patch.on) this.favorites.get(patch.userId)!.add(patch.listingId);
         else this.favorites.get(patch.userId)!.delete(patch.listingId);
+        this.emitLikes(patch.listingId);
         break;
       }
       case 'block': {
@@ -1721,6 +1723,17 @@ export class MockClient implements MarketplaceClient {
     if (favorited) favs.add(listingId);
     else favs.delete(listingId);
     this.broadcast({ type: 'favorite', userId: me.id, listingId, on: favorited });
+    this.emitLikes(listingId);
+  }
+
+  private emitLikes(listingId: string): void {
+    const likes = this.likesOf(listingId);
+    for (const cb of this.likeListeners) cb(listingId, likes);
+  }
+
+  subscribeToLikeCounts(cb: (listingId: string, likes: number) => void): Unsubscribe {
+    this.likeListeners.add(cb);
+    return () => this.likeListeners.delete(cb);
   }
 
   // ---- Chat ---------------------------------------------------------------

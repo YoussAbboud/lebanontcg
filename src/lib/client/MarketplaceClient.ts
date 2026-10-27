@@ -201,6 +201,9 @@ export interface MarketplaceClient {
   getFavoriteIds(): Promise<Set<string>>;
   getFavoriteListings(): Promise<ListingWithSeller[]>;
   setFavorite(listingId: string, favorited: boolean): Promise<void>;
+  /** Live like (watch) counts: fires with a listing's new total whenever
+      anyone watches or unwatches it. One feed for every listing. */
+  subscribeToLikeCounts(cb: (listingId: string, likes: number) => void): Unsubscribe;
 
   // ---- Chat --------------------------------------------------------------
   listConversations(): Promise<ConversationSummary[]>;

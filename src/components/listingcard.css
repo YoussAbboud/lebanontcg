@@ -71,8 +71,16 @@
   padding: 4px 9px;
   border-radius: var(--r-pill);
   border: 1px solid var(--border);
+  background: transparent;
   color: var(--text-2);
   white-space: nowrap;
+  cursor: var(--cursor-default);
+}
+/* The count is the watch toggle: lime while you watch. */
+.lcard-likes:hover,
+.lcard-likes.is-on {
+  border-color: var(--acid);
+  color: var(--acid);
 }
 
 .lcard-facewrap {
@@ -94,25 +102,6 @@
   border: 1px solid var(--face-border);
   border-radius: var(--r-pill);
   padding: 4px 10px;
-}
-
-.lcard-watch {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--r-thumb);
-  cursor: var(--cursor-default);
-  font-size: 15px;
-  border: 1px solid var(--face-border);
-  background: var(--watch-bg);
-  color: var(--text-1);
-  transition: border-color var(--t-fast), color var(--t-fast);
-}
-.lcard-watch-on {
-  border-color: var(--acid);
-  color: var(--acid);
 }
 
 .lcard-body { padding: 14px; }
@@ -189,6 +178,14 @@
 .lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-likes {
   border-color: var(--ink-rule);
   color: var(--ink);
+}
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-likes:hover {
+  border-color: var(--ink);
+}
+.lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-likes.is-on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--acid);
 }
 .lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-stats { border-top-color: var(--ink-rule); }
 .lcard:is(:hover, :focus-visible, :active, .is-acid) .lcard-cta {

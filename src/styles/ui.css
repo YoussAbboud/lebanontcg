@@ -72,6 +72,18 @@
 .btn-icon:hover { border-color: var(--acid); color: var(--acid); }
 .btn-icon[aria-pressed='true'],
 .btn-icon.icon-on { border-color: var(--acid); color: var(--acid); }
+/* ♡ count + watch toggle in an icon row (LikeButton) */
+.btn-icon.btn-like {
+  width: auto;
+  min-width: 44px;
+  padding: 0 14px;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.btn-icon.is-on { border-color: var(--acid); color: var(--acid); }
 
 /* Ghost mono text button ("See more →", "← Back") */
 .btn-ghost-mono {

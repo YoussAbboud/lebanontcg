@@ -7,6 +7,12 @@
       "skillPath": "skills/brag/SKILL.md",
       "computedHash": "917eba27222a174bd05088df28a155c8e43a28be611d3694d409790adcc082d0"
     },
+    "posta": {
+      "source": "STGime/posta-skill",
+      "sourceType": "github",
+      "skillPath": "skills/posta/SKILL.md",
+      "computedHash": "911e1f3643b9d63e828fa2a91f01f3538dc4c12be1a659ac3a019f7360641ab7"
+    },
     "static-ads": {
       "source": "byextremeai/static-ads",
       "sourceType": "github",

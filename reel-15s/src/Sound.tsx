@@ -26,7 +26,7 @@ const B = S.browse.from;
 const E = S.end.from;
 export const SFX: Pin[] = [
   // S1 · cards tumble in (the flight's fastest stretch) and land on b3; the portal opens into the drop (b8)
-  pin(S.opening.from + 14, 'paper-slide.mp3', 0.42, 'cards slide through the air'),
+  pin(S.opening.from + 14, 'paper-slide.mp3', 0.8, 'cards slide through the air'),
   pin(beatF(3), 'paper-move-quick.mp3', 0.5, 'the stack lands (b3)'),
   pin(beatF(8) - 4, 'sweep-short.mp3', 0.62, 'portal opens onto the Browse page (drop, b8)'),
   // S2 · paging under the fast scroll (fades as it brakes), a soft lock as it settles, the tap, the open
@@ -35,22 +35,22 @@ export const SFX: Pin[] = [
     volume: (f: number) => 0.85 * Math.pow(Math.max(0, 1 - f / (SCROLL1 - SCROLL0)), 1.2),
   },
   pin(B + SCROLL1 - 1, 'lock-quick.mp3', 0.26, 'the scroll settles on Red-Eyes'),
-  pin(B + TAP, 'switch-tap.mp3', 0.36, 'tap (b15)'),
+  pin(B + TAP, 'switch-tap.mp3', 0.75, 'tap (b15)'),
   pin(B + Math.round((OPEN[0] + OPEN[1]) / 2), 'swoosh-quick.mp3', 0.62, 'card art grows into the listing photo'),
   // S4 · card lifts off the page, flips flat (thinnest on b24), the mark blooms; one key per word; the URL click
-  pin(E + 8, 'paper-move-quick.mp3', 0.42, 'card lifts off the page'),
+  pin(E + 8, 'paper-slide.mp3', 0.8, 'card lifts off the page'),
   pin(beatF(24), 'transition-snap.mp3', 0.75, 'flip flat → mark (b24)'),
   pin(beatF(24) + 3, 'hit-weak.mp3', 0.32, 'mark blooms open'),
   pin(E + 89, 'typewriter-hit-soft.mp3', 0.9, 'BUY. (b27)'),
-  pin(E + 96, 'typewriter-hit-hard.mp3', 0.7, 'SELL. (half-beat)'),
-  pin(E + 104, 'typewriter-hit-soft.mp3', 0.95, 'TRADE. (b28)'),
-  pin(E + 111, 'switch-click-quick.mp3', 0.36, 'lebanontcg.com'),
+  pin(E + 94, 'typewriter-hit-hard.mp3', 0.7, 'SELL.'),
+  pin(E + 99, 'typewriter-hit-soft.mp3', 0.95, 'TRADE.'),
+  pin(E + 104, 'switch-click-quick.mp3', 0.45, 'lebanontcg.com (b28)'),
 ];
 
 // BGM: 0.38 (the effects sit on top of it), ducked ~5 dB under the three moments the effects carry the picture and
 // ~2.5 dB under the tagline keys (they land on kick beats; measured masked below 2 kHz without it)
 const BGM_LEVEL = 0.38;
-const DUCK: [number, number, number][] = [[beatF(8) - 18, beatF(8) + 6, 0.56], [B + SCROLL0, B + SCROLL1, 0.56], [B + OPEN[0], B + OPEN[1], 0.56], [E + 86, E + 112, 0.75]];
+const DUCK: [number, number, number][] = [[beatF(8) - 18, beatF(8) + 6, 0.56], [B + SCROLL0, B + SCROLL1, 0.56], [B + OPEN[0], B + OPEN[1], 0.56], [E + 86, E + 108, 0.75]];
 const bgmVolume = (f: number) => {
   const fade = interpolate(f, [0, 3, TOTAL - 14, TOTAL - 1], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const duck = DUCK.reduce((k, [a, b, g]) => Math.min(k, interpolate(f, [a - 4, a, b, b + 6], [1, g, g, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })), 1);

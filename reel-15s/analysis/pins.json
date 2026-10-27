@@ -45,9 +45,20 @@
    "frame": 119
   },
   {
-   "name": "tap_b15",
+   "name": "tap_ring_b15",
    "beat": 15,
-   "frame": 222
+   "detect": "appear",
+   "window": [
+    215,
+    230
+   ],
+   "box": [
+    480,
+    690,
+    600,
+    810
+   ],
+   "thr": 5
   },
   {
    "name": "open_lands_b17",
@@ -57,30 +68,51 @@
   {
    "name": "flip_thinnest_b24",
    "beat": 24,
-   "frame": 355
+   "detect": "min_width",
+   "window": [
+    345,
+    365
+   ],
+   "band": [
+    400,
+    780
+   ],
+   "stage_luma": 46
   },
   {
    "name": "BUY_b27",
    "beat": 27,
-   "frame": 399
+   "detect": "appear",
+   "window": [
+    392,
+    410
+   ],
+   "box": [
+    150,
+    1030,
+    370,
+    1140
+   ],
+   "thr": 4
   },
   {
-   "name": "SELL_b27.5",
-   "beat": 27.5,
-   "frame": 406
-  },
-  {
-   "name": "TRADE_b28",
+   "name": "URL_b28",
    "beat": 28,
-   "frame": 414
-  },
-  {
-   "name": "url_b28.5",
-   "beat": 28.5,
-   "frame": 421
+   "detect": "appear",
+   "window": [
+    405,
+    425
+   ],
+   "box": [
+    180,
+    1170,
+    900,
+    1280
+   ],
+   "thr": 4
   }
  ],
  "notes": {
-  "scroll_stop": "abs 199 (Browse.tsx SCROLL1 = local 80): off-beat by design; it lands between b13 (192) and b14 (207) so the post-portal hold is \u226530f"
+  "scroll_stop": "abs 197 measured (picture registration, second review) \u2014 Browse.tsx SCROLL1 = local 80 (abs 199) is where the curve reaches exactly 0; the last visible movement ends at 197; off-beat by design so the post-portal hold is \u226530f"
  }
 }

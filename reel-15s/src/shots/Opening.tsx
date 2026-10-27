@@ -81,8 +81,9 @@ const HOVER_POSE: Pose = { x: 0, y: -130, rx: 0, ry: 0, rz: 0, s: 1.9 * 1.03 }; 
 const idleAt = (f: number) => {
   const t = f - FLIGHT[1] * 0.86;
   if (t <= 0) return { ry: 0, rx: 0, rz: 0 };
-  const r = Math.min(1, t / 14) ** 2;
-  return { ry: t * 0.25 * r, rx: t * -0.08 * r, rz: t * 0.04 * r };
+  // quadratic ease-in over 14f that meets the steady rate with the same value and slope (no speed kink at t = 14)
+  const u = t < 14 ? (t * t) / 28 : t - 7;
+  return { ry: u * 0.25, rx: u * -0.08, rz: u * 0.04 };
 };
 
 const poseAt = (i: number, f: number): Pose => {
@@ -157,8 +158,8 @@ export const Opening: React.FC = () => {
           }}>
             <BrowseTop />
           </div>
-          {t < 0.3 && (
-            <div style={{ position: 'absolute', inset: 0, opacity: Math.max(0, 1 - t * 3.6) }}>
+          {t < 0.2 && (
+            <div style={{ position: 'absolute', inset: 0, opacity: Math.max(0, 1 - t * 5) }}>
               <Img src={staticFile(`textures/${front.file}`)} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', borderRadius: win.r }} />
             </div>
           )}

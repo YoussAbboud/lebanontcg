@@ -32,7 +32,7 @@
    "err_f": 0.43
   },
   {
-   "name": "tap_b15",
+   "name": "tap_ring_b15",
    "picture_frame": 222,
    "design_beat_frame": 221.85,
    "err_f": 0.15
@@ -51,30 +51,18 @@
   },
   {
    "name": "BUY_b27",
-   "picture_frame": 399,
+   "picture_frame": 400,
    "design_beat_frame": 398.89,
-   "err_f": 0.11
+   "err_f": 1.11
   },
   {
-   "name": "SELL_b27.5",
-   "picture_frame": 406,
-   "design_beat_frame": 406.27,
-   "err_f": -0.27
-  },
-  {
-   "name": "TRADE_b28",
-   "picture_frame": 414,
+   "name": "URL_b28",
+   "picture_frame": 415,
    "design_beat_frame": 413.65,
-   "err_f": 0.35
-  },
-  {
-   "name": "url_b28.5",
-   "picture_frame": 421,
-   "design_beat_frame": 421.02,
-   "err_f": -0.02
+   "err_f": 1.35
   }
  ],
- "max_abs_err_f": 0.43,
+ "max_abs_err_f": 1.35,
  "librosa": {
   "source_window": {
    "bpm": 122.064,
@@ -89,5 +77,6 @@
    "t0": 1.0865
   },
   "note": "av_check.py reports output_delay_f = 1.88 from librosa on the full mix; that fit is pulled by the SFX onsets (124.1 vs 122.06 BPM). The exact BGM stem gives the identical grid to the source and cross-correlates at \u22120.33 ms, so the real output delay is 0. Detector bias on the source: 0.67 f."
- }
+ },
+ "picture_detection": "tap ring, flip-thinnest, BUY and URL are detected on the delivery picture (av_check.py detect: appear / min_width); the rest are design frames"
 }

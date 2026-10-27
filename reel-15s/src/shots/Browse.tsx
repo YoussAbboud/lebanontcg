@@ -39,7 +39,7 @@ export const Browse: React.FC = () => {
   const v = (scrollAt(frame + 0.5) - scrollAt(frame - 0.5)) * PAGE_S; // screen px / frame
   const lift = interpolate(frame, [LIFT0, LIFT0 + 14], [0, 1], { easing: EASE.out, ...CL });
   const press = interpolate(frame, [TAP, TAP + 3, TAP + 9], [1, 0.985, 1], CL);
-  const ring = ramp(frame, TAP, 14, EASE.out);
+  const ring = ramp(frame, TAP - 1, 18, EASE.out); // first visible frame = the tap (b15)
   const open = interpolate(frame, [OPEN[0], OPEN[1]], [0, 1], { easing: Easing.bezier(0.7, 0, 0.3, 1), ...CL });
   const browseOut = interpolate(open, [0, 0.4], [0, 1], { ...CL, easing: EASE.smooth }); // feed → page ground first
   const listingIn = interpolate(open, [0.55, 1], [0, 1], { ...CL, easing: EASE.smooth }); // listing arrives under the art
@@ -83,20 +83,20 @@ export const Browse: React.FC = () => {
         {ring > 0 && ring < 1 && (
           <div style={{
             position: 'absolute', left: tapAt.x - 70, top: tapAt.y - 70, width: 140, height: 140, borderRadius: 70,
-            border: '5px solid rgba(255,255,255,0.95)', boxShadow: '0 0 0 3px rgba(8,9,11,0.55), inset 0 0 0 3px rgba(8,9,11,0.55)',
-            transform: `scale(${(0.3 + 0.9 * ring).toFixed(3)})`, opacity: 1 - ring,
+            border: '7px solid rgba(255,255,255,0.95)', boxShadow: '0 0 0 4px rgba(8,9,11,0.55), inset 0 0 0 4px rgba(8,9,11,0.55)',
+            transform: `scale(${(0.35 + 0.85 * ring).toFixed(3)})`, opacity: 1 - ring * ring,
           }} />
         )}
       </AbsoluteFill>
 
-      {/* shared element in flight: the card's own art crop, cross-fading into the listing photo */}
+      {/* shared element in flight: ONE image — the listing photo, cropped by the flying rect (object-fit cover) so it starts
+          framed like the Browse art (no badge, button or border baked in) and ends as the full photo; no swap */}
       {open > 0 && (
         <div style={{
           position: 'absolute', left: art.x, top: art.y, width: art.w, height: art.h, overflow: 'hidden', borderRadius: rad,
           boxShadow: `0 ${(40 * Math.sin(Math.PI * open)).toFixed(1)}px ${(90 * Math.sin(Math.PI * open)).toFixed(1)}px rgba(0,0,0,0.5)`,
         }}>
-          <Img src={staticFile('textures/target-face-3x.png')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 1 - ramp(open, 0.3, 0.45, EASE.smooth) }} />
-          <Img src={staticFile('textures/listing-face-3x.png')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: ramp(open, 0.3, 0.45, EASE.smooth) }} />
+          <Img src={staticFile('textures/listing-face-3x.png')} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: ramp(frame, OPEN[0], 3, EASE.out) }} />
         </div>
       )}
     </AbsoluteFill>

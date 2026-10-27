@@ -10,12 +10,12 @@
 // periods and the URL); no backdrop light, no glow.
 //
 // Local timeline (abs = local + 310):
-//   0–14   page dissolves; the card flies from its place on the page to centre
+//   0–14   page dissolves; the card flies from its place on the page to the lockup position
 //   13–33  anticipation wobble        33–45  flip flat (thinnest at 45 = b24, abs 355)
-//   45–    mark blooms (spring)       50–68  mark settles up into the lockup (in-out)
-//   52–86  wordmark letters (2.4f stagger, 10f each)
-//   89 / 96 / 104  BUY. (b27) / SELL. (half-beat) / TRADE. (b28) — only after the wordmark has set
-//   111    lebanontcg.com (84px, the slogan's size)    111–140 sign-off hold with a 1.5% push
+//   45–    mark blooms (spring)       46–58  mark shrinks into the lockup (in-out; it never moves over the wordmark band)
+//   57–87  wordmark letters (2.4f stagger, 10f each; the dot lands with the G)
+//   89 / 94 / 99   BUY. SELL. TRADE. — a quick triplet from b27, only after the wordmark has set
+//   104    lebanontcg.com on b28 (84px, the slogan's size), holding 36f to the end, with a 1.5% push
 // The ending is deliberately calm (a premium sign-off on the groove), not the film's energy peak — recorded in the spec.
 import React from 'react';
 import { AbsoluteFill, Easing, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
@@ -29,17 +29,17 @@ import { LISTING_END_SCROLL } from './Listing';
 const FLIGHT = [0, 14] as const;
 const WOBBLE = [13, 33] as const; // after the flight, not over it (the demo's 22f, 2f shorter)
 const FLIP = [33, 45] as const; // thinnest on b24 (abs 355)
-const SETTLE = [50, 68] as const;
-const WORD0 = 52;
+const SETTLE = [46, 58] as const; // the mark only shrinks into place (it blooms at its lockup height)
+const WORD0 = 57; // letters start once the mark has cleared their band
 const STAGGER = 2.4; // the card's minimum legible per-letter stagger
-const WORDS = [{ t: 'BUY', at: 89 }, { t: 'SELL', at: 96 }, { t: 'TRADE', at: 104 }]; // b27 · half-beat · b28 (wordmark set at 86)
-const URL_AT = 111;
+const WORDS = [{ t: 'BUY', at: 89 }, { t: 'SELL', at: 94 }, { t: 'TRADE', at: 99 }]; // a quick triplet from b27 (wordmark set at 87)
+const URL_AT = 104; // b28, the strongest kick: holds 36f
 const CL = { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' } as const;
 
-const CARD_H = 760; // centre stage size of the card / mark (1:1.4)
+const CARD_H = 600; // centre stage size of the card / mark (1:1.4)
 const MARK_H = 440; // the mark's size in the lockup
-const STAGE_CY = 720;
 const LOCK_CY = 600;
+const STAGE_CY = LOCK_CY; // the card flips where the mark will sit, so the settle never sweeps over the wordmark band
 const WORDMARK = 'LEBANONTCG';
 
 export const EndCard: React.FC = () => {
@@ -112,7 +112,8 @@ export const EndCard: React.FC = () => {
         {/* wordmark: letter by letter, big+soft → set (pivot on the baseline) */}
         <div style={{ position: 'absolute', left: 0, right: 0, top: LOCK_CY + MARK_H / 2 + 56, display: 'flex', justifyContent: 'center', fontFamily: FONT.display, fontWeight: 700, fontSize: 112, lineHeight: 1, letterSpacing: '0.03em', color: C.ink }}>
           {[...WORDMARK, '.'].map((ch, i) => {
-            const t = ramp(frame, WORD0 + i * STAGGER, 10, EASE.snappy);
+            // the trailing dot lands with the G
+            const t = ramp(frame, WORD0 + Math.min(i, WORDMARK.length - 1) * STAGGER, 10, EASE.snappy);
             return (
               <span key={i} style={{
                 display: 'inline-block', opacity: t, transform: `scale(${mix(1.9, 1, t).toFixed(4)})`, transformOrigin: '50% 100%',

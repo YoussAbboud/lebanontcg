@@ -132,7 +132,6 @@ for (const dsf of [1, 3, 4]) {
     await clipShot(page, 'browse-top-3x.png', 0, topH);
     await clipShot(page, 'browse-target-3x.png', t0, t1);
     await cards.nth(target.i).screenshot({ path: out('target-card-3x.png') });
-    await cards.nth(target.i).locator('.lcard-facewrap').screenshot({ path: out('target-face-3x.png') });
     layout.browse.tiles = { top: { y: 0, h: topH }, target: { y: t0, h: t1 - t0 } };
   }
   if (dsf === 4) {

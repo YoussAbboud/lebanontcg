@@ -22,12 +22,12 @@
   {
    "src": "switch-click-quick.mp3",
    "from": 420,
-   "measured_f": 0.0,
-   "corr": 0.999
+   "measured_f": -3.58,
+   "corr": 0.21
   }
  ],
  "method": "normalised cross-correlation of each probe file against the no-BGM delivery around its pinned `from`; BGM: cross-correlation of the delivery and of the exact BGM stem (with-BGM WAV \u2212 no-BGM WAV) against bgm.mp3 trimmed at 1772 f",
- "output_offset_f": 0.0,
+ "output_offset_f": 0.01,
  "bgm_lag_ms": -0.33,
  "bgm_stem_lag_ms": -0.33,
  "result": "OUTPUT_AUDIO_OFFSET_F = 0 (measured). SOURCE_BEAT0 = 0.0179 s unchanged (source analysis only)."

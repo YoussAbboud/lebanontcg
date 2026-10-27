@@ -1,0 +1,8 @@
+node_modules
+out/qa/
+out/*.mp4
+!out/lebanontcg-reel.mp4
+!out/lebanontcg-reel-nobgm.mp4
+out/*.wav
+out/*.log
+review/ref/

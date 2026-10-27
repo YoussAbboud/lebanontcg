@@ -1,0 +1,57 @@
+{
+ "hit-weak.mp3": {
+  "dur_s": 0.59,
+  "peak_db": -5.6,
+  "peak_lag_f": 4.7
+ },
+ "lock-quick.mp3": {
+  "dur_s": 1.13,
+  "peak_db": -0.3,
+  "peak_lag_f": 0.8
+ },
+ "paper-book-browse-fast.mp3": {
+  "dur_s": 9.28,
+  "peak_db": -4.1,
+  "peak_lag_f": 213.7
+ },
+ "paper-move-quick.mp3": {
+  "dur_s": 0.9,
+  "peak_db": -7.5,
+  "peak_lag_f": 9.5
+ },
+ "paper-slide.mp3": {
+  "dur_s": 1.09,
+  "peak_db": -0.7,
+  "peak_lag_f": 10.4
+ },
+ "sweep-short.mp3": {
+  "dur_s": 0.61,
+  "peak_db": -5.8,
+  "peak_lag_f": 13.8
+ },
+ "switch-click-quick.mp3": {
+  "dur_s": 1.04,
+  "peak_db": -0.1,
+  "peak_lag_f": 0.6
+ },
+ "switch-tap.mp3": {
+  "dur_s": 1.11,
+  "peak_db": -0.6,
+  "peak_lag_f": 0.5
+ },
+ "swoosh-quick.mp3": {
+  "dur_s": 0.78,
+  "peak_db": -3.9,
+  "peak_lag_f": 8.6
+ },
+ "transition-snap.mp3": {
+  "dur_s": 0.57,
+  "peak_db": -5.6,
+  "peak_lag_f": 3.5
+ },
+ "typewriter-hit-soft.mp3": {
+  "dur_s": 0.53,
+  "peak_db": -3.7,
+  "peak_lag_f": 4.7
+ }
+}

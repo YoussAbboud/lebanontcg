@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { ConversationSummary, Message } from '../lib/types';
 import { MESSAGE_MAX_LENGTH } from '../lib/types';
@@ -11,10 +11,13 @@ import {
   currentPosition,
   formatCoords,
   googleMapsHref,
-  parsePoint,
   wazeHref,
   type SharedPoint,
 } from '../lib/location';
+import { StaticMap } from '../components/StaticMap';
+
+// Leaflet only downloads when someone opens "Choose on the map".
+const MapPicker = lazy(() => import('../components/MapPicker'));
 import { formatPrice, relativeTime, timeOfDay } from '../lib/format';
 import { STATUS_LABELS } from '../lib/status';
 import { glyphOf, thumbBackground } from '../lib/face';
@@ -60,6 +63,25 @@ function rememberPhone(userId: string, iso: string, phone: string): void {
 }
 
 type InboxFilter = 'all' | 'buying' | 'selling' | 'unread';
+
+function MapIcon() {
+  return (
+    <svg
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" />
+      <path d="M9 4v14M15 6v14" />
+    </svg>
+  );
+}
 
 function PinIcon({ size = 16 }: { size?: number }) {
   return (
@@ -260,7 +282,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
   const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
   const [locOpen, setLocOpen] = useState(false);
   const [locPoint, setLocPoint] = useState<(SharedPoint & { accuracy?: number }) | null>(null);
-  const [locPaste, setLocPaste] = useState('');
+  const [mapOpen, setMapOpen] = useState(false);
   const [locPlace, setLocPlace] = useState('');
   const [locBusy, setLocBusy] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -539,19 +561,11 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
     setLocBusy(true);
     try {
       setLocPoint(await currentPosition());
-      setLocPaste('');
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Your location isn’t available right now.');
     } finally {
       setLocBusy(false);
     }
-  };
-
-  const pasted = locPaste.trim() ? parsePoint(locPaste) : null;
-  const onLocPaste = (text: string) => {
-    setLocPaste(text);
-    const parsed = text.trim() ? parsePoint(text) : null;
-    setLocPoint(parsed?.ok ? parsed.point : null);
   };
 
   const shareLocation = async () => {
@@ -560,7 +574,6 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
     const place = locPlace.trim().slice(0, PLACE_MAX_LENGTH);
     setLocOpen(false);
     setLocPoint(null);
-    setLocPaste('');
     setLocPlace('');
     const clientId = nextClientId();
     const optimistic: Message = {
@@ -910,6 +923,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
                       </div>
                       {point && (
                         <>
+                          <StaticMap point={point} label={m.body} />
                           <div className="mono-value chat-loc-coords">{formatCoords(point)}</div>
                           <div className="chat-phone-actions">
                             <a
@@ -1101,7 +1115,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             }}
           >
             <span className="mono-label chat-offerbar-label">Location</span>
-            {locPoint && !locPaste ? (
+            {locPoint ? (
               <span className="mono-value chat-loc-found">
                 <PinIcon />
                 {formatCoords(locPoint)}
@@ -1116,31 +1130,26 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
                 </button>
               </span>
             ) : (
-              <button
-                type="button"
-                className="btn-outline chat-loc-me"
-                disabled={locBusy}
-                onClick={() => void locateMe()}
-              >
-                <PinIcon />
-                {locBusy ? 'Finding you…' : 'Use my current location'}
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="btn-outline chat-loc-me"
+                  disabled={locBusy}
+                  onClick={() => void locateMe()}
+                >
+                  <PinIcon />
+                  {locBusy ? 'Finding you…' : 'Use my current location'}
+                </button>
+                <button type="button" className="btn-outline chat-loc-map" onClick={() => setMapOpen(true)}>
+                  <MapIcon />
+                  Choose on the map
+                </button>
+              </>
             )}
-            <input
-              type="text"
-              aria-label="Or paste a map link or coordinates"
-              placeholder="…or paste a map link or coordinates"
-              className="input chat-loc-paste"
-              value={locPaste}
-              aria-invalid={pasted ? !pasted.ok : undefined}
-              onChange={(e) => onLocPaste(e.target.value)}
-            />
-            {pasted && !pasted.ok && (
-              <p className="field-error chat-loc-error" role="alert">
-                {pasted.reason === 'short-link'
-                  ? 'Short links (maps.app.goo.gl) can’t be read here. In Google Maps, press and hold the spot and copy the numbers that appear, or paste the full link from your browser.'
-                  : 'Paste coordinates like 33.89380, 35.50180 or a full Google Maps, Apple Maps or Waze link.'}
-              </p>
+            {locPoint && (
+              <button type="button" className="btn-ghost-mono chat-loc-adjust" onClick={() => setMapOpen(true)}>
+                Adjust on the map
+              </button>
             )}
             <input
               type="text"
@@ -1160,6 +1169,18 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
               chat.
             </p>
           </form>
+        )}
+        {mapOpen && (
+          <Suspense fallback={null}>
+            <MapPicker
+              start={locPoint}
+              onClose={() => setMapOpen(false)}
+              onPick={(point) => {
+                setLocPoint(point);
+                setMapOpen(false);
+              }}
+            />
+          </Suspense>
         )}
         <div className="chat-composer-row">
           <button

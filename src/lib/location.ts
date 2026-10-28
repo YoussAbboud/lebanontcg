@@ -1,6 +1,6 @@
-// Locations shared in chat: a point plus an optional place name. The site
-// embeds no map (no third-party map service runs on it); the card links out
-// to Google Maps and Waze, which people in Lebanon already use to get there.
+// Locations shared in chat: a point plus an optional place name, picked from
+// the device's position or on an OpenStreetMap (see osm.ts). The card links
+// out to Google Maps and Waze, which people in Lebanon use to get there.
 
 export interface SharedPoint {
   latitude: number;
@@ -52,41 +52,4 @@ export function currentPosition(): Promise<SharedPoint & { accuracy: number }> {
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 30_000 },
     );
   });
-}
-
-const NUM = String.raw`(-?\d{1,3}(?:\.\d+)?)`;
-// Most precise first: a place link's pin (!3d…!4d…), then a query point,
-// then the map's centre (@lat,lng), then bare "lat, lng".
-const PATTERNS = [
-  new RegExp(String.raw`!3d${NUM}!4d${NUM}`),
-  new RegExp(String.raw`[?&](?:q|query|ll|daddr|destination)=(?:loc:)?${NUM}(?:,|%2C)\s*${NUM}`, 'i'),
-  new RegExp(String.raw`@${NUM},${NUM}`),
-  new RegExp(String.raw`^\s*${NUM}\s*,\s*${NUM}\s*$`),
-];
-
-export type PointParse =
-  | { ok: true; point: SharedPoint }
-  | { ok: false; reason: 'short-link' | 'unreadable' };
-
-/**
- * Reads a point from what people paste: coordinates ("33.89380, 35.50180")
- * or a full Google Maps, Apple Maps or Waze link. Short share links
- * (maps.app.goo.gl) only resolve over the network, which the site does not
- * do, so they come back as 'short-link' for the chat to explain.
- */
-export function parsePoint(text: string): PointParse {
-  const t = text.trim();
-  if (/^(https?:\/\/)?(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(t)) {
-    return { ok: false, reason: 'short-link' };
-  }
-  for (const re of PATTERNS) {
-    const m = re.exec(t);
-    if (!m) continue;
-    const latitude = Number(m[1]);
-    const longitude = Number(m[2]);
-    if (Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180) {
-      return { ok: true, point: { latitude: roundCoord(latitude), longitude: roundCoord(longitude) } };
-    }
-  }
-  return { ok: false, reason: 'unreadable' };
 }

@@ -442,7 +442,9 @@
 .chat-phone-toggle { font-size: 16px; }
 .chat-loc-toggle svg { display: block; }
 
-.chat-loc-me { display: inline-flex; align-items: center; gap: 8px; }
+.chat-loc-me,
+.chat-loc-map { display: inline-flex; align-items: center; gap: 8px; }
+.chat-loc-adjust { padding: 6px 0; }
 .chat-loc-found {
   display: inline-flex;
   align-items: center;
@@ -459,9 +461,8 @@
   padding: 4px;
 }
 .chat-loc-clear:hover { color: var(--danger); }
-.chat-loc-paste { flex: 1 1 240px; }
 .chat-loc-name { flex: 1 1 240px; }
-.chat-loc-error { flex-basis: 100%; margin: 0; }
+
 .chat-input { flex: 1; }
 .chat-send { min-height: 48px; padding: 14px 24px; }
 

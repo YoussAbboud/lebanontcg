@@ -155,6 +155,16 @@ const SECTIONS: LegalSection[] = [
             and nothing that identifies you. Under the API terms we use, your photos are not used
             to train their models.
           </li>
+          <li>
+            <strong>OpenStreetMap</strong> — when a map appears in a chat (choosing a meeting place,
+            or a shared location), your browser loads the map images straight from OpenStreetMap’s
+            tile servers. Like any website, they see your IP address and which part of the map is
+            shown; nothing else about you or the chat is sent. Their{' '}
+            <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">
+              privacy policy
+            </a>{' '}
+            applies to those requests.
+          </li>
         </ul>
         <p>
           These providers operate servers outside Lebanon, so your data is transferred

@@ -269,7 +269,8 @@ export function AuctionPanel({
           <button
             type="button"
             className="btn-acid"
-            disabled={busy}
+            disabled={busy || Boolean(user?.suspendedAt)}
+            title={user?.suspendedAt ? 'Your account is suspended' : undefined}
             onClick={() => void place()}
           >
             {busy ? 'Bidding…' : 'Place bid'}

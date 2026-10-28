@@ -69,6 +69,7 @@ export function LiveBidPage({
   const over = isEffectivelyOver(auction, now);
   const soon = isEndingSoon(auction.endsAt, now);
   const isOwner = user?.id === listing.sellerId;
+  const suspended = Boolean(user?.suspendedAt);
   const cover = listing.images[photo] ?? listing.images[0];
   const sellerHandle = listing.seller.username
     ? `@${listing.seller.username}`
@@ -181,13 +182,13 @@ export function LiveBidPage({
               !over ? (
                 <>
                   <Link to={`/sell/${listing.id}`} className="btn-outline">Edit</Link>
-                  <button type="button" className="btn-outline" disabled={busy} onClick={() => void endNow()}>
+                  <button type="button" className="btn-outline" disabled={busy || suspended} onClick={() => void endNow()}>
                     End auction now
                   </button>
                   <button
                     type="button"
                     className="btn-outline btn-danger-outline"
-                    disabled={busy}
+                    disabled={busy || suspended}
                     onClick={() => setCancelOpen((v) => !v)}
                   >
                     Cancel auction
@@ -211,7 +212,7 @@ export function LiveBidPage({
               )
             ) : (
               <>
-                <button type="button" className="btn-outline" disabled={busy} onClick={() => void askQuestion()}>
+                <button type="button" className="btn-outline" disabled={busy || suspended} onClick={() => void askQuestion()}>
                   Ask a question
                 </button>
                 <LikeButton listingId={listing.id} likes={listing.likes} className="btn-icon btn-like" />

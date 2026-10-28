@@ -739,7 +739,10 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
 
   const listing = conv.listing;
   const isSeller = conv.sellerId === meId;
-  const composerDisabled = listing.status === 'removed' || blockedOther;
+  // A suspension lands here live (the profile is followed over realtime),
+  // so the composer locks the moment a moderator suspends.
+  const suspended = Boolean(user?.suspendedAt);
+  const composerDisabled = listing.status === 'removed' || blockedOther || suspended;
   const cover = listing.images[0];
 
   return (
@@ -889,7 +892,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
                         {formatPrice(m.amount ?? 0, listing.currency)}
                       </div>
                       {m.body && <div className="chat-offer-note">{m.body}</div>}
-                      {pending && (
+                      {pending && !suspended && (
                         <div className="chat-offer-actions">
                           <button type="button" className="btn-acid chat-offer-btn" onClick={() => void respond(m, true)}>
                             Accept
@@ -1100,6 +1103,14 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
       )}
 
       <div className="chat-composer">
+        {suspended && (
+          <div className="chat-blocked mono-label">
+            Your account is suspended — you can read this chat but not reply.{' '}
+            <Link to="/support" className="chat-unblock">
+              Contact support
+            </Link>
+          </div>
+        )}
         {blockedOther && (
           <div className="chat-blocked mono-label">
             You blocked @{conv.otherParty.username ?? conv.otherParty.displayName}.{' '}
@@ -1316,7 +1327,9 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             type="text"
             aria-label="Message"
             placeholder={
-              blockedOther
+              suspended
+                ? 'Your account is suspended'
+                : blockedOther
                 ? 'You blocked this user'
                 : listing.status === 'removed'
                   ? 'This listing was removed'

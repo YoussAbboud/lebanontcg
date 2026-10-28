@@ -48,6 +48,7 @@ import type {
   UserWarning,
 } from '../types';
 import { WARNING_LIMIT } from '../types';
+import { formatWait } from '../format';
 import type {
   AuctionEvent,
   AuthState,
@@ -662,6 +663,46 @@ export class MockClient implements MarketplaceClient {
     if (l && l.reviewState !== 'approved') throw new Error('This listing is waiting for review.');
   }
 
+  /** 0032's listing_cooldown_until: ten minutes from the second of two
+      flagged listings in a row, or two within five minutes. A failed check
+      doesn't count, nor does a listing a moderator has since approved. */
+  private cooldownUntil(userId: string): number {
+    const approvedByModerator = new Set(
+      this.adminActions.filter((a) => a.kind === 'listing_approve').map((a) => a.targetId),
+    );
+    const done = this.listings
+      .filter((l) => l.sellerId === userId)
+      .flatMap((l) =>
+        (this.screens.get(l.id) ?? [])
+          .filter((sc) => sc.verdict && sc.verdict !== 'error')
+          .map((sc) => ({
+            listingId: l.id,
+            at: new Date(sc.createdAt).getTime(),
+            flagged:
+              (sc.verdict === 'not_card' || sc.verdict === 'unsure') &&
+              !(l.reviewState === 'approved' && approvedByModerator.has(l.id)),
+          })),
+      )
+      .sort((a, b) => a.at - b.at);
+    const now = Date.now();
+    let until = 0;
+    done.forEach((d, i) => {
+      if (!d.flagged || d.at <= now - 10 * 60_000) return;
+      const prev = done[i - 1];
+      const inARow = prev && prev.flagged && prev.listingId !== d.listingId;
+      const close = done.some(
+        (e) => e.flagged && e.listingId !== d.listingId && e.at < d.at && e.at >= d.at - 5 * 60_000,
+      );
+      if (inARow || close) until = Math.max(until, d.at + 10 * 60_000);
+    });
+    return until;
+  }
+
+  private requireNoCooldown(userId: string): void {
+    const left = Math.ceil((this.cooldownUntil(userId) - Date.now()) / 1000);
+    if (left > 0) throw new Error(`You can't list at the moment. Try again in ${formatWait(left)}.`);
+  }
+
   /**
    * The mock equivalent of the RLS `not is_suspended()` clauses in 0016:
    * a suspended account can read and be read, but creates nothing new.
@@ -801,7 +842,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async claimUsername(username: string): Promise<Profile> {
-    const me = this.me();
+    const me = this.meActive();
     if (me.username) throw new Error('Username is already set and cannot be changed.');
     if (this.profiles.some((p) => p.username?.toLowerCase() === username.toLowerCase())) {
       throw new Error('That username is taken.');
@@ -818,7 +859,7 @@ export class MockClient implements MarketplaceClient {
     bio?: string;
     avatarUrl?: string | null;
   }): Promise<Profile> {
-    const me = this.me();
+    const me = this.meActive();
     const profile = this.profiles.find((p) => p.id === me.id)!;
     if (patch.displayName !== undefined) profile.displayName = patch.displayName;
     if (patch.bio !== undefined) profile.bio = patch.bio;
@@ -1009,6 +1050,7 @@ export class MockClient implements MarketplaceClient {
   async createListing(input: ListingInput, images: ImageDraft[]): Promise<Listing> {
     const me = this.meActive();
     await sleep(netDelay());
+    this.requireNoCooldown(me.id);
     this.chargeListingQuota(me.id);
     const id = nextId('l');
     const nowIso = new Date().toISOString();
@@ -1039,10 +1081,11 @@ export class MockClient implements MarketplaceClient {
   }
 
   async updateListing(id: string, input: ListingInput, images: ImageDraft[]): Promise<Listing> {
-    const me = this.me();
+    const me = this.meActive();
     const listing = this.listings.find((l) => l.id === id);
     if (!listing) throw new Error('Listing not found');
     if (listing.sellerId !== me.id) throw new Error('Only the seller can edit a listing');
+    if (images.some((img) => img.kind === 'new')) this.requireNoCooldown(me.id);
     const priorPrice = listing.price;
     Object.assign(listing, input);
     // An auction listing's price mirrors the current bid — edits can't move it.
@@ -1077,8 +1120,14 @@ export class MockClient implements MarketplaceClient {
     return structuredClone(listing);
   }
 
+  async getListingCooldown(): Promise<number> {
+    const uid = this.auth.user?.id;
+    if (!uid) return 0;
+    return Math.max(0, Math.ceil((this.cooldownUntil(uid) - Date.now()) / 1000));
+  }
+
   async screenListing(listingId: string): Promise<ReviewState> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay() + 600);
     const listing = this.listings.find((l) => l.id === listingId);
     if (!listing || listing.sellerId !== me.id) return 'pending';
@@ -1120,7 +1169,7 @@ export class MockClient implements MarketplaceClient {
     status: ListingStatus,
     opts?: { reservedForConversationId?: string | null },
   ): Promise<Listing> {
-    const me = this.me();
+    const me = this.meActive();
     const listing = this.listings.find((l) => l.id === id);
     if (!listing) throw new Error('Listing not found');
     if (listing.sellerId !== me.id) throw new Error('Only the seller can change listing status');
@@ -1433,7 +1482,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async placeBid(auctionId: string, amount: number): Promise<PlacedBid> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     return this.placeBidAs(me, auctionId, amount);
   }
@@ -1581,7 +1630,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async endAuctionEarly(auctionId: string): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     const a = this.auctions.find((x) => x.id === auctionId);
     if (!a) throw new Error('Auction not found.');
@@ -1592,7 +1641,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async cancelAuction(auctionId: string, reason: string): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     this.cancelAuctionAs(me, auctionId, reason);
   }
@@ -1682,7 +1731,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async reportAuctionNoShow(auctionId: string): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     const a = this.auctions.find((x) => x.id === auctionId);
     if (!a) throw new Error('Auction not found.');
@@ -1747,7 +1796,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async retractAuctionNoShow(auctionId: string): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     const i = this.noShows.findIndex(
       (n) => n.auctionId === auctionId && n.reporterId === me.id,
@@ -1793,7 +1842,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async setFavorite(listingId: string, favorited: boolean): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     const favs = this.myFavorites();
     if (favorited) this.requirePublic(this.listings.find((l) => l.id === listingId));
     if (favorited) favs.add(listingId);
@@ -1854,7 +1903,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async openConversation(listingId: string): Promise<Conversation> {
-    const me = this.me();
+    const me = this.meActive();
     const listing = this.listings.find((l) => l.id === listingId);
     if (!listing) throw new Error('Listing not found');
     if (listing.sellerId === me.id) throw new Error('You cannot message yourself');
@@ -2029,7 +2078,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async respondToOffer(conversationId: string, messageId: string, accept: boolean): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     const msg = this.messages.find((m) => m.id === messageId && m.conversationId === conversationId);
     if (!msg || msg.kind !== 'offer') throw new Error('Offer not found');
     if (msg.senderId === me.id) throw new Error('You cannot respond to your own offer.');
@@ -2179,7 +2228,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async submitReview(conversationId: string, rating: number, body: string): Promise<Review> {
-    const me = this.me();
+    const me = this.meActive();
     const conv = this.conversations.find((c) => c.id === conversationId);
     if (!conv || (conv.buyerId !== me.id && conv.sellerId !== me.id)) {
       throw new Error('Conversation not found');
@@ -2220,7 +2269,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async submitReport(input: ReportInput): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     const report: StoredReport = {
       id: nextId('r'),
@@ -2245,7 +2294,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async setBlocked(userId: string, blocked: boolean): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     if (!this.blocks.has(me.id)) this.blocks.set(me.id, new Set());
     if (blocked) this.blocks.get(me.id)!.add(userId);
     else this.blocks.get(me.id)!.delete(userId);
@@ -2259,7 +2308,7 @@ export class MockClient implements MarketplaceClient {
     hasRake: boolean;
     caseHint?: string;
   }): Promise<DefectAssessment> {
-    const me = this.me();
+    const me = this.meActive();
     // Vision-model calls cost money: subscribers and admins only (0019).
     if (!this.canUsePregradeFor(me.id)) {
       throw new Error('Pre-Grade is part of a subscription — subscribe to run it.');
@@ -2280,7 +2329,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async savePregradeReport(input: PregradeReportInput): Promise<PregradeReport> {
-    const me = this.me();
+    const me = this.meActive();
     if (!this.canUsePregradeFor(me.id)) {
       throw new Error('Pre-Grade is part of a subscription — subscribe to run it.');
     }
@@ -2343,7 +2392,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async publishPregradeReport(reportId: string, listingId: string): Promise<PregradeReport> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     const r = this.pregradeReports.find((x) => x.id === reportId && x.userId === me.id);
     if (!r) throw new Error('Report not found.');
@@ -2362,7 +2411,7 @@ export class MockClient implements MarketplaceClient {
   }
 
   async unpublishPregradeReport(reportId: string): Promise<PregradeReport> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     const r = this.pregradeReports.find((x) => x.id === reportId && x.userId === me.id);
     if (!r) throw new Error('Report not found.');
@@ -2375,7 +2424,7 @@ export class MockClient implements MarketplaceClient {
     actualGrade: number,
     certNumber?: string,
   ): Promise<void> {
-    const me = this.me();
+    const me = this.meActive();
     await sleep(netDelay());
     const r = this.pregradeReports.find((x) => x.id === reportId && x.userId === me.id);
     if (!r) throw new Error('Report not found.');
@@ -3019,9 +3068,18 @@ export class MockClient implements MarketplaceClient {
     if (suspended && target.isAdmin) {
       throw new Error('Demote this admin before suspending the account.');
     }
+    const was = target.suspendedAt;
     target.suspendedAt = suspended ? new Date().toISOString() : null;
     target.suspendedReason = suspended ? reason.trim() : null;
     this.broadcast({ type: 'profile', profile: structuredClone(target) });
+    // As in 0032: the member hears about it either way.
+    if (suspended) {
+      this.notify(userId, 'moderation', 'Your account is suspended',
+        `${reason.trim()}. You can still read, and contact support to appeal.`, '/support');
+    } else if (was) {
+      this.notify(userId, 'moderation', 'Your suspension was lifted',
+        'Your account works normally again.', '/settings');
+    }
     this.logAdmin(
       actor,
       suspended ? 'user_suspend' : 'user_unsuspend',
@@ -3432,13 +3490,6 @@ export class MockClient implements MarketplaceClient {
     );
     if (count >= WARNING_LIMIT && !target.suspendedAt) {
       await this.adminSetSuspended(userId, true, `${WARNING_LIMIT} warnings — ${w.reason}`);
-      this.notify(
-        userId,
-        'moderation',
-        'Your account is suspended',
-        `It reached ${WARNING_LIMIT} warnings. You can still read and message about existing deals; a moderator can lift it.`,
-        '/settings',
-      );
     }
     return count;
   }

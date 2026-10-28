@@ -106,6 +106,7 @@ export function ListingPage() {
   }
 
   const isOwner = user?.id === listing.sellerId;
+  const suspended = Boolean(user?.suspendedAt);
   const cover = listing.images[photo] ?? listing.images[0];
   const sellerHandle = listing.seller.username
     ? `@${listing.seller.username}`
@@ -254,7 +255,7 @@ export function ListingPage() {
                   key={s}
                   type="button"
                   className={s === 'sold' ? 'btn-acid' : s === 'removed' ? 'btn-outline btn-danger-outline' : 'btn-outline'}
-                  disabled={busy}
+                  disabled={busy || suspended}
                   onClick={() => void changeStatus(s)}
                 >
                   {s === 'active'
@@ -270,7 +271,7 @@ export function ListingPage() {
               <button
                 type="button"
                 className="btn-acid ldetail-msg"
-                disabled={busy || listing.status === 'sold' || listing.status === 'removed'}
+                disabled={busy || suspended || listing.status === 'sold' || listing.status === 'removed'}
                 onClick={() => void messageSeller()}
               >
                 {listing.status === 'sold'

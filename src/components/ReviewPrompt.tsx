@@ -12,7 +12,7 @@ interface Props {
 
 /** Post-sale review card: the buyer rates the seller once the deal closes. */
 export function ReviewPrompt({ conversationId, otherParty, onDone }: Props) {
-  const { client } = useApp();
+  const { client, user } = useApp();
   const toast = useToast();
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -67,7 +67,7 @@ export function ReviewPrompt({ conversationId, otherParty, onDone }: Props) {
       <button
         type="button"
         className="btn-acid rvw-submit"
-        disabled={rating < 1 || busy}
+        disabled={rating < 1 || busy || Boolean(user?.suspendedAt)}
         onClick={() => void submit()}
       >
         {busy ? 'Submitting…' : 'Submit review'}

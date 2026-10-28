@@ -30,6 +30,10 @@ export function LikeButton({
       navigate('/signin');
       return;
     }
+    if (user.suspendedAt) {
+      toast('Your account is suspended, so you can’t watch listings.');
+      return;
+    }
     setLikeCount(listingId, Math.max(0, likes + (watched ? -1 : 1)));
     try {
       await toggleFavorite(listingId);

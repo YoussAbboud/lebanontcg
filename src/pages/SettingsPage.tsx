@@ -192,7 +192,10 @@ export function SettingsPage() {
         )}
         <div className="settings-save-row">
           {saveState === 'saved' && <span className="settings-saved" role="status">Saved ✓</span>}
-          <button className="btn-acid" disabled={saveState === 'busy' || !displayName.trim()}>
+          <button
+            className="btn-acid"
+            disabled={saveState === 'busy' || !displayName.trim() || Boolean(user.suspendedAt)}
+          >
             {saveState === 'busy' ? 'Saving…' : 'Save profile'}
           </button>
         </div>
@@ -260,8 +263,9 @@ export function SettingsPage() {
         {user.suspendedAt ? (
           <p className="settings-standing-bad">
             <strong>Your account is suspended.</strong>
-            {user.suspendedReason ? ` ${user.suspendedReason}.` : ''} You can still read and message
-            about existing deals, but not list, bid or start new conversations. To appeal,{' '}
+            {user.suspendedReason ? ` ${user.suspendedReason}.` : ''} While it lasts you can browse
+            and read your chats, but not list, message, like, bid, report, review or edit your
+            profile. To appeal,{' '}
             <Link to="/support">open a support ticket</Link>.
           </p>
         ) : (

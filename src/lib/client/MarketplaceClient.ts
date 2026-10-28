@@ -162,6 +162,9 @@ export interface MarketplaceClient {
       (waiting for a moderator). Never throws for a failed check — the
       listing just waits. */
   screenListing(listingId: string): Promise<ReviewState>;
+  /** Seconds until the signed-in seller may list again after repeated
+      flagged listings (0032); 0 when they can list now. */
+  getListingCooldown(): Promise<number>;
   /** The auction + full bid history for a listing (newest first).
       Lazily closes overdue auctions so a stale one never reads live. */
   getAuctionForListing(listingId: string): Promise<AuctionDetail | null>;

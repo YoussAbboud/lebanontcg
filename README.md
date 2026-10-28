@@ -131,6 +131,20 @@ only a moderator can approve it.
 - Mock mode approves any listing with a photo unless its title contains
   "junk", so the queue can be demoed.
 
+### Suspension and the listing cooldown
+
+`supabase/migrations/0032_suspension_and_cooldown.sql`:
+
+- A suspended account can browse, read its chats, mark things read and
+  open support tickets (to appeal) — nothing else. One trigger on every
+  table a member writes to refuses the rest. The member's own profile is
+  followed over realtime, so an open app locks the moment a moderator
+  suspends and unlocks when it's lifted; both are also notified.
+- When the photo check flags two of a seller's listings in a row, or two
+  within five minutes, they can't list or add photos for ten minutes from
+  the second flag. A failed check doesn't count, and nor does a listing a
+  moderator has since approved. The sell page shows the countdown.
+
 ## Admin console
 
 `/admin` is the moderation surface: a queue for reports, account

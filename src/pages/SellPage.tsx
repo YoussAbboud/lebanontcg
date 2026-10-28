@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { Condition, Finish, Game, ImageDraft, ListingInput, ListingWithSeller, SaleType } from '../lib/types';
 import { AUCTION_DURATIONS, CONDITIONS, FINISHES, FINISH_LABELS, GAMES, GAME_LABELS } from '../lib/types';
@@ -7,6 +7,7 @@ import { useApp } from '../state/AppContext';
 import { useToast } from '../state/ToastContext';
 import { ImageManager } from '../components/ImageManager';
 import { ListingCard } from '../components/ListingCard';
+import { CooldownBanner } from '../components/CooldownBanner';
 import './sell.css';
 import { usePageMeta } from '../lib/usePageMeta';
 
@@ -135,6 +136,15 @@ export function SellPage() {
     editing || relistId ? 'loading' : 'ready',
   );
   const [saving, setSaving] = useState<false | 'saving' | 'checking'>(false);
+  // Two flagged listings in a row (or within five minutes) pause listing
+  // for ten minutes (0032). Known up front, so nobody fills four steps in vain.
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const refreshCooldown = useCallback(() => {
+    if (editing || !user) return;
+    void client.getListingCooldown().then((s) => setCooldownUntil(s > 0 ? Date.now() + s * 1000 : null));
+  }, [client, editing, user]);
+  useEffect(refreshCooldown, [refreshCooldown]);
+  const clearCooldown = useCallback(() => setCooldownUntil(null), []);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -377,8 +387,9 @@ export function SellPage() {
           <h3>Your account is suspended</h3>
           <p>
             {user.suspendedReason ? `${user.suspendedReason}. ` : ''}
-            You can still read and message about existing deals, but not list cards. Your
-            warnings and standing are in Settings; to appeal, open a support ticket.
+            While it lasts you can browse and read your chats, but not list, message, like,
+            bid, report or review. Your warnings are in Settings; to appeal, open a support
+            ticket.
           </p>
           <Link to="/support" className="btn-acid">
             Open a support ticket
@@ -435,6 +446,7 @@ export function SellPage() {
     } catch (err) {
       toast(err instanceof Error ? err.message : 'Saving failed — try again.');
       setSaving(false);
+      refreshCooldown();
     }
   };
 
@@ -446,6 +458,8 @@ export function SellPage() {
           {String(step).padStart(2, '0')} / {String(STEPS.length).padStart(2, '0')}
         </div>
       </div>
+
+      {cooldownUntil !== null && <CooldownBanner until={cooldownUntil} onDone={clearCooldown} />}
 
       <div className="sell-bars">
         {STEPS.map((label, i) => (
@@ -821,7 +835,7 @@ export function SellPage() {
             <button
               type="button"
               className="btn-acid sell-publish"
-              disabled={saving !== false || walled}
+              disabled={saving !== false || walled || cooldownUntil !== null}
               onClick={() => void publish()}
             >
               {saving === 'checking'

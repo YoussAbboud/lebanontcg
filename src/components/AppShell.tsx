@@ -242,6 +242,16 @@ export function AppShell() {
       )}
 
       <main id="main" className="shell-main">
+        {user?.suspendedAt && (
+          // Appears the moment a moderator suspends (0032 follows the
+          // profile live) and goes away the moment it's lifted.
+          <div className="shell-suspended" role="alert">
+            <strong>Your account is suspended.</strong>{' '}
+            {user.suspendedReason ? `${user.suspendedReason}. ` : ''}
+            You can browse and read your chats, but you can&apos;t list, message, like, bid,
+            report or review. <Link to="/support">Contact support</Link> to appeal.
+          </div>
+        )}
         {redirectTo ? <Navigate to={redirectTo} replace /> : <Outlet />}
       </main>
 

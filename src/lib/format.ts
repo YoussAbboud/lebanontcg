@@ -33,3 +33,14 @@ export function memberSince(iso: string): string {
 export function timeOfDay(iso: string): string {
   return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
+
+/** "8 minutes 59 seconds", "1 minute", "40 seconds" — mirrors 0032's
+    format_wait so the countdown and the database's refusal read alike. */
+export function formatWait(totalSeconds: number): string {
+  const secs = Math.max(0, Math.ceil(totalSeconds));
+  const m = Math.floor(secs / 60);
+  const r = secs % 60;
+  const unit = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+  if (m === 0) return unit(r, 'second');
+  return r ? `${unit(m, 'minute')} ${unit(r, 'second')}` : unit(m, 'minute');
+}

@@ -551,7 +551,32 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
 
   private setAuth(state: AuthState) {
     this.auth = state;
+    this.followOwnProfile(state.user?.id ?? null);
     for (const cb of this.authListeners) cb(state);
+  }
+
+  private profileChannel: { userId: string; channel: ReturnType<SupabaseClient['channel']> } | null =
+    null;
+
+  /** A suspension (or its lifting) lands in the open app at once: the
+      signed-in member's own profile row is followed over realtime (0032),
+      so every screen re-renders with the new state without a reload. */
+  private followOwnProfile(userId: string | null) {
+    if (this.profileChannel?.userId === userId) return;
+    if (this.profileChannel) void this.sb.removeChannel(this.profileChannel.channel);
+    this.profileChannel = null;
+    if (!userId) return;
+    const channel = this.sb
+      .channel(`me-${userId}-${Math.random().toString(36).slice(2)}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+        (payload) => {
+          if (this.auth.user?.id === userId) this.setUser(this.mapProfile(payload.new as ProfileRow));
+        },
+      )
+      .subscribe();
+    this.profileChannel = { userId, channel };
   }
 
   /** Replace the profile while keeping the auth flags intact. */
@@ -1160,6 +1185,14 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     }
     const listing = await this.getListing(listingId);
     return listing?.reviewState ?? 'pending';
+  }
+
+  async getListingCooldown(): Promise<number> {
+    if (!this.auth.user) return 0;
+    const { data, error } = await this.sb.rpc('my_listing_cooldown');
+    // Not deployed yet (migration 0032): no cooldown to show.
+    if (error) return 0;
+    return Math.max(0, Number(data) || 0);
   }
 
   async getAuctionForListing(listingId: string): Promise<AuctionDetail | null> {

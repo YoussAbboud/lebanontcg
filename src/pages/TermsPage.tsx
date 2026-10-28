@@ -66,7 +66,8 @@ const SECTIONS: LegalSection[] = [
           A new listing, and a listing you add new photos to, goes public once its photos are
           checked: an automatic check confirms they show a trading card, and when it can&apos;t, a
           moderator looks. Until then only you can see it. We may decline a listing that isn&apos;t
-          a trading card, and we tell you why.
+          a trading card, and we tell you why. If the check flags two of your listings in a row, or
+          two within five minutes, you can&apos;t list or add photos for ten minutes.
         </p>
         <p>
           Listings are free for now; <Link to="/plans">subscription plans</Link> will follow and we
@@ -205,9 +206,10 @@ const SECTIONS: LegalSection[] = [
           Moderators may remove listings, withdraw reviews, cancel auctions and issue warnings,
           always with a reason that is recorded and shown to you.{' '}
           <strong>{WARNING_LIMIT} active warnings suspend an account automatically.</strong> A
-          suspended account keeps its history and can still read and message about existing deals,
-          but cannot list, bid, make offers or start new conversations until a moderator lifts the
-          suspension. Serious breaches — counterfeits, theft, fraud, threats — may be met with
+          suspended account keeps its history and can still browse and read its conversations, but
+          cannot do anything else — list, edit listings, message, make or answer offers, share a
+          number or location, watch, bid, report, review or edit its profile — until a moderator
+          lifts the suspension. A suspension takes effect immediately. Serious breaches — counterfeits, theft, fraud, threats — may be met with
           immediate suspension without prior warnings.
         </p>
         <p>

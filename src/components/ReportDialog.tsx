@@ -111,7 +111,7 @@ export function ReportDialog({ targetType, targetId, targetLabel, onClose }: Pro
               <button className="btn-outline" onClick={onClose}>Cancel</button>
               <button
                 className="btn-outline btn-danger-outline"
-                disabled={!reason || !user || state === 'busy'}
+                disabled={!reason || !user || Boolean(user.suspendedAt) || state === 'busy'}
                 onClick={() => void submit()}
               >
                 {state === 'busy' ? 'Submitting…' : 'Submit report'}

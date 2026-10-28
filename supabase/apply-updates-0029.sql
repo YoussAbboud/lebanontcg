@@ -100,3 +100,8 @@ $$;
 -- ──────────────────────────────────────────────────────────────────────────
 -- END supabase/migrations/0029_location_messages.sql
 -- ──────────────────────────────────────────────────────────────────────────
+
+-- Tell the API (PostgREST) to reload the schema now, so the app sees the
+-- new columns and kinds at once instead of failing with "could not find
+-- the column … in the schema cache" until its cache refreshes.
+notify pgrst, 'reload schema';

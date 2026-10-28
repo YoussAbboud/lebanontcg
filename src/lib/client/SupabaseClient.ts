@@ -1492,6 +1492,9 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       if (error.code === '42501') {
         throw new Error(this.suspensionMessage() ?? 'You cannot message this user.');
       }
+      if (error.code === '23514' && error.message.includes('kind_check')) {
+        throw new Error('Sharing a phone number isn’t switched on yet. Please try again later.');
+      }
       if (error.code === '23514') throw new Error('That doesn’t look like a phone number.');
       throw new Error(error.message);
     }
@@ -1520,6 +1523,11 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     if (error) {
       if (error.code === '42501') {
         throw new Error(this.suspensionMessage() ?? 'You cannot message this user.');
+      }
+      // The database hasn't had migration 0029 yet (no latitude column, or no
+      // 'location' kind): say so plainly instead of PostgREST's schema text.
+      if (error.code === 'PGRST204' || (error.code === '23514' && error.message.includes('kind_check'))) {
+        throw new Error('Sharing a location isn’t switched on yet. Please try again later.');
       }
       if (error.code === '23514') throw new Error('That location couldn’t be shared.');
       throw new Error(error.message);

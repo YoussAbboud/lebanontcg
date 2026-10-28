@@ -15,6 +15,7 @@ import {
   type SharedPoint,
 } from '../lib/location';
 import { StaticMap } from '../components/StaticMap';
+import { useMediaQuery } from '../lib/useMediaQuery';
 
 // Leaflet only downloads when someone opens "Choose on the map".
 const MapPicker = lazy(() => import('../components/MapPicker'));
@@ -63,6 +64,25 @@ function rememberPhone(userId: string, iso: string, phone: string): void {
 }
 
 type InboxFilter = 'all' | 'buying' | 'selling' | 'unread';
+
+function PhoneIcon() {
+  // A line icon, not the ☎ character: phones draw that as a red telephone emoji.
+  return (
+    <svg
+      width={16}
+      height={16}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+}
 
 function MapIcon() {
   return (
@@ -283,6 +303,10 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
   const [locOpen, setLocOpen] = useState(false);
   const [locPoint, setLocPoint] = useState<(SharedPoint & { accuracy?: number }) | null>(null);
   const [mapOpen, setMapOpen] = useState(false);
+  // Phones: the three tools fold behind one + button and float up when it's pressed.
+  const compactTools = useMediaQuery('(max-width: 560px)');
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsRef = useRef<HTMLDivElement>(null);
   const [locPlace, setLocPlace] = useState('');
   const [locBusy, setLocBusy] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -557,6 +581,51 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
     }
   };
 
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!toolsRef.current?.contains(e.target as Node)) setToolsOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setToolsOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [toolsOpen]);
+  useEffect(() => {
+    if (!compactTools) setToolsOpen(false);
+  }, [compactTools]);
+
+  const toggleOffer = () => {
+    setOfferOpen((v) => !v);
+    setPhoneOpen(false);
+    setLocOpen(false);
+    setToolsOpen(false);
+  };
+  const togglePhone = () => {
+    if (!phoneOpen && !phoneDraft) {
+      const saved = rememberedPhone(meId);
+      setPhoneCountry(saved.iso);
+      setPhoneDraft(saved.national);
+    }
+    setPhoneOpen((v) => !v);
+    setOfferOpen(false);
+    setLocOpen(false);
+    setToolsOpen(false);
+  };
+  const toggleLoc = () => {
+    setLocOpen((v) => !v);
+    setOfferOpen(false);
+    setPhoneOpen(false);
+    setToolsOpen(false);
+  };
+  // On phones, folded tools are out of the tab order and hidden from screen readers.
+  const toolHidden = compactTools && !toolsOpen;
+
   const locateMe = async () => {
     setLocBusy(true);
     try {
@@ -789,8 +858,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
           <div className="chat-log-empty">
             <p>
               Say hello — ask about condition, make an offer with the <strong>$</strong> button,
-              share your number with <strong>☎</strong> and a meeting place with the pin when
-              you&apos;re ready to meet.
+              share your number and a meeting place when you&apos;re ready to meet.
             </p>
           </div>
         )}
@@ -1183,55 +1251,67 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
           </Suspense>
         )}
         <div className="chat-composer-row">
-          <button
-            type="button"
-            aria-label="Make an offer"
-            aria-pressed={offerOpen}
-            className={`btn-icon chat-offer-toggle ${offerOpen ? 'icon-on' : ''}`}
-            disabled={composerDisabled}
-            onClick={() => {
-              setOfferOpen((v) => !v);
-              setPhoneOpen(false);
-              setLocOpen(false);
-            }}
-          >
-            $
-          </button>
-          <button
-            type="button"
-            aria-label="Share your phone number"
-            aria-pressed={phoneOpen}
-            title="Share your phone number"
-            className={`btn-icon chat-phone-toggle ${phoneOpen ? 'icon-on' : ''}`}
-            disabled={composerDisabled}
-            onClick={() => {
-              if (!phoneOpen && !phoneDraft) {
-                const saved = rememberedPhone(meId);
-                setPhoneCountry(saved.iso);
-                setPhoneDraft(saved.national);
-              }
-              setPhoneOpen((v) => !v);
-              setOfferOpen(false);
-              setLocOpen(false);
-            }}
-          >
-            ☎
-          </button>
-          <button
-            type="button"
-            aria-label="Share a location"
-            aria-pressed={locOpen}
-            title="Share a location"
-            className={`btn-icon chat-loc-toggle ${locOpen ? 'icon-on' : ''}`}
-            disabled={composerDisabled}
-            onClick={() => {
-              setLocOpen((v) => !v);
-              setOfferOpen(false);
-              setPhoneOpen(false);
-            }}
-          >
-            <PinIcon />
-          </button>
+          <div className="chat-tools-wrap" ref={toolsRef}>
+            <button
+              type="button"
+              className={`btn-icon chat-tools-toggle ${toolsOpen ? 'is-open' : ''} ${offerOpen || phoneOpen || locOpen ? 'icon-on' : ''}`}
+              aria-expanded={toolsOpen}
+              aria-controls="chat-tools"
+              aria-label={toolsOpen ? 'Close' : 'Offer, phone number or location'}
+              disabled={composerDisabled}
+              onClick={() => setToolsOpen((v) => !v)}
+            >
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+            </button>
+            <div id="chat-tools" className={`chat-tools ${toolsOpen ? 'is-open' : ''}`}>
+              <button
+                type="button"
+                aria-label="Make an offer"
+                aria-pressed={offerOpen}
+                aria-hidden={toolHidden || undefined}
+                tabIndex={toolHidden ? -1 : undefined}
+                className={`btn-icon chat-tool chat-offer-toggle ${offerOpen ? 'icon-on' : ''}`}
+                style={{ '--i': 0 } as React.CSSProperties}
+                disabled={composerDisabled}
+                onClick={toggleOffer}
+              >
+                <span className="chat-tool-ic">$</span>
+                <span className="chat-tool-label">Make an offer</span>
+              </button>
+              <button
+                type="button"
+                aria-label="Share your phone number"
+                aria-pressed={phoneOpen}
+                aria-hidden={toolHidden || undefined}
+                tabIndex={toolHidden ? -1 : undefined}
+                title="Share your phone number"
+                className={`btn-icon chat-tool chat-phone-toggle ${phoneOpen ? 'icon-on' : ''}`}
+                style={{ '--i': 1 } as React.CSSProperties}
+                disabled={composerDisabled}
+                onClick={togglePhone}
+              >
+                <span className="chat-tool-ic"><PhoneIcon /></span>
+                <span className="chat-tool-label">Share phone number</span>
+              </button>
+              <button
+                type="button"
+                aria-label="Share a location"
+                aria-pressed={locOpen}
+                aria-hidden={toolHidden || undefined}
+                tabIndex={toolHidden ? -1 : undefined}
+                title="Share a location"
+                className={`btn-icon chat-tool chat-loc-toggle ${locOpen ? 'icon-on' : ''}`}
+                style={{ '--i': 2 } as React.CSSProperties}
+                disabled={composerDisabled}
+                onClick={toggleLoc}
+              >
+                <span className="chat-tool-ic"><PinIcon /></span>
+                <span className="chat-tool-label">Share location</span>
+              </button>
+            </div>
+          </div>
           <input
             type="text"
             aria-label="Message"

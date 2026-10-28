@@ -1,6 +1,6 @@
 -- ==========================================================================
 -- LebanonTCG — one-paste setup
--- Generated from supabase/migrations/0001–0029 (do not edit; edit the
+-- Generated from supabase/migrations/0001–0030 (do not edit; edit the
 -- individual migration files and regenerate instead).
 --
 -- HOW TO USE: Supabase dashboard → SQL Editor → New query → paste this
@@ -4363,4 +4363,27 @@ $$;
 
 -- ──────────────────────────────────────────────────────────────────────────
 -- END supabase/migrations/0029_location_messages.sql
+-- ──────────────────────────────────────────────────────────────────────────
+
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- BEGIN supabase/migrations/0030_account_deletion.sql
+-- ──────────────────────────────────────────────────────────────────────────
+-- 0030: deleting an account works again.
+--
+-- Deleting an account cascades: its conversations (for both people in
+-- them, with every message, phone number and location shared there),
+-- reviews, listings and the rest go with it. But messages.sender_id is
+-- also ON DELETE SET NULL, and 0008's system_has_no_sender check required
+-- every non-system message to keep a sender, so the SET NULL failed and
+-- deleting anyone who had ever sent a message was refused. The check now
+-- says only what it is for: system messages have no sender. New messages
+-- still need one (the insert policy requires sender_id = auth.uid()).
+
+alter table public.messages drop constraint system_has_no_sender;
+alter table public.messages
+  add constraint system_has_no_sender check (kind <> 'system' or sender_id is null);
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- END supabase/migrations/0030_account_deletion.sql
 -- ──────────────────────────────────────────────────────────────────────────

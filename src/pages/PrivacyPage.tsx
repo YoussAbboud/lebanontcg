@@ -74,6 +74,17 @@ const SECTIONS: LegalSection[] = [
           <li>We do not sell, rent or trade your data, and we do not send it to anyone for marketing.</li>
           <li>Moderators and administrators do not access or read your messages. The only exception is a message someone reports: a moderator then sees that one message, never the rest of the conversation. Reporting a person or a listing does not open anyone’s messages. This is enforced by the database’s access rules, not just by policy.</li>
           <li>We do not take or store payment card details.</li>
+          <li>
+            We do not collect your phone number or your location. Neither is part of your account,
+            and the site never reads your location in the background: only once, at the moment you
+            press “Use my current location” in a chat.
+          </li>
+          <li>
+            A phone number or location you choose to share in a chat is kept only as that one
+            message, because that is how the person you sent it to can see it. It is not added to
+            your profile, not copied anywhere else, not used for anything else and never given to
+            anyone. It is deleted, with the rest of the conversation, when you delete your account.
+          </li>
         </ul>
       </>
     ),
@@ -161,11 +172,13 @@ const SECTIONS: LegalSection[] = [
         <p>
           For as long as you have an account, so your history, reviews and conversations keep
           working. When a listing is removed, we keep it so moderators and the people in its
-          conversations can still see what was said. When you delete your account, we delete your
-          profile, listings, photos, watchlist, notifications and Pre-Grade material. Reviews you
-          wrote and messages you sent to others remain in their conversations without your name
-          attached; moderation records (warnings, reports, the audit log) are kept for as long as
-          we need them to keep the venue safe, then removed.
+          conversations can still see what was said. When you delete your account, everything tied
+          to it is deleted with it: your profile, listings and photos, watchlist, notifications,
+          Pre-Grade material, bids, warnings and the reports you filed, the reviews you wrote or
+          received, and your conversations, for both people in them, with every message, phone
+          number and location shared there. What stays is what other people reported about you or
+          your listings and the moderators’ log of what was done about it, kept for as long as we
+          need it to keep the venue safe, then removed.
         </p>
       </>
     ),
@@ -177,8 +190,10 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>
           We set no tracking cookies. Your browser keeps the token that proves you are signed in,
-          plus small conveniences such as the page to return to after signing in. Clearing site
-          data signs you out and forgets them. Nothing on your device is read by anyone else.
+          plus small conveniences such as the page to return to after signing in and, if you have
+          shared one, the last phone number you shared, so the field is filled in next time. These
+          stay in your browser: the number is not sent anywhere until you share it again. Clearing
+          site data signs you out and forgets them. Nothing on your device is read by anyone else.
         </p>
       </>
     ),

@@ -1,0 +1,1155 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 3 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/home/user/lebanontcg/brag-output-2026-10-28-090355/work/composition/compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      },
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 2 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/home/user/lebanontcg/brag-output-2026-10-28-090355/work/composition/compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      }
+    ],
+    "filesScanned": 2
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 20,
+    "findings": [
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 1.369,
+        "selector": "#covT > div:nth-of-type(1) > div:nth-of-type(3)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 304.75,
+          "top": 895,
+          "right": 775.25,
+          "bottom": 1020,
+          "width": 470.5,
+          "height": 125
+        },
+        "containerSelector": "#covB",
+        "text": "One chat.",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 0.33,
+        "dataAttributes": {
+          "data-layout-allow-overflow": ""
+        },
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 304.75,
+          "y": 895,
+          "width": 470.5,
+          "height": 125
+        },
+        "firstSeen": 1.369,
+        "lastSeen": 1.369,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.369
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 1.369,
+        "selector": "#covB > div:nth-of-type(1) > div:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 325.8,
+          "top": 600,
+          "right": 754.2,
+          "bottom": 640,
+          "width": 428.41,
+          "height": 40
+        },
+        "containerSelector": "#covT",
+        "text": "LebanonTCG · Messages",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 325.8,
+          "y": 600,
+          "width": 428.41,
+          "height": 40
+        },
+        "firstSeen": 1.369,
+        "lastSeen": 1.369,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.369
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 1.369,
+        "selector": "#covB > div:nth-of-type(1) > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 109.81,
+          "top": 710,
+          "right": 970.17,
+          "bottom": 835,
+          "width": 860.36,
+          "height": 125
+        },
+        "containerSelector": "#covT",
+        "text": "Two collectors.",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 109.81,
+          "y": 710,
+          "width": 860.36,
+          "height": 125
+        },
+        "firstSeen": 1.369,
+        "lastSeen": 1.369,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.369
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 1.369,
+        "selector": "#covB > div:nth-of-type(1) > div:nth-of-type(3)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 304.75,
+          "top": 895,
+          "right": 775.25,
+          "bottom": 1020,
+          "width": 470.5,
+          "height": 125
+        },
+        "containerSelector": "#covT",
+        "text": "One chat.",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 0.67,
+        "dataAttributes": {
+          "data-layout-allow-overflow": ""
+        },
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 304.75,
+          "y": 895,
+          "width": 470.5,
+          "height": 125
+        },
+        "firstSeen": 1.369,
+        "lastSeen": 1.369,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.369
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 1.369,
+        "selector": "#covT > div:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "containerSelector": "#covT",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 960,
+          "width": 1080,
+          "height": 960
+        },
+        "overflow": {
+          "bottom": 960
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 1920
+        },
+        "firstSeen": 1.369,
+        "lastSeen": 1.369,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.369
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 1.369,
+        "selector": "#covB > div:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "containerSelector": "#covB",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 960,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 960
+        },
+        "overflow": {
+          "top": 960
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1080,
+          "height": 1920
+        },
+        "firstSeen": 1.369,
+        "lastSeen": 1.369,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.369
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 3.442,
+        "selector": "#bO > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 340.37,
+          "top": 1177.69,
+          "right": 956.06,
+          "bottom": 1254.99,
+          "width": 615.69,
+          "height": 77.3
+        },
+        "containerSelector": "#covB > div:nth-of-type(1) > div:nth-of-type(4)",
+        "text": "Still available! Price is a bit negotiable for a quick pickup. 2:14 PM",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 340.37,
+          "y": 1177.69,
+          "width": 615.69,
+          "height": 77.3
+        },
+        "firstSeen": 3.442,
+        "lastSeen": 3.579,
+        "occurrences": 2,
+        "heldMs": 137,
+        "times": [
+          3.442,
+          3.579
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 3.717,
+        "selector": "#bot > div:nth-of-type(4) > div:nth-of-type(4)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 373.19,
+          "top": 1663.95,
+          "right": 594.81,
+          "bottom": 1698.11,
+          "width": 221.62,
+          "height": 34.16
+        },
+        "containerSelector": "#covB > div:nth-of-type(1) > div:nth-of-type(3)",
+        "text": "Write a message",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 373.19,
+          "y": 1663.95,
+          "width": 221.62,
+          "height": 34.16
+        },
+        "firstSeen": 3.717,
+        "lastSeen": 3.717,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.717
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 6.845,
+        "selector": "#bOacc",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 114,
+          "top": 1523.5,
+          "right": 203.77,
+          "bottom": 1552.5,
+          "width": 89.77,
+          "height": 29
+        },
+        "containerSelector": "#finger",
+        "text": "Accept",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 0.78,
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 114,
+          "y": 1523.5,
+          "width": 89.77,
+          "height": 29
+        },
+        "firstSeen": 6.845,
+        "lastSeen": 6.845,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          6.845
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 7.297,
+        "selector": "#tOsent",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 578,
+          "top": 664,
+          "right": 635.92,
+          "bottom": 693,
+          "width": 57.92,
+          "height": 29
+        },
+        "containerSelector": "#tOok",
+        "text": "SENT",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 578,
+          "y": 664,
+          "width": 57.92,
+          "height": 29
+        },
+        "firstSeen": 7.297,
+        "lastSeen": 7.297,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          7.297
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 9.583,
+        "selector": "#tO",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 60,
+          "top": 270.2,
+          "right": 1020,
+          "bottom": 720.2,
+          "width": 960,
+          "height": 450
+        },
+        "containerSelector": "#top > div:nth-of-type(3)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 60,
+          "top": 320,
+          "right": 1020,
+          "bottom": 770,
+          "width": 960,
+          "height": 450
+        },
+        "overflow": {
+          "top": 49.8
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 60,
+          "y": 270.2,
+          "width": 960,
+          "height": 450
+        },
+        "firstSeen": 9.583,
+        "lastSeen": 9.583,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          9.583
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 9.583,
+        "selector": "#bO",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 60,
+          "top": 1114.2,
+          "right": 1020,
+          "bottom": 1564.2,
+          "width": 960,
+          "height": 450
+        },
+        "containerSelector": "#bot > div:nth-of-type(2)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 60,
+          "top": 1164,
+          "right": 1020,
+          "bottom": 1614,
+          "width": 960,
+          "height": 450
+        },
+        "overflow": {
+          "top": 49.8
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 60,
+          "y": 1114.2,
+          "width": 960,
+          "height": 450
+        },
+        "firstSeen": 9.583,
+        "lastSeen": 9.583,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          9.583
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 9.583,
+        "selector": "#s1b",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 0,
+          "top": 890.42,
+          "right": 1080,
+          "bottom": 1010.42,
+          "width": 1080,
+          "height": 120
+        },
+        "containerSelector": "#seam",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 900,
+          "right": 1080,
+          "bottom": 1020,
+          "width": 1080,
+          "height": 120
+        },
+        "overflow": {
+          "top": 9.58
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 890.42,
+          "width": 1080,
+          "height": 120
+        },
+        "firstSeen": 9.583,
+        "lastSeen": 9.583,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          9.583
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 12.321,
+        "selector": "#tNwa",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 241.84,
+          "top": 620.5,
+          "right": 361.53,
+          "bottom": 649.5,
+          "width": 119.69,
+          "height": 29
+        },
+        "containerSelector": "#finger",
+        "text": "WhatsApp",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 0.44,
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 241.84,
+          "y": 620.5,
+          "width": 119.69,
+          "height": 29
+        },
+        "firstSeen": 12.321,
+        "lastSeen": 12.321,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          12.321
+        ]
+      },
+      {
+        "code": "text_box_overflow",
+        "severity": "info",
+        "time": 12.321,
+        "selector": "#s2",
+        "message": "Text extends outside its nearest visual/container box.",
+        "rect": {
+          "left": 367.81,
+          "top": 890.3,
+          "right": 712.17,
+          "bottom": 961.3,
+          "width": 344.36,
+          "height": 71
+        },
+        "containerSelector": "#seam",
+        "text": "02 · Number",
+        "fixHint": "Text is 344px x 71px inside 1080px x 120px and overflows by up to 10px; increase the container height to at least ~130px, or allow wrapping with max-width/fitTextFontSize.",
+        "containerRect": {
+          "left": 0,
+          "top": 900,
+          "right": 1080,
+          "bottom": 1020,
+          "width": 1080,
+          "height": 120
+        },
+        "overflow": {
+          "top": 9.7
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 367.81,
+          "y": 890.3,
+          "width": 344.36,
+          "height": 71
+        },
+        "firstSeen": 12.321,
+        "lastSeen": 12.321,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          12.321
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 12.321,
+        "selector": "#s2",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 0,
+          "top": 865.8,
+          "right": 1080,
+          "bottom": 985.8,
+          "width": 1080,
+          "height": 120
+        },
+        "containerSelector": "#seam",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 900,
+          "right": 1080,
+          "bottom": 1020,
+          "width": 1080,
+          "height": 120
+        },
+        "overflow": {
+          "top": 34.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 865.8,
+          "width": 1080,
+          "height": 120
+        },
+        "firstSeen": 12.321,
+        "lastSeen": 12.321,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          12.321
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 15.06,
+        "selector": "#map",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 0,
+          "top": 342.34,
+          "right": 1080,
+          "bottom": 942.34,
+          "width": 1080,
+          "height": 600
+        },
+        "containerSelector": "#top",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 900,
+          "width": 1080,
+          "height": 900
+        },
+        "overflow": {
+          "bottom": 42.34
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 342.34,
+          "width": 1080,
+          "height": 600
+        },
+        "firstSeen": 15.06,
+        "lastSeen": 15.06,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.06
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 15.06,
+        "selector": "#pinwrap",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 0,
+          "top": 402.34,
+          "right": 1080,
+          "bottom": 926.34,
+          "width": 1080,
+          "height": 524
+        },
+        "containerSelector": "#view",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 418.34,
+          "right": 1080,
+          "bottom": 942.34,
+          "width": 1080,
+          "height": 524
+        },
+        "overflow": {
+          "top": 16
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 402.34,
+          "width": 1080,
+          "height": 524
+        },
+        "firstSeen": 15.06,
+        "lastSeen": 15.06,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.06
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 15.144,
+        "selector": "#tM > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 86,
+          "top": 341,
+          "right": 461.45,
+          "bottom": 377,
+          "width": 375.45,
+          "height": 36
+        },
+        "containerSelector": "div.t.display",
+        "text": "Got it. Where do we meet? 2:17 PM",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 86,
+          "y": 341,
+          "width": 375.45,
+          "height": 36
+        },
+        "firstSeen": 15.144,
+        "lastSeen": 15.144,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.144
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 17.798,
+        "selector": "#s3b",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 0,
+          "top": 906.44,
+          "right": 1080,
+          "bottom": 1026.44,
+          "width": 1080,
+          "height": 120
+        },
+        "containerSelector": "#seam",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 900,
+          "right": 1080,
+          "bottom": 1020,
+          "width": 1080,
+          "height": 120
+        },
+        "overflow": {
+          "bottom": 6.44
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 906.44,
+          "width": 1080,
+          "height": 120
+        },
+        "firstSeen": 17.798,
+        "lastSeen": 17.798,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          17.798
+        ]
+      }
+    ],
+    "duration": 24.6429,
+    "samples": [
+      1.369,
+      4.107,
+      6.845,
+      9.583,
+      12.321,
+      15.06,
+      17.798,
+      20.536,
+      23.274
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 20,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      1.369,
+      6.845,
+      12.321,
+      17.798,
+      23.274
+    ],
+    "checked": 62,
+    "passed": 62
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 28 text elements stay under it for 0.5 s or more, the smallest \"Accept\" at 21 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Accept",
+        "selector": "#bOacc",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 112.98,
+          "y": 1538.9,
+          "width": 88.07,
+          "height": 28.45
+        },
+        "time": 6.223,
+        "times": [
+          3.236,
+          3.236,
+          4.978,
+          4.978,
+          5.974,
+          5.974,
+          5.974,
+          6.223,
+          6.223,
+          6.223,
+          6.223,
+          7.343,
+          7.343,
+          7.592,
+          10.081,
+          10.081,
+          11.326,
+          11.575,
+          11.575,
+          11.575,
+          14.313,
+          14.313,
+          14.313,
+          15.184,
+          17.3,
+          17.3,
+          17.3,
+          17.3
+        ],
+        "fontPx": 20.61,
+        "floorPx": 28,
+        "seconds": 0.995,
+        "elements": [
+          {
+            "selector": "#bOacc",
+            "text": "Accept",
+            "fontPx": 20.61,
+            "time": 6.223,
+            "seconds": 0.995
+          },
+          {
+            "selector": "span.btn.no",
+            "text": "Decline",
+            "fontPx": 21.58,
+            "time": 6.223,
+            "seconds": 0.995
+          },
+          {
+            "selector": "#tNc > div:nth-of-type(3) > span:nth-of-type(1)",
+            "text": "Call",
+            "fontPx": 21.65,
+            "time": 11.575,
+            "seconds": 2.364
+          },
+          {
+            "selector": "#tNwa",
+            "text": "WhatsApp",
+            "fontPx": 21.65,
+            "time": 11.575,
+            "seconds": 2.364
+          },
+          {
+            "selector": "#tOsent",
+            "text": "Sent",
+            "fontPx": 21.78,
+            "time": 5.974,
+            "seconds": 1.369
+          },
+          {
+            "selector": "#bNsend",
+            "text": "Share",
+            "fontPx": 21.96,
+            "time": 10.081,
+            "seconds": 1.493
+          },
+          {
+            "selector": "#bMc > div:nth-of-type(4) > span:nth-of-type(1)",
+            "text": "Google Maps",
+            "fontPx": 21.96,
+            "time": 17.3,
+            "seconds": 2.115
+          },
+          {
+            "selector": "#bMc > div:nth-of-type(4) > span:nth-of-type(2)",
+            "text": "Waze",
+            "fontPx": 21.96,
+            "time": 17.3,
+            "seconds": 2.115
+          },
+          {
+            "selector": "#tOsend",
+            "text": "Send offer",
+            "fontPx": 22,
+            "time": 4.978,
+            "seconds": 1.244
+          },
+          {
+            "selector": "#tOok",
+            "text": "✓ Offer accepted",
+            "fontPx": 22,
+            "time": 7.343,
+            "seconds": 2.364
+          },
+          {
+            "selector": "#bOok",
+            "text": "✓ Offer accepted",
+            "fontPx": 22,
+            "time": 7.343,
+            "seconds": 2.364
+          },
+          {
+            "selector": "#tMbar > div:nth-of-type(1)",
+            "text": "Use my current location",
+            "fontPx": 22,
+            "time": 14.313,
+            "seconds": 1.119
+          },
+          {
+            "selector": "#tMonmap",
+            "text": "Choose on the map",
+            "fontPx": 22,
+            "time": 14.313,
+            "seconds": 1.119
+          },
+          {
+            "selector": "#muse",
+            "text": "Use this spot",
+            "fontPx": 22,
+            "time": 15.184,
+            "seconds": 1.991
+          },
+          {
+            "selector": "#tOp > span:nth-of-type(1)",
+            "text": "Offer accepted · $290",
+            "fontPx": 23.45,
+            "time": 7.592,
+            "seconds": 2.115
+          },
+          {
+            "selector": "#bOc > div:nth-of-type(1)",
+            "text": "Offer · Non-binding",
+            "fontPx": 23.55,
+            "time": 6.223,
+            "seconds": 3.484
+          },
+          {
+            "selector": "#tNc > div:nth-of-type(1)",
+            "text": "Phone number",
+            "fontPx": 23.62,
+            "time": 11.575,
+            "seconds": 2.364
+          },
+          {
+            "selector": "#bNc > div:nth-of-type(1)",
+            "text": "You shared your number",
+            "fontPx": 23.63,
+            "time": 11.326,
+            "seconds": 2.613
+          },
+          {
+            "selector": "#tOc > div:nth-of-type(1)",
+            "text": "Offer · Non-binding",
+            "fontPx": 23.76,
+            "time": 5.974,
+            "seconds": 3.733
+          },
+          {
+            "selector": "#tMc > div:nth-of-type(1)",
+            "text": "You shared a location",
+            "fontPx": 23.96,
+            "time": 17.3,
+            "seconds": 2.115
+          },
+          {
+            "selector": "#bMc > div:nth-of-type(1)",
+            "text": "Location",
+            "fontPx": 23.96,
+            "time": 17.3,
+            "seconds": 2.115
+          },
+          {
+            "selector": "#tObar > span:nth-of-type(1)",
+            "text": "Offer",
+            "fontPx": 24,
+            "time": 4.978,
+            "seconds": 1.244
+          },
+          {
+            "selector": "#bNbar > span:nth-of-type(1)",
+            "text": "Phone",
+            "fontPx": 24,
+            "time": 10.081,
+            "seconds": 1.493
+          },
+          {
+            "selector": "#tMbar > span:nth-of-type(1)",
+            "text": "Location",
+            "fontPx": 24,
+            "time": 14.313,
+            "seconds": 1.119
+          },
+          {
+            "selector": "#bOc > div:nth-of-type(3)",
+            "text": "Cash, this weekend?",
+            "fontPx": 25.51,
+            "time": 6.223,
+            "seconds": 3.484
+          },
+          {
+            "selector": "#tOc > div:nth-of-type(3)",
+            "text": "Cash, this weekend?",
+            "fontPx": 25.75,
+            "time": 5.974,
+            "seconds": 3.733
+          },
+          {
+            "selector": "#top > div:nth-of-type(1)",
+            "text": "Buyer · @ritacollects",
+            "fontPx": 26,
+            "time": 3.236,
+            "seconds": 16.179
+          },
+          {
+            "selector": "#bot > div:nth-of-type(5)",
+            "text": "Seller · @mayapulls",
+            "fontPx": 26,
+            "time": 3.236,
+            "seconds": 16.179
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.12400000000000233,
+    "samples": 198
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "saved": {
+    "id": "028dd1cf-3515-405f-a75f-7d9041074c10",
+    "revision": "e1c6b22a-014d-4aeb-9368-2c111ad55853",
+    "report": "/home/user/lebanontcg/brag-output-2026-10-28-090355/work/composition/.hyperframes/artifacts/checks/028dd1cf-3515-405f-a75f-7d9041074c10.json",
+    "attribution": "recorded-revision"
+  },
+  "_meta": {
+    "version": "0.8.203",
+    "latestVersion": "0.8.210",
+    "updateAvailable": true
+  }
+}

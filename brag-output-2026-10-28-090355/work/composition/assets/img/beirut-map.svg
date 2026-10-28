@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+  <!-- Illustrative Beirut waterfront in OpenStreetMap's palette (not OSM data). The marina's
+       meeting point sits at (900, 520). -->
+  <rect width="1600" height="1200" fill="#f2efe9"/>
+  <!-- sea: north and west -->
+  <path d="M0 0 H1600 V300 C1480 330 1380 290 1260 330 C1150 365 1090 420 1030 430
+           C990 437 970 470 960 470 L960 560 L840 560 L840 470 C800 470 760 430 700 440
+           C600 455 520 520 420 560 C330 595 260 690 200 760 C150 820 80 860 0 880 Z" fill="#aad3df"/>
+  <!-- marina piers -->
+  <rect x="868" y="470" width="10" height="70" fill="#f2efe9"/>
+  <rect x="914" y="470" width="10" height="70" fill="#f2efe9"/>
+  <!-- parks -->
+  <path d="M1040 470 C1080 455 1130 450 1180 470 L1170 540 L1050 545 Z" fill="#c8facc"/>
+  <rect x="560" y="760" width="170" height="120" rx="8" fill="#c8facc"/>
+  <!-- blocks -->
+  <g fill="#e0dbd2">
+    <rect x="980" y="600" width="120" height="80" rx="4"/><rect x="1120" y="600" width="140" height="80" rx="4"/>
+    <rect x="980" y="700" width="120" height="110" rx="4"/><rect x="1120" y="700" width="140" height="110" rx="4"/>
+    <rect x="760" y="610" width="180" height="90" rx="4"/><rect x="760" y="720" width="180" height="90" rx="4"/>
+    <rect x="560" y="620" width="170" height="110" rx="4"/><rect x="1290" y="560" width="160" height="120" rx="4"/>
+    <rect x="1290" y="700" width="160" height="110" rx="4"/><rect x="400" y="700" width="130" height="120" rx="4"/>
+    <rect x="980" y="840" width="280" height="120" rx="4"/><rect x="760" y="840" width="180" height="120" rx="4"/>
+    <rect x="560" y="910" width="170" height="110" rx="4"/><rect x="1290" y="840" width="160" height="120" rx="4"/>
+  </g>
+  <!-- residential streets -->
+  <g stroke="#ffffff" stroke-width="14" fill="none" stroke-linecap="round">
+    <path d="M745 590 V1200"/><path d="M955 580 V1200"/><path d="M1110 590 V1200"/><path d="M1275 560 V1200"/>
+    <path d="M540 610 V1200"/><path d="M380 690 L740 690"/><path d="M745 825 H1460"/><path d="M380 890 H1460"/>
+    <path d="M540 1040 H1460"/><path d="M1460 540 V1200"/>
+  </g>
+  <!-- the corniche (primary road) along the coast -->
+  <path d="M0 920 C120 900 210 830 270 760 C340 680 420 620 520 585 C620 550 700 520 780 540
+           C840 556 880 582 960 582 C1060 582 1120 560 1230 520 C1330 485 1460 450 1600 440"
+        stroke="#d8b07a" stroke-width="30" fill="none" stroke-linecap="round"/>
+  <path d="M0 920 C120 900 210 830 270 760 C340 680 420 620 520 585 C620 550 700 520 780 540
+           C840 556 880 582 960 582 C1060 582 1120 560 1230 520 C1330 485 1460 450 1600 440"
+        stroke="#fcd6a4" stroke-width="22" fill="none" stroke-linecap="round"/>
+  <!-- labels -->
+  <g font-family="Inter, Arial, sans-serif" fill="#5c7d8a" font-style="italic" font-size="30">
+    <text x="300" y="250">Mediterranean Sea</text>
+  </g>
+  <g font-family="Inter, Arial, sans-serif" font-size="22" fill="#5a5450">
+    <text x="830" y="455" font-weight="600">Zaitunay Bay</text>
+    <text x="1010" y="575" fill="#8a6a3d">Corniche</text>
+    <text x="580" y="830" fill="#3f7a46">Park</text>
+  </g>
+</svg>

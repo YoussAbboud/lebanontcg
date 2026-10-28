@@ -1756,7 +1756,7 @@ export class MockClient implements MarketplaceClient {
       listing: listingClone,
       otherParty: this.withRating(this.profiles.find((p) => p.id === otherId)!),
       lastMessage: msgs.length ? structuredClone(msgs[msgs.length - 1]) : null,
-      unreadCount: msgs.filter((m) => (m.kind === 'user' || m.kind === 'phone') && m.senderId !== me.id && !m.readAt).length,
+      unreadCount: msgs.filter((m) => (m.kind === 'user' || m.kind === 'phone' || m.kind === 'location') && m.senderId !== me.id && !m.readAt).length,
     };
   }
 
@@ -1824,12 +1824,34 @@ export class MockClient implements MarketplaceClient {
     return this.postMessage(conversationId, 'phone', phone, clientId, 'Shared their phone number');
   }
 
+  async shareLocation(
+    conversationId: string,
+    point: { latitude: number; longitude: number },
+    place: string,
+    clientId: string,
+  ): Promise<Message> {
+    // Mirrors 0029's location_shape check.
+    const { latitude, longitude } = point;
+    const label = place.trim() || 'Location';
+    if (
+      !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+      Math.abs(latitude) > 90 || Math.abs(longitude) > 180 || label.length > 120
+    ) {
+      throw new Error('That location couldn’t be shared.');
+    }
+    return this.postMessage(conversationId, 'location', label, clientId, 'Shared a location', {
+      latitude,
+      longitude,
+    });
+  }
+
   private async postMessage(
     conversationId: string,
-    kind: 'user' | 'phone',
+    kind: 'user' | 'phone' | 'location',
     body: string,
     clientId: string,
     notifyBody: string,
+    point?: { latitude: number; longitude: number },
   ): Promise<Message> {
     const me = this.meActive();
     const conv = this.conversations.find((c) => c.id === conversationId);
@@ -1853,6 +1875,7 @@ export class MockClient implements MarketplaceClient {
       createdAt: new Date().toISOString(),
       readAt: null,
       clientId,
+      ...(point ?? {}),
     };
     this.messages.push(message);
     conv.lastMessageAt = message.createdAt;
@@ -1984,7 +2007,7 @@ export class MockClient implements MarketplaceClient {
       if (
         m.conversationId === conversationId &&
         m.senderId !== me.id &&
-        (m.kind === 'user' || m.kind === 'phone') &&
+        (m.kind === 'user' || m.kind === 'phone' || m.kind === 'location') &&
         !m.readAt
       ) {
         m.readAt = at;
@@ -2023,7 +2046,7 @@ export class MockClient implements MarketplaceClient {
         .map((c) => c.id),
     );
     return this.messages.filter(
-      (m) => myConvIds.has(m.conversationId) && (m.kind === 'user' || m.kind === 'phone') && m.senderId !== me.id && !m.readAt,
+      (m) => myConvIds.has(m.conversationId) && (m.kind === 'user' || m.kind === 'phone' || m.kind === 'location') && m.senderId !== me.id && !m.readAt,
     ).length;
   }
 

@@ -256,9 +256,13 @@ export interface Message {
   conversationId: string;
   senderId: string;
   /** Empty senderId + kind=system for status-change notices; kind=phone
-      carries one E.164 phone number as its body. */
-  kind: 'user' | 'system' | 'offer' | 'phone';
+      carries one E.164 phone number as its body; kind=location carries a
+      point (latitude/longitude) and the place name, or 'Location', as body. */
+  kind: 'user' | 'system' | 'offer' | 'phone' | 'location';
   body: string;
+  /** kind=location only. */
+  latitude?: number | null;
+  longitude?: number | null;
   /** kind=offer only: proposed amount in the listing's currency. */
   amount: number | null;
   /** kind=offer only: negotiation state, mutated by the recipient. */

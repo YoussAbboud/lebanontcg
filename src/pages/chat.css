@@ -352,6 +352,22 @@
 }
 .chat-phone-btn { padding: 11px 18px; min-height: 44px; text-decoration: none; }
 
+/* Shared location (shares the phone card's frame) */
+.chat-loc-place {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-18);
+  line-height: 1.25;
+  color: var(--text-1);
+  overflow-wrap: anywhere;
+}
+.chat-loc-place svg { flex: none; margin-top: 2px; color: var(--acid); }
+.chat-loc-coords { margin-top: 6px; font-size: var(--fs-12); color: var(--text-2); }
+
 .chat-typing { padding: 2px 4px; }
 
 .chat-newpill {
@@ -424,6 +440,28 @@
 }
 .chat-offer-toggle { font-family: var(--font-mono); font-size: 13px; }
 .chat-phone-toggle { font-size: 16px; }
+.chat-loc-toggle svg { display: block; }
+
+.chat-loc-me { display: inline-flex; align-items: center; gap: 8px; }
+.chat-loc-found {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-12);
+  color: var(--text-1);
+}
+.chat-loc-found svg { color: var(--acid); }
+.chat-loc-clear {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: var(--cursor-default);
+  padding: 4px;
+}
+.chat-loc-clear:hover { color: var(--danger); }
+.chat-loc-paste { flex: 1 1 240px; }
+.chat-loc-name { flex: 1 1 240px; }
+.chat-loc-error { flex-basis: 100%; margin: 0; }
 .chat-input { flex: 1; }
 .chat-send { min-height: 48px; padding: 14px 24px; }
 
@@ -454,4 +492,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Phones: the $, ☎ and pin tools take their own row so the message box and
+   Send keep the full width below them. */
+@media (max-width: 560px) {
+  .chat-composer-row { flex-wrap: wrap; row-gap: 10px; }
+  .chat-input { flex: 1 1 200px; min-width: 0; }
 }

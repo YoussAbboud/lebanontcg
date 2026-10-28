@@ -49,3 +49,32 @@ describe('sharing a phone number in chat', () => {
     await expect(client.sharePhone(conv.id, '+961', 'cid-3')).rejects.toThrow(/phone number/);
   });
 });
+
+describe('sharing a location in chat', () => {
+  it('sends a point and place name the other party sees as unread', async () => {
+    await client.signInAsMockUser('u-karim');
+    const conv = await client.openConversation('l-auc-6');
+    const msg = await client.shareLocation(
+      conv.id,
+      { latitude: 33.93212, longitude: 35.58934 },
+      'ABC Mall, Dbayeh',
+      'cid-4',
+    );
+    expect(msg).toMatchObject({ kind: 'location', body: 'ABC Mall, Dbayeh', latitude: 33.93212, longitude: 35.58934 });
+
+    await client.signInAsMockUser('u-lina');
+    const thread = await client.getMessages(conv.id);
+    expect(thread.find((m) => m.kind === 'location')).toMatchObject({ latitude: 33.93212 });
+    expect(await client.getTotalUnreadCount()).toBeGreaterThan(0);
+  });
+
+  it('names an unnamed point "Location" and refuses impossible points', async () => {
+    await client.signInAsMockUser('u-karim');
+    const conv = await client.openConversation('l-auc-6');
+    const msg = await client.shareLocation(conv.id, { latitude: 1, longitude: 2 }, '  ', 'cid-5');
+    expect(msg.body).toBe('Location');
+    await expect(
+      client.shareLocation(conv.id, { latitude: 91, longitude: 2 }, '', 'cid-6'),
+    ).rejects.toThrow(/couldn’t be shared/);
+  });
+});

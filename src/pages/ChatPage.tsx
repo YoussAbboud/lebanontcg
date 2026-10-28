@@ -6,6 +6,15 @@ import { groupMessages } from '../lib/chat';
 import { formatPhone, nationalPart, normalizePhone, telHref, whatsappHref } from '../lib/phone';
 import { DEFAULT_COUNTRY, countryByIso, countryOfPhone } from '../lib/countries';
 import { CountryCodePicker, Flag } from '../components/CountryCodePicker';
+import {
+  PLACE_MAX_LENGTH,
+  currentPosition,
+  formatCoords,
+  googleMapsHref,
+  parsePoint,
+  wazeHref,
+  type SharedPoint,
+} from '../lib/location';
 import { formatPrice, relativeTime, timeOfDay } from '../lib/format';
 import { STATUS_LABELS } from '../lib/status';
 import { glyphOf, thumbBackground } from '../lib/face';
@@ -51,6 +60,25 @@ function rememberPhone(userId: string, iso: string, phone: string): void {
 }
 
 type InboxFilter = 'all' | 'buying' | 'selling' | 'unread';
+
+function PinIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.5" />
+    </svg>
+  );
+}
 
 export function ChatPage() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -161,7 +189,11 @@ export function ChatPage() {
                     ? c.lastMessage.senderId === user.id
                       ? 'You shared your phone number'
                       : 'Shared a phone number'
-                    : `${c.lastMessage.senderId === user.id ? 'You: ' : ''}${c.lastMessage.body}`
+                    : c.lastMessage.kind === 'location'
+                      ? c.lastMessage.senderId === user.id
+                        ? 'You shared a location'
+                        : 'Shared a location'
+                      : `${c.lastMessage.senderId === user.id ? 'You: ' : ''}${c.lastMessage.body}`
               : 'No messages yet';
             const cover = c.listing.images[0];
             return (
@@ -226,6 +258,11 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [phoneDraft, setPhoneDraft] = useState('');
   const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
+  const [locOpen, setLocOpen] = useState(false);
+  const [locPoint, setLocPoint] = useState<(SharedPoint & { accuracy?: number }) | null>(null);
+  const [locPaste, setLocPaste] = useState('');
+  const [locPlace, setLocPlace] = useState('');
+  const [locBusy, setLocBusy] = useState(false);
   const [typing, setTyping] = useState(false);
   const [statusBusy, setStatusBusy] = useState(false);
   const [reviewState, setReviewState] = useState<
@@ -498,6 +535,60 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
     }
   };
 
+  const locateMe = async () => {
+    setLocBusy(true);
+    try {
+      setLocPoint(await currentPosition());
+      setLocPaste('');
+    } catch (err) {
+      toast(err instanceof Error ? err.message : 'Your location isn’t available right now.');
+    } finally {
+      setLocBusy(false);
+    }
+  };
+
+  const pasted = locPaste.trim() ? parsePoint(locPaste) : null;
+  const onLocPaste = (text: string) => {
+    setLocPaste(text);
+    const parsed = text.trim() ? parsePoint(text) : null;
+    setLocPoint(parsed?.ok ? parsed.point : null);
+  };
+
+  const shareLocation = async () => {
+    if (!conv || !locPoint) return;
+    const point = { latitude: locPoint.latitude, longitude: locPoint.longitude };
+    const place = locPlace.trim().slice(0, PLACE_MAX_LENGTH);
+    setLocOpen(false);
+    setLocPoint(null);
+    setLocPaste('');
+    setLocPlace('');
+    const clientId = nextClientId();
+    const optimistic: Message = {
+      id: clientId,
+      conversationId,
+      senderId: meId,
+      kind: 'location',
+      body: place || 'Location',
+      amount: null,
+      offerStatus: null,
+      createdAt: new Date().toISOString(),
+      readAt: null,
+      pending: true,
+      clientId,
+      ...point,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    requestAnimationFrame(() => scrollLog(true));
+    try {
+      const real = await client.shareLocation(conversationId, point, place, clientId);
+      setMessages((prev) => prev.map((m) => (m.clientId === clientId && m.pending ? { ...real } : m)));
+      toast('Location shared');
+    } catch (err) {
+      setMessages((prev) => prev.filter((m) => m.clientId !== clientId));
+      toast(err instanceof Error ? err.message : 'Could not share the location');
+    }
+  };
+
   const respond = async (m: Message, accept: boolean) => {
     try {
       await client.respondToOffer(conversationId, m.id, accept);
@@ -685,7 +776,8 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
           <div className="chat-log-empty">
             <p>
               Say hello — ask about condition, make an offer with the <strong>$</strong> button,
-              share your number with <strong>☎</strong> when you&apos;re ready to meet.
+              share your number with <strong>☎</strong> and a meeting place with the pin when
+              you&apos;re ready to meet.
             </p>
           </div>
         )}
@@ -781,6 +873,63 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
                             WhatsApp
                           </a>
                         </div>
+                      )}
+                      <div className="mono-value chat-msg-meta">
+                        {m.pending ? 'Sending…' : timeOfDay(m.createdAt)}
+                        {m.id === lastReadOwnId && <span className="chat-seen"> · Seen</span>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              if (cluster.kind === 'location') {
+                const m = cluster.messages[0];
+                const point =
+                  m.latitude != null && m.longitude != null
+                    ? { latitude: m.latitude, longitude: m.longitude }
+                    : null;
+                return (
+                  <div key={m.id} className={`chat-msgrow ${mine ? 'chat-msgrow-mine' : ''}`}>
+                    <div className={`chat-bubble chat-bubble-phone chat-bubble-loc ${m.pending ? 'chat-bubble-pending' : ''}`}>
+                      {!mine && (
+                        <button
+                          type="button"
+                          className="chat-msg-report"
+                          aria-label="Report this message"
+                          onClick={() => setReportMessage(m)}
+                        >
+                          ⚑
+                        </button>
+                      )}
+                      <div className="mono-label chat-phone-label">
+                        {mine ? 'You shared a location' : 'Location'}
+                      </div>
+                      <div className="chat-loc-place">
+                        <PinIcon size={20} />
+                        <span>{m.body === 'Location' ? 'Pinned location' : m.body}</span>
+                      </div>
+                      {point && (
+                        <>
+                          <div className="mono-value chat-loc-coords">{formatCoords(point)}</div>
+                          <div className="chat-phone-actions">
+                            <a
+                              className="btn-acid chat-phone-btn"
+                              href={googleMapsHref(point)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Google Maps
+                            </a>
+                            <a
+                              className="btn-outline chat-phone-btn"
+                              href={wazeHref(point)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Waze
+                            </a>
+                          </div>
+                        </>
                       )}
                       <div className="mono-value chat-msg-meta">
                         {m.pending ? 'Sending…' : timeOfDay(m.createdAt)}
@@ -943,6 +1092,75 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             </p>
           </form>
         )}
+        {locOpen && !composerDisabled && (
+          <form
+            className="chat-phonebar chat-locbar"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void shareLocation();
+            }}
+          >
+            <span className="mono-label chat-offerbar-label">Location</span>
+            {locPoint && !locPaste ? (
+              <span className="mono-value chat-loc-found">
+                <PinIcon />
+                {formatCoords(locPoint)}
+                {locPoint.accuracy != null && ` · ±${locPoint.accuracy} m`}
+                <button
+                  type="button"
+                  className="chat-loc-clear"
+                  aria-label="Clear this location"
+                  onClick={() => setLocPoint(null)}
+                >
+                  ✕
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                className="btn-outline chat-loc-me"
+                disabled={locBusy}
+                onClick={() => void locateMe()}
+              >
+                <PinIcon />
+                {locBusy ? 'Finding you…' : 'Use my current location'}
+              </button>
+            )}
+            <input
+              type="text"
+              aria-label="Or paste a map link or coordinates"
+              placeholder="…or paste a map link or coordinates"
+              className="input chat-loc-paste"
+              value={locPaste}
+              aria-invalid={pasted ? !pasted.ok : undefined}
+              onChange={(e) => onLocPaste(e.target.value)}
+            />
+            {pasted && !pasted.ok && (
+              <p className="field-error chat-loc-error" role="alert">
+                {pasted.reason === 'short-link'
+                  ? 'Short links (maps.app.goo.gl) can’t be read here. In Google Maps, press and hold the spot and copy the numbers that appear, or paste the full link from your browser.'
+                  : 'Paste coordinates like 33.89380, 35.50180 or a full Google Maps, Apple Maps or Waze link.'}
+              </p>
+            )}
+            <input
+              type="text"
+              aria-label="Place name"
+              placeholder="Place name (optional)"
+              className="input chat-loc-name"
+              value={locPlace}
+              maxLength={PLACE_MAX_LENGTH}
+              onChange={(e) => setLocPlace(e.target.value)}
+            />
+            <button type="submit" className="btn-acid" disabled={!locPoint}>
+              Share location
+            </button>
+            <p className="chat-phonebar-hint">
+              Meet somewhere public, not at home. Only @
+              {conv.otherParty.username ?? conv.otherParty.displayName} will see it, here in this
+              chat.
+            </p>
+          </form>
+        )}
         <div className="chat-composer-row">
           <button
             type="button"
@@ -953,6 +1171,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             onClick={() => {
               setOfferOpen((v) => !v);
               setPhoneOpen(false);
+              setLocOpen(false);
             }}
           >
             $
@@ -972,9 +1191,25 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
               }
               setPhoneOpen((v) => !v);
               setOfferOpen(false);
+              setLocOpen(false);
             }}
           >
             ☎
+          </button>
+          <button
+            type="button"
+            aria-label="Share a location"
+            aria-pressed={locOpen}
+            title="Share a location"
+            className={`btn-icon chat-loc-toggle ${locOpen ? 'icon-on' : ''}`}
+            disabled={composerDisabled}
+            onClick={() => {
+              setLocOpen((v) => !v);
+              setOfferOpen(false);
+              setPhoneOpen(false);
+            }}
+          >
+            <PinIcon />
           </button>
           <input
             type="text"

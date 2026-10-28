@@ -38,7 +38,7 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Activity:</strong> messages and offers in your conversations, any phone number
-            you choose to share in a chat, bids, cards you watch, reviews you write and receive,
+            or location you choose to share in a chat, bids, cards you watch, reviews you write and receive,
             reports you file, and the notifications we send you.
           </li>
           <li>
@@ -112,8 +112,8 @@ const SECTIONS: LegalSection[] = [
         </p>
         <p>
           <strong>Private to you and the other party:</strong> conversations, offers, a phone number
-          you share in a chat (it is never added to your profile or shown anywhere else) and the
-          outcome of a deal. <strong>Private to you and moderators:</strong> your warnings, your
+          or location you share in a chat (never added to your profile or shown anywhere else) and
+          the outcome of a deal. <strong>Private to you and moderators:</strong> your warnings, your
           reports, and a message that has been reported. <strong>Private to you:</strong> your
           email, watchlist, notifications, unpublished Pre-Grade reports and plan requests.
         </p>

@@ -160,9 +160,11 @@ interface MessageRow {
   id: string;
   conversation_id: string;
   sender_id: string | null;
-  kind: 'user' | 'system' | 'offer' | 'phone';
+  kind: 'user' | 'system' | 'offer' | 'phone' | 'location';
   body: string;
   amount: number | string | null;
+  latitude?: number | string | null;
+  longitude?: number | string | null;
   offer_status: 'proposed' | 'accepted' | 'declined' | null;
   created_at: string;
   read_at: string | null;
@@ -452,6 +454,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       offerStatus: row.offer_status,
       createdAt: row.created_at,
       readAt: row.read_at,
+      latitude: row.latitude == null ? null : Number(row.latitude),
+      longitude: row.longitude == null ? null : Number(row.longitude),
     };
   }
 
@@ -1384,7 +1388,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
           .from('messages')
           .select('conversation_id')
           .in('conversation_id', convIds)
-          .in('kind', ['user', 'phone'])
+          .in('kind', ['user', 'phone', 'location'])
           .neq('sender_id', me)
           .is('read_at', null),
       ]);
@@ -1489,6 +1493,35 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
         throw new Error(this.suspensionMessage() ?? 'You cannot message this user.');
       }
       if (error.code === '23514') throw new Error('That doesn’t look like a phone number.');
+      throw new Error(error.message);
+    }
+    return { ...this.mapMessage(data as MessageRow), clientId };
+  }
+
+  async shareLocation(
+    conversationId: string,
+    point: { latitude: number; longitude: number },
+    place: string,
+    clientId: string,
+  ): Promise<Message> {
+    const uid = this.uid();
+    const { data, error } = await this.sb
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: uid,
+        kind: 'location',
+        body: place.trim() || 'Location',
+        latitude: point.latitude,
+        longitude: point.longitude,
+      })
+      .select()
+      .single();
+    if (error) {
+      if (error.code === '42501') {
+        throw new Error(this.suspensionMessage() ?? 'You cannot message this user.');
+      }
+      if (error.code === '23514') throw new Error('That location couldn’t be shared.');
       throw new Error(error.message);
     }
     return { ...this.mapMessage(data as MessageRow), clientId };
@@ -1638,7 +1671,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     const { count } = await this.sb
       .from('messages')
       .select('id', { count: 'exact', head: true })
-      .in('kind', ['user', 'phone'])
+      .in('kind', ['user', 'phone', 'location'])
       .neq('sender_id', this.auth.user.id)
       .is('read_at', null);
     return count ?? 0;

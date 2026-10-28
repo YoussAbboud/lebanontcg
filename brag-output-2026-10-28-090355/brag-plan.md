@@ -62,3 +62,12 @@ Vertical 1080×1920, 30 fps, about 24.6 s (46 beats at 112 BPM). Key text stays 
 
 ## Share caption
 Both sides of a LebanonTCG deal, one chat: make an offer, share your number, pick a public spot on the map, and meet. No checkout, no fees. www.lebanontcg.com
+
+## As built
+- **Check:** HyperFrames check passed with zero errors. The remaining warnings were weighed and kept:
+  - the map and flag images are used more than once on purpose;
+  - small UI chrome (buttons, timestamps) sits under the 28 px floor, while the seam labels at 54 px and the lime cards carry the message.
+- **Visibility:** anything fully under the lime card is hidden rather than drawn underneath. The phones start hidden in CSS and appear as the card opens, and are hidden again once it closes.
+- **Taps:** the fingertip targets were read from the actual layout in Chromium. Accept (159, 1538), WhatsApp (302, 637), "Choose on the map" (253, 720) and "Use this spot" (933, 846) all land on their buttons.
+- **Render:** 1080×1920, 30 fps, 24.67 s (740 frames), −12.9 LUFS, −1.0 dBFS peak. In the final file the audio onsets land within 1 ms of their beats (checked at beats 2, 4, 11.5, 13 and 30).
+- **Poster and frame 0:** both come from 3.0 s, the lime card with all three lines set.

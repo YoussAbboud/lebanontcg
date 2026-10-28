@@ -253,6 +253,11 @@ create table if not exists private.listing_screen_secret (
   secret_hash bytea not null,
   rotated_at timestamptz not null default now()
 );
+-- Belt and braces: no API role can reach it even if the schema were
+-- exposed. The functions below run as the table owner, which RLS
+-- doesn't restrict, so they still read and write it.
+alter table private.listing_screen_secret enable row level security;
+revoke all on private.listing_screen_secret from public, anon, authenticated;
 
 -- Run in the SQL editor: `select private.rotate_listing_screen_secret();`
 -- It returns a new secret once. Put it in the Vercel project as

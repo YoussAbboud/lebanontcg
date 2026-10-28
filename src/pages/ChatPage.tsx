@@ -824,7 +824,8 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
                 disabled={statusBusy}
                 onClick={() => void confirmDeal()}
               >
-                We completed this deal
+                <span className="chat-head-long">We completed this deal</span>
+                <span className="chat-head-short">Deal done</span>
               </button>
             </>
           )}

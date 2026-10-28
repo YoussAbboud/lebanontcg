@@ -13,6 +13,9 @@
 /* ---- Inbox ------------------------------------------------------------------- */
 .chat-inbox {
   flex: 1 1 280px;
+  /* A flex item won't shrink below its content by default, so one long
+     card title would stretch the column (and the page) past the screen. */
+  min-width: 0;
   max-width: 380px;
   border-right: 1px solid var(--hairline);
   padding: 20px 16px;
@@ -56,6 +59,7 @@
 
 .chat-row {
   display: flex;
+  min-width: 0;
   gap: 12px;
   align-items: center;
   width: 100%;
@@ -94,8 +98,15 @@
   align-items: center;
   gap: 8px;
 }
-.chat-row-handle { font-size: var(--fs-13); font-weight: 600; }
-.chat-row-time { margin-left: auto; font-size: var(--fs-11); color: var(--muted); }
+.chat-row-handle {
+  font-size: var(--fs-13);
+  font-weight: 600;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-row-time { margin-left: auto; flex: none; font-size: var(--fs-11); color: var(--muted); }
 .chat-row-unread {
   width: 8px;
   height: 8px;
@@ -186,6 +197,7 @@
   flex-wrap: wrap;
 }
 .chat-head-btn { padding: 11px 16px; min-height: 44px; }
+.chat-head-short { display: none; }
 .chat-deal-done { cursor: default; }
 
 /* ---- Log ------------------------------------------------------------------------- */
@@ -504,6 +516,21 @@
 /* Phones: the $, ☎ and pin tools take their own row so the message box and
    Send keep the full width below them. */
 @media (max-width: 560px) {
+  /* The thread's buttons share one row: compact, and the long label gets
+     its short form. */
+  .chat-thread-actions { width: 100%; flex-wrap: nowrap; gap: 6px; }
+  .chat-head-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 38px;
+    padding: 8px 10px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .chat-head-long { display: none; }
+  .chat-head-short { display: inline; }
+
   /* one row: [+] [message] [send] */
   .chat-input { min-width: 0; }
   .chat-send { padding: 14px 18px; }

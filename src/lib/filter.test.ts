@@ -29,6 +29,8 @@ const base = (over: Partial<Listing> = {}): Listing => ({
   status: 'active',
   saleType: 'fixed',
   reservedForConversationId: null,
+  reviewState: 'approved',
+  reviewNote: null,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
   images: [],

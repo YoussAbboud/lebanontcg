@@ -88,8 +88,14 @@ export const ListingCard = memo(function ListingCard({
 
       <div className="lcard-facewrap">
         <CardFace listing={listing} className="lcard-face" />
-        {listing.status !== 'active' && (
-          <div className="lcard-status mono-label">{listing.status}</div>
+        {listing.reviewState !== 'approved' ? (
+          <div className="lcard-status lcard-status-review mono-label">
+            {listing.reviewState === 'rejected' ? 'not approved' : 'in review'}
+          </div>
+        ) : (
+          listing.status !== 'active' && (
+            <div className="lcard-status mono-label">{listing.status}</div>
+          )
         )}
         {live && livePill && <div className="lcard-live mono-label">{livePill}</div>}
       </div>

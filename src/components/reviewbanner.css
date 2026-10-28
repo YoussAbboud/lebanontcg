@@ -1,0 +1,17 @@
+.review-banner {
+  margin: 14px 0 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--warn);
+  border-radius: 12px;
+  background: rgba(255, 196, 94, 0.06);
+}
+.review-banner p {
+  margin: 4px 0 0;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.review-banner-label { color: var(--warn); }
+.review-banner-no { border-color: var(--danger); background: rgba(255, 92, 138, 0.06); }
+.review-banner-no .review-banner-label { color: var(--danger); }
+.review-banner .review-banner-note { color: var(--text-1); }

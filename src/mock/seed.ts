@@ -257,6 +257,8 @@ export function buildSeedListings(): Listing[] {
       status: s.status ?? 'active',
       saleType: 'fixed',
       reservedForConversationId: null,
+      reviewState: 'approved',
+      reviewNote: null,
       createdAt: days(s.ageDays),
       updatedAt: days(Math.max(0, s.ageDays - 1)),
       images: Array.from({ length: count }, (_, j) => ({
@@ -376,6 +378,8 @@ export function buildStressListings(count: number): Listing[] {
       status: 'active',
       saleType: 'fixed',
       reservedForConversationId: null,
+      reviewState: 'approved',
+      reviewNote: null,
       createdAt: days(1 + (i % 300)),
       updatedAt: days(i % 300),
       images: [
@@ -520,6 +524,8 @@ export function buildSeedAuctions(): { listings: Listing[]; auctions: Auction[] 
     status: 'active',
     saleType: 'auction',
     reservedForConversationId: null,
+    reviewState: 'approved',
+    reviewNote: null,
     createdAt: days(1),
     updatedAt: days(0),
     images: Array.from({ length: 2 }, (_, j) => ({

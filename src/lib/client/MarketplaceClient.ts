@@ -29,6 +29,8 @@ import type {
   Report,
   ReportInput,
   ReportStatus,
+  ReviewQueueItem,
+  ReviewState,
   PurchaseKind,
   PurchaseStatus,
   Review,
@@ -154,6 +156,12 @@ export interface MarketplaceClient {
     images: ImageDraft[],
     auction: AuctionInput,
   ): Promise<Listing>;
+  /** Ask for the automatic photo check on the seller's own pending
+      listing, right after its photos are saved. Resolves with the
+      review state afterwards: 'approved' (live now) or 'pending'
+      (waiting for a moderator). Never throws for a failed check — the
+      listing just waits. */
+  screenListing(listingId: string): Promise<ReviewState>;
   /** The auction + full bid history for a listing (newest first).
       Lazily closes overdue auctions so a stale one never reads live. */
   getAuctionForListing(listingId: string): Promise<AuctionDetail | null>;
@@ -358,6 +366,11 @@ export interface MarketplaceClient {
   /** Hard delete — cascades to images, conversations and reviews. Last
       resort; removal is the everyday tool. */
   adminDeleteListing(listingId: string, reason: string): Promise<void>;
+  /** Listings waiting for review, oldest first. */
+  adminListReviewQueue(): Promise<ReviewQueueItem[]>;
+  /** Approve (live now) or reject (reason required, shown to the
+      seller). Rejecting an auction cancels it. */
+  adminReviewListing(listingId: string, approve: boolean, reason: string): Promise<void>;
   adminListAuctions(status: AuctionStatus | 'all'): Promise<AdminAuction[]>;
   /** Kill a live auction: no winner, every bidder told a moderator did it. */
   adminCancelAuction(auctionId: string, reason: string): Promise<void>;

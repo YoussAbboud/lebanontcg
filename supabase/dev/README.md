@@ -19,8 +19,17 @@ for f in supabase/migrations/*.sql; do
   psql -h /tmp/pgtest -U postgres -d apptest -v ON_ERROR_STOP=1 -f "$f" || break
 done
 psql -h /tmp/pgtest -U postgres -d apptest -f supabase/seed.sql
+psql -h /tmp/pgtest -U postgres -d apptest -f supabase/dev/legacy-autoapprove.sql
 psql -h /tmp/pgtest -U postgres -d apptest -f supabase/dev/rls-test.sql
 ```
+
+Since 0031 a member's new listing waits for review, while the suites
+written before it expect a listing to be public as soon as it's
+inserted. `legacy-autoapprove.sql` approves listings as they're created
+for those suites. `review-test.sql` tests the review itself, so run it on
+its own fresh database, without that file. Each suite is written for a
+fresh database: some count rows across the whole table, so run them
+separately rather than one after another in the same database.
 
 `rls-test.sql` prints `Tnn ...: true` lines; every `true` is an assertion,
 and each `(expect error above: ...)` line documents the immediately

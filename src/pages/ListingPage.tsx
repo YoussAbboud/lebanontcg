@@ -14,6 +14,7 @@ import { ReportDialog } from '../components/ReportDialog';
 import { PregradeListingPanel } from '../components/pregrade/PregradeListingPanel';
 import { ImageLightbox } from '../components/ImageLightbox';
 import { LiveBidPage } from './LiveBidPage';
+import { ReviewBanner } from '../components/ReviewBanner';
 import './listing.css';
 import { usePageMeta } from '../lib/usePageMeta';
 import { listingMeta } from '../lib/pageMeta';
@@ -241,6 +242,7 @@ export function ListingPage() {
               </span>
             )}
           </div>
+          <ReviewBanner listing={listing} isOwner={isOwner} />
 
           {isOwner ? (
             <div className="ldetail-actions">

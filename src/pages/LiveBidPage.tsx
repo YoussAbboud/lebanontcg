@@ -15,6 +15,7 @@ import { AuctionPriceChart } from '../components/AuctionPriceChart';
 import { ImageLightbox } from '../components/ImageLightbox';
 import { ReportDialog } from '../components/ReportDialog';
 import { PregradeListingPanel } from '../components/pregrade/PregradeListingPanel';
+import { ReviewBanner } from '../components/ReviewBanner';
 import './livebid.css';
 
 /**
@@ -171,6 +172,7 @@ export function LiveBidPage({
             {listing.setName ? ` · ${listing.setName}` : ''}
           </div>
           <h1 className="display livebid-title">{listing.title}</h1>
+          <ReviewBanner listing={listing} isOwner={isOwner} />
 
           <AuctionPanel listing={listing} onAuctionChanged={onReload} onDetail={setDetail} />
 

@@ -63,6 +63,12 @@ const SECTIONS: LegalSection[] = [
           <li>the price is the price. Bait listings and listings created only to advertise something else are forbidden.</li>
         </ul>
         <p>
+          A new listing, and a listing you add new photos to, goes public once its photos are
+          checked: an automatic check confirms they show a trading card, and when it can&apos;t, a
+          moderator looks. Until then only you can see it. We may decline a listing that isn&apos;t
+          a trading card, and we tell you why.
+        </p>
+        <p>
           Listings are free for now; <Link to="/plans">subscription plans</Link> will follow and we
           will say so clearly before anything is charged. We may remove any listing that breaks
           these rules, misleads buyers, or is reported and found wanting, and we may keep a copy

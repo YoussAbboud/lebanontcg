@@ -134,7 +134,7 @@ export function SellPage() {
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'missing' | 'forbidden'>(
     editing || relistId ? 'loading' : 'ready',
   );
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<false | 'saving' | 'checking'>(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -299,6 +299,8 @@ export function SellPage() {
             }
           : undefined,
       reservedForConversationId: null,
+      reviewState: 'approved',
+      reviewNote: null,
       createdAt: now,
       updatedAt: now,
       images: images.map((img, i) => ({
@@ -401,7 +403,7 @@ export function SellPage() {
         return;
       }
     }
-    setSaving(true);
+    setSaving('saving');
     try {
       const listing = editing
         ? await client.updateListing(id!, input, images)
@@ -412,7 +414,22 @@ export function SellPage() {
               durationHours: form.durationHours,
             })
           : await client.createListing(input, images);
-      toast(editing ? 'Listing updated' : form.saleType === 'auction' ? 'Auction started' : 'Published');
+      // A new listing, or new photos, wait for review: the photo check
+      // usually puts it live within seconds, otherwise a moderator does.
+      let review = listing.reviewState;
+      if (review === 'pending') {
+        setSaving('checking');
+        review = await client.screenListing(listing.id);
+      }
+      toast(
+        review === 'approved'
+          ? editing
+            ? 'Listing updated'
+            : form.saleType === 'auction'
+              ? 'Auction started'
+              : 'Published'
+          : "Saved. It's waiting for a moderator to check it — we'll let you know when it's live.",
+      );
       refreshEntitlements();
       navigate(`/listing/${listing.id}`);
     } catch (err) {
@@ -798,15 +815,18 @@ export function SellPage() {
                 ? "Bids aren't binding and LebanonTCG handles no payment. When the clock runs out, the highest bidder and you get a chat to sort out the deal yourselves."
                 : "LebanonTCG doesn't handle payment or shipping. You'll arrange both directly with the buyer in chat."}{' '}
               By publishing you confirm this is a real card you own, described honestly — fake
-              or misleading listings get the account banned.
+              or misleading listings get the account banned. Listings go live once a quick check
+              confirms the photos show a card.
             </div>
             <button
               type="button"
               className="btn-acid sell-publish"
-              disabled={saving || walled}
+              disabled={saving !== false || walled}
               onClick={() => void publish()}
             >
-              {saving
+              {saving === 'checking'
+                ? 'Checking your photos…'
+                : saving
                 ? 'Saving…'
                 : editing
                   ? 'Save changes'

@@ -145,17 +145,28 @@ export function MyListingsPage() {
                 </div>
                 <div className="mylist-price-line">
                   <span className="mono-value">{formatPrice(l.price, l.currency)}</span>
-                  <span
-                    className={`mono-label ${
-                      l.status === 'active'
-                        ? 'mylist-status-active'
-                        : l.status === 'reserved'
-                          ? 'mylist-status-reserved'
-                          : 'mylist-status-muted'
-                    }`}
-                  >
-                    {STATUS_LABELS[l.status]}
-                  </span>
+                  {l.reviewState !== 'approved' && l.status !== 'removed' ? (
+                    <span
+                      className={`mono-label ${
+                        l.reviewState === 'rejected' ? 'mylist-status-rejected' : 'mylist-status-reserved'
+                      }`}
+                      title={l.reviewNote ?? undefined}
+                    >
+                      {l.reviewState === 'rejected' ? 'Not approved' : 'In review'}
+                    </span>
+                  ) : (
+                    <span
+                      className={`mono-label ${
+                        l.status === 'active'
+                          ? 'mylist-status-active'
+                          : l.status === 'reserved'
+                            ? 'mylist-status-reserved'
+                            : 'mylist-status-muted'
+                      }`}
+                    >
+                      {STATUS_LABELS[l.status]}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="mylist-actions">

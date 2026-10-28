@@ -4,6 +4,9 @@ export type Game = 'pokemon' | 'magic' | 'yugioh' | 'onepiece' | 'lorcana' | 'ot
 export type Condition = 'NM' | 'LP' | 'MP' | 'HP' | 'DMG';
 export type Finish = 'normal' | 'holo' | 'reverse' | 'foil' | 'etched' | 'other';
 export type ListingStatus = 'active' | 'reserved' | 'sold' | 'removed';
+/** A member's new listing is hidden until screening or a moderator
+    approves it (migration 0031); new photos send it back to pending. */
+export type ReviewState = 'pending' | 'approved' | 'rejected';
 /** Chosen once at creation, immutable for the life of the listing. */
 export type SaleType = 'fixed' | 'auction';
 export type AuctionStatus = 'live' | 'closed' | 'cancelled';
@@ -106,6 +109,10 @@ export interface Listing {
   status: ListingStatus;
   saleType: SaleType;
   reservedForConversationId: string | null;
+  /** Only 'approved' listings are public. */
+  reviewState: ReviewState;
+  /** Why a moderator turned it down; shown to the seller. */
+  reviewNote: string | null;
   createdAt: string;
   updatedAt: string;
   images: ListingImage[];
@@ -420,7 +427,9 @@ export type AdminActionKind =
   | 'review_delete'
   | 'report_resolve'
   | 'user_warn'
-  | 'warning_revoke';
+  | 'warning_revoke'
+  | 'listing_approve'
+  | 'listing_reject';
 
 export const ADMIN_ACTION_LABELS: Record<AdminActionKind, string> = {
   user_suspend: 'Suspended user',
@@ -435,6 +444,8 @@ export const ADMIN_ACTION_LABELS: Record<AdminActionKind, string> = {
   report_resolve: 'Actioned report',
   user_warn: 'Warned user',
   warning_revoke: 'Withdrew warning',
+  listing_approve: 'Approved listing',
+  listing_reject: 'Rejected listing',
 };
 
 /** One append-only audit row. Nothing in the app can delete these. */
@@ -461,6 +472,8 @@ export interface AdminStats {
   listingsSold: number;
   listingsRemoved: number;
   listingsNew7d: number;
+  /** Listings waiting in the review queue. */
+  listingsPending: number;
   auctionsLive: number;
   bids24h: number;
   reportsOpen: number;
@@ -479,6 +492,21 @@ export interface AdminListingFilter {
   status: ListingStatus | 'all';
   saleType: SaleType | 'all';
   sellerId?: string | null;
+}
+
+/** One automatic check of a listing's photos. `verdict` is null while it runs. */
+export interface ListingScreen {
+  verdict: 'card' | 'not_card' | 'unsure' | 'error' | null;
+  reason: string;
+  createdAt: string;
+}
+
+/** A listing in the review queue, with what the automatic checks said. */
+export interface ReviewQueueItem {
+  listing: Listing;
+  seller: Profile | null;
+  /** Newest first. */
+  screens: ListingScreen[];
 }
 
 // ---------------------------------------------------------------------------

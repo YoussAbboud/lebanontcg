@@ -43,7 +43,9 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Moderation:</strong> warnings issued to your account, with the reason, and any
-            suspension. Moderator actions are logged with who did what and why.
+            suspension; the result of the automatic check on your listing photos, and a
+            moderator&apos;s decision on a listing. Moderator actions are logged with who did what
+            and why.
           </li>
           <li>
             <strong>Pre-Grade:</strong> the photographs you submit to the estimator, the
@@ -97,6 +99,7 @@ const SECTIONS: LegalSection[] = [
         <ul>
           <li>To run the marketplace: show your listings, deliver your messages, run auctions, count likes, and tell you when something happens.</li>
           <li>To keep it honest: handle reports, issue warnings, suspend accounts that break the <Link to="/terms">Terms</Link>, and keep a record of moderation decisions.</li>
+          <li>To check that a new listing&apos;s photos show a trading card before it goes public.</li>
           <li>To produce Pre-Grade estimates from the photos you submit.</li>
           <li>To secure the service and investigate abuse.</li>
           <li>To contact you about your account, a plan you asked for, or changes to these documents. We do not send marketing email.</li>
@@ -151,9 +154,10 @@ const SECTIONS: LegalSection[] = [
           </li>
           <li>
             <strong>Anthropic</strong> — when you run a Pre-Grade estimate, the photographs you
-            submitted are sent to Anthropic’s API to produce the assessment. We send the photos
-            and nothing that identifies you. Under the API terms we use, your photos are not used
-            to train their models.
+            submitted are sent to Anthropic’s API to produce the assessment. When you publish a
+            listing or add photos to one, its photos, title and description are sent to the same
+            API to check they show a trading card. We send nothing that identifies you. Under the
+            API terms we use, none of it is used to train their models.
           </li>
           <li>
             <strong>OpenStreetMap</strong> — when a map appears in a chat (choosing a meeting place,

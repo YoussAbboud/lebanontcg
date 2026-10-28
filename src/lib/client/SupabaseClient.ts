@@ -34,6 +34,9 @@ import type {
   Report,
   ReportInput,
   ReportStatus,
+  ReviewQueueItem,
+  ReviewState,
+  ListingScreen,
   PurchaseKind,
   PurchaseRequest,
   PurchaseStatus,
@@ -114,6 +117,9 @@ interface ListingRow {
   status: ListingStatus;
   sale_type: 'fixed' | 'auction';
   reserved_for_conversation_id: string | null;
+  /** Absent until migration 0031 is applied — read as approved. */
+  review_state?: ReviewState;
+  review_note?: string | null;
   created_at: string;
   updated_at: string;
   listing_images?: ListingImageRow[];
@@ -394,6 +400,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       status: row.status,
       saleType: row.sale_type ?? 'fixed',
       reservedForConversationId: row.reserved_for_conversation_id,
+      reviewState: row.review_state ?? 'approved',
+      reviewNote: row.review_note ?? null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       images,
@@ -754,6 +762,17 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   }
 
   async searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage> {
+    // RLS hides other people's listings in review; a seller's own still
+    // come back, and browse is for public listings only.
+    const page = await this.searchVisibleListings(filter, offset, limit);
+    return { ...page, items: page.items.filter((l) => l.reviewState === 'approved') };
+  }
+
+  private async searchVisibleListings(
+    filter: ListingFilter,
+    offset: number,
+    limit: number,
+  ): Promise<ListingPage> {
     if ((filter.saleType ?? 'all') === 'auction' || filter.sort === 'ending_soon') {
       // A stale auction must never render as live if cron is behind.
       void this.sb.rpc('close_due_auctions').then(() => undefined, () => undefined);
@@ -1125,6 +1144,22 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     const listingId = data as string;
     await this.syncImages(listingId, images, []);
     return (await this.getListing(listingId))!;
+  }
+
+  async screenListing(listingId: string): Promise<ReviewState> {
+    const { data: sess } = await this.sb.auth.getSession();
+    const token = sess.session?.access_token;
+    if (token) {
+      // Whatever the check says (or if it can't run), the listing row is
+      // the truth — read it back afterwards.
+      await fetch('/api/listings/screen', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+        body: JSON.stringify({ listingId }),
+      }).catch(() => undefined);
+    }
+    const listing = await this.getListing(listingId);
+    return listing?.reviewState ?? 'pending';
   }
 
   async getAuctionForListing(listingId: string): Promise<AuctionDetail | null> {
@@ -2067,6 +2102,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       suspended: n('suspended'),
       admins: n('admins'),
       listingsActive: n('listingsActive'),
+      listingsPending: n('listingsPending'),
       listingsReserved: n('listingsReserved'),
       listingsSold: n('listingsSold'),
       listingsRemoved: n('listingsRemoved'),
@@ -2187,6 +2223,39 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   async adminDeleteListing(listingId: string, reason: string): Promise<void> {
     const { error } = await this.sb.rpc('admin_delete_listing', {
       p_listing: listingId,
+      p_reason: reason,
+    });
+    if (error) throw this.adminError(error);
+  }
+
+  async adminListReviewQueue(): Promise<ReviewQueueItem[]> {
+    const { data, error } = await this.sb
+      .from('listings')
+      .select(
+        `${LISTING_SELECT}, seller:profiles!listings_seller_id_fkey(*), listing_screens(verdict, reason, created_at)`,
+      )
+      .eq('review_state', 'pending')
+      .neq('status', 'removed')
+      .order('review_requested_at', { ascending: true })
+      .limit(100);
+    if (error) throw this.adminError(error);
+    type Row = ListingRow & {
+      seller: ProfileRow | null;
+      listing_screens?: { verdict: ListingScreen['verdict']; reason: string | null; created_at: string }[];
+    };
+    return (data as Row[]).map((row) => ({
+      listing: this.mapListing(row),
+      seller: row.seller ? this.mapProfile(row.seller) : null,
+      screens: (row.listing_screens ?? [])
+        .map((sc) => ({ verdict: sc.verdict, reason: sc.reason ?? '', createdAt: sc.created_at }))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+    }));
+  }
+
+  async adminReviewListing(listingId: string, approve: boolean, reason: string): Promise<void> {
+    const { error } = await this.sb.rpc('admin_review_listing', {
+      p_listing: listingId,
+      p_approve: approve,
       p_reason: reason,
     });
     if (error) throw this.adminError(error);

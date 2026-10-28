@@ -216,6 +216,11 @@ export function AdminListings({ onChanged }: { onChanged(): void }) {
                   </Link>
                   <span className="acard-flags">
                     <Chip tone={STATUS_TONE[l.status]}>{STATUS_LABELS[l.status]}</Chip>
+                    {l.reviewState !== 'approved' && (
+                      <Chip tone={l.reviewState === 'rejected' ? 'danger' : 'warn'}>
+                        {l.reviewState === 'rejected' ? 'Not approved' : 'In review'}
+                      </Chip>
+                    )}
                     {l.saleType === 'auction' && <Chip tone="warn">Auction</Chip>}
                   </span>
                 </div>

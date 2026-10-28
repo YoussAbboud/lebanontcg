@@ -81,6 +81,7 @@
 .mylist-status-active { color: var(--acid); }
 .mylist-status-reserved { color: var(--warn); }
 .mylist-status-muted { color: var(--muted); }
+.mylist-status-rejected { color: var(--danger); }
 
 .mylist-actions {
   display: flex;

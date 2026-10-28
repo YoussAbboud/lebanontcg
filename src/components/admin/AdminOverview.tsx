@@ -59,6 +59,13 @@ export function AdminOverview({ stats, recent, onGo }: Props) {
           <span className="aqueue-go mono-label">Open the queue →</span>
         </button>
       )}
+      {stats.listingsPending > 0 && (
+        <button type="button" className="aqueue-cta" onClick={() => onGo('review')}>
+          <span className="mono-label">Listings to review</span>
+          <span className="display aqueue-n">{stats.listingsPending}</span>
+          <span className="aqueue-go mono-label">Open the review queue →</span>
+        </button>
+      )}
 
       <div className="astats">
         <Stat

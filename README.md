@@ -110,6 +110,27 @@ estimates can never touch the listings table's real-slab columns
   (`VITE_MOCK=1`) runs the whole flow with canned cases — `?case=indent`
   on `/pregrade` for UI work.
 
+## Listing review
+
+A member's new listing stays hidden (only the seller and moderators see
+it) until it's known to be a card — `supabase/migrations/0031_listing_review.sql`.
+Right after the photos upload, the app calls `api/listings/screen`, which
+asks the vision model whether the photos show a trading card. A clear
+"card" puts the listing live within seconds; anything else (not a card,
+unsure, sealed product, the check failing) waits in **Admin →
+Approvals** and the moderators are notified. Adding photos to a listing
+sends it back for a check, and once a moderator has rejected a listing
+only a moderator can approve it.
+
+- The check needs `ANTHROPIC_API_KEY` and `LISTING_SCREEN_SECRET` in the
+  Vercel project env (`LISTING_SCREEN_MODEL` optional). Get the secret by
+  running `select private.rotate_listing_screen_secret();` in the
+  Supabase SQL editor — the database keeps only its hash, and running it
+  again replaces it. Without the secret every new listing waits for a
+  moderator.
+- Mock mode approves any listing with a photo unless its title contains
+  "junk", so the queue can be demoed.
+
 ## Admin console
 
 `/admin` is the moderation surface: a queue for reports, account

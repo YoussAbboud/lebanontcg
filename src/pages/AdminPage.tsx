@@ -6,6 +6,7 @@ import { AdminOverview } from '../components/admin/AdminOverview';
 import { AdminReports } from '../components/admin/AdminReports';
 import { AdminUsers } from '../components/admin/AdminUsers';
 import { AdminListings } from '../components/admin/AdminListings';
+import { AdminReviewQueue } from '../components/admin/AdminReviewQueue';
 import { AdminAuctions } from '../components/admin/AdminAuctions';
 import { AdminReviews } from '../components/admin/AdminReviews';
 import { AdminBilling } from '../components/admin/AdminBilling';
@@ -17,6 +18,7 @@ import { usePageMeta } from '../lib/usePageMeta';
 const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'reports', label: 'Reports' },
+  { key: 'review', label: 'Approvals' },
   { key: 'users', label: 'Users' },
   { key: 'listings', label: 'Listings' },
   { key: 'auctions', label: 'Auctions' },
@@ -88,6 +90,7 @@ export function AdminPage() {
   }
 
   const openCount = stats ? stats.reportsOpen : 0;
+  const reviewCount = stats ? stats.listingsPending : 0;
 
   return (
     <main className="admin">
@@ -113,12 +116,18 @@ export function AdminPage() {
                 {openCount > 99 ? '99+' : openCount}
               </span>
             )}
+            {t.key === 'review' && reviewCount > 0 && (
+              <span className="admin-tab-badge" aria-label={`${reviewCount} waiting`}>
+                {reviewCount > 99 ? '99+' : reviewCount}
+              </span>
+            )}
           </button>
         ))}
       </nav>
 
       {tab === 'overview' && <AdminOverview stats={stats} recent={recent} onGo={go} />}
       {tab === 'reports' && <AdminReports onChanged={refresh} />}
+      {tab === 'review' && <AdminReviewQueue onChanged={refresh} />}
       {tab === 'users' && <AdminUsers onChanged={refresh} />}
       {tab === 'listings' && <AdminListings onChanged={refresh} />}
       {tab === 'auctions' && <AdminAuctions onChanged={refresh} />}

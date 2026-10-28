@@ -34,6 +34,9 @@ import type {
   Report,
   ReportInput,
   ReportStatus,
+  ListingScreen,
+  ReviewQueueItem,
+  ReviewState,
   ReportSubject,
   ReportTargetType,
   Review,
@@ -184,6 +187,8 @@ export class MockClient implements MarketplaceClient {
   private reports: StoredReport[] = structuredClone(seedReports) as StoredReport[];
   /** Append-only in mock too — nothing here ever deletes a row. */
   private adminActions: StoredAdminAction[] = [];
+  /** Automatic photo checks per listing, newest first (0031). */
+  private screens = new Map<string, ListingScreen[]>();
   /** Pre-grade reports live per-tab in mock mode (captures = object URLs). */
   private pregradeReports: PregradeReport[] = [];
 
@@ -641,6 +646,22 @@ export class MockClient implements MarketplaceClient {
     return this.auth.user;
   }
 
+  /** The mock of 0031's listing RLS: only approved listings are public;
+      the seller, moderators and anyone already chatting about it still
+      see one in review. */
+  private canSee(l: Listing): boolean {
+    if (l.reviewState === 'approved') return true;
+    const uid = this.auth.user?.id;
+    if (!uid) return false;
+    if (l.sellerId === uid) return true;
+    if (this.profiles.find((p) => p.id === uid)?.isAdmin) return true;
+    return this.conversations.some((c) => c.listingId === l.id && c.buyerId === uid);
+  }
+
+  private requirePublic(l: Listing | undefined): void {
+    if (l && l.reviewState !== 'approved') throw new Error('This listing is waiting for review.');
+  }
+
   /**
    * The mock equivalent of the RLS `not is_suspended()` clauses in 0016:
    * a suspended account can read and be read, but creates nothing new.
@@ -922,7 +943,9 @@ export class MockClient implements MarketplaceClient {
   async searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage> {
     await sleep(netDelay());
     this.lazyCloseAuctions();
-    let candidates = this.listings.filter((l) => listingMatchesFilter(l, filter));
+    let candidates = this.listings.filter(
+      (l) => l.reviewState === 'approved' && listingMatchesFilter(l, filter),
+    );
     if (filter.sellerHasReviews) {
       candidates = candidates.filter(
         (l) => this.withRating(this.profiles.find((p) => p.id === l.sellerId)!).ratingCount > 0,
@@ -958,13 +981,15 @@ export class MockClient implements MarketplaceClient {
     await sleep(netDelay());
     this.lazyCloseAuctions();
     const l = this.listings.find((l) => l.id === id);
-    return l ? this.hydrate(l) : null;
+    return l && this.canSee(l) ? this.hydrate(l) : null;
   }
 
   async getListingsBySeller(sellerId: string, statuses: ListingStatus[]): Promise<Listing[]> {
     await sleep(netDelay());
     return sortListings(
-      this.listings.filter((l) => l.sellerId === sellerId && statuses.includes(l.status)),
+      this.listings.filter(
+        (l) => l.sellerId === sellerId && statuses.includes(l.status) && this.canSee(l),
+      ),
       'newest',
     ).map((l) => {
       const clone = structuredClone(l);
@@ -994,6 +1019,8 @@ export class MockClient implements MarketplaceClient {
       status: 'active',
       saleType: 'fixed',
       reservedForConversationId: null,
+      reviewState: 'pending',
+      reviewNote: null,
       createdAt: nowIso,
       updatedAt: nowIso,
       images: images.map((img, i) => ({
@@ -1030,6 +1057,11 @@ export class MockClient implements MarketplaceClient {
         }
       }
     }
+    // New photos mean a new look at the listing (0031).
+    if (images.some((img) => img.kind === 'new') && listing.reviewState !== 'pending') {
+      listing.reviewState = 'pending';
+      listing.reviewNote = null;
+    }
     listing.images = images.map((img, i) => ({
       id: img.kind === 'existing' ? img.id : nextId('img'),
       listingId: id,
@@ -1043,6 +1075,44 @@ export class MockClient implements MarketplaceClient {
     this.emitListing(listing);
     this.broadcast({ type: 'listing', listing: structuredClone(listing) });
     return structuredClone(listing);
+  }
+
+  async screenListing(listingId: string): Promise<ReviewState> {
+    const me = this.me();
+    await sleep(netDelay() + 600);
+    const listing = this.listings.find((l) => l.id === listingId);
+    if (!listing || listing.sellerId !== me.id) return 'pending';
+    if (listing.reviewState !== 'pending') return listing.reviewState;
+    // Stand-in for the vision check: a listing with photos is a card,
+    // unless its title says "junk" (so the queue can be demoed).
+    const card = listing.images.length > 0 && !/junk/i.test(listing.title);
+    const screen: ListingScreen = {
+      verdict: card ? 'card' : 'not_card',
+      reason: card
+        ? 'The photos show a trading card.'
+        : listing.images.length === 0
+          ? 'No photos could be checked.'
+          : 'The photos do not show a trading card.',
+      createdAt: new Date().toISOString(),
+    };
+    this.screens.set(listingId, [screen, ...(this.screens.get(listingId) ?? [])]);
+    const turnedDown = this.adminActions.some(
+      (a) => a.kind === 'listing_reject' && a.targetId === listingId,
+    );
+    if (card && !turnedDown) {
+      listing.reviewState = 'approved';
+      listing.reviewNote = null;
+    } else {
+      for (const p of this.profiles) {
+        if (p.isAdmin) {
+          this.notify(p.id, 'moderation', 'Listing waiting for review',
+            `${listing.title} — ${screen.reason}`, '/admin?tab=review', me.id, `review:${listingId}`);
+        }
+      }
+    }
+    this.emitListing(listing);
+    this.broadcast({ type: 'listing', listing: structuredClone(listing) });
+    return listing.reviewState;
   }
 
   async setListingStatus(
@@ -1123,7 +1193,11 @@ export class MockClient implements MarketplaceClient {
       as live (mirrors close_due_auctions + the lazy close on read). */
   private lazyCloseAuctions() {
     for (const a of this.auctions) {
-      if (a.status === 'live' && new Date(a.endsAt).getTime() <= Date.now()) {
+      if (
+        a.status === 'live' &&
+        new Date(a.endsAt).getTime() <= Date.now() &&
+        this.listings.find((l) => l.id === a.listingId)?.reviewState === 'approved'
+      ) {
         this.closeAuction(a);
       }
     }
@@ -1281,6 +1355,7 @@ export class MockClient implements MarketplaceClient {
     this.lazyCloseAuctions();
     const a = this.auctions.find((x) => x.id === auctionId);
     if (!a) throw new Error('Auction not found.');
+    this.requirePublic(this.listings.find((l) => l.id === a.listingId));
     if (a.status !== 'live' || new Date(a.endsAt).getTime() <= Date.now()) {
       throw new Error('This auction has ended.');
     }
@@ -1720,6 +1795,7 @@ export class MockClient implements MarketplaceClient {
   async setFavorite(listingId: string, favorited: boolean): Promise<void> {
     const me = this.me();
     const favs = this.myFavorites();
+    if (favorited) this.requirePublic(this.listings.find((l) => l.id === listingId));
     if (favorited) favs.add(listingId);
     else favs.delete(listingId);
     this.broadcast({ type: 'favorite', userId: me.id, listingId, on: favorited });
@@ -1789,6 +1865,7 @@ export class MockClient implements MarketplaceClient {
       (c) => c.listingId === listingId && c.buyerId === me.id,
     );
     if (existing) return structuredClone(existing);
+    this.requirePublic(listing);
     const conv: Conversation = {
       id: nextId('c'),
       listingId,
@@ -2882,6 +2959,9 @@ export class MockClient implements MarketplaceClient {
       listingsSold: byStatus('sold').length,
       listingsRemoved: byStatus('removed').length,
       listingsNew7d: this.listings.filter((l) => new Date(l.createdAt).getTime() > since(7)).length,
+      listingsPending: this.listings.filter(
+        (l) => l.reviewState === 'pending' && l.status !== 'removed',
+      ).length,
       auctionsLive: this.auctions.filter((a) => a.status === 'live').length,
       bids24h: this.bids.filter((b) => new Date(b.createdAt).getTime() > since(1)).length,
       reportsOpen: this.reports.filter((r) => r.status === 'open').length,
@@ -3072,6 +3152,55 @@ export class MockClient implements MarketplaceClient {
     this.broadcast({ type: 'listing', listing: structuredClone(listing) });
     this.logAdmin(actor, 'listing_status', 'listing', listingId, reason, { from, to: status });
     return structuredClone(listing);
+  }
+
+  async adminListReviewQueue(): Promise<ReviewQueueItem[]> {
+    this.requireAdmin();
+    await sleep(netDelay());
+    return this.listings
+      .filter((l) => l.reviewState === 'pending' && l.status !== 'removed')
+      .sort((a, b) => a.updatedAt.localeCompare(b.updatedAt))
+      .map((l) => {
+        const listing = structuredClone(l);
+        for (const img of listing.images) img.url = this.resolveImageUrl(img.storagePath);
+        return {
+          listing,
+          seller: this.profileById(l.sellerId),
+          screens: structuredClone(this.screens.get(l.id) ?? []),
+        };
+      });
+  }
+
+  async adminReviewListing(listingId: string, approve: boolean, reason: string): Promise<void> {
+    const actor = this.requireAdmin();
+    await sleep(netDelay());
+    const listing = this.listings.find((l) => l.id === listingId);
+    if (!listing) throw new Error('Listing not found.');
+    const from = listing.reviewState;
+    if (approve) {
+      if (from === 'approved') return;
+      listing.reviewState = 'approved';
+      listing.reviewNote = null;
+      this.notify(listing.sellerId, 'moderation', 'Your listing is live', listing.title,
+        `/listing/${listing.id}`, actor.id);
+      this.logAdmin(actor, 'listing_approve', 'listing', listing.id, reason, { from });
+    } else {
+      if (from === 'rejected') return;
+      if (reason.trim().length < 3) throw new Error('A reason is required to reject a listing.');
+      listing.reviewState = 'rejected';
+      listing.reviewNote = reason.trim();
+      for (const a of this.auctions) {
+        if (a.listingId === listing.id && a.status === 'live') {
+          a.status = 'cancelled';
+          a.cancelReason = `Listing not approved: ${reason.trim()}`;
+        }
+      }
+      this.notify(listing.sellerId, 'moderation', 'Your listing wasn\'t approved',
+        `${listing.title} — ${reason.trim()}`, `/listing/${listing.id}`, actor.id);
+      this.logAdmin(actor, 'listing_reject', 'listing', listing.id, reason, { from });
+    }
+    this.emitListing(listing);
+    this.broadcast({ type: 'listing', listing: structuredClone(listing) });
   }
 
   async adminDeleteListing(listingId: string, reason: string): Promise<void> {

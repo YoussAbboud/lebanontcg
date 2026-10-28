@@ -212,6 +212,9 @@ export interface MarketplaceClient {
   openConversation(listingId: string): Promise<Conversation>;
   getMessages(conversationId: string): Promise<Message[]>;
   sendMessage(conversationId: string, body: string, clientId: string): Promise<Message>;
+  /** Shares the sender's phone number (E.164, e.g. +96170123456) as a
+      'phone'-kind message — visible to the other party only. */
+  sharePhone(conversationId: string, phone: string, clientId: string): Promise<Message>;
   /** Non-binding offer: an 'offer'-kind message with an amount. */
   sendOffer(conversationId: string, amount: number, note: string, clientId: string): Promise<Message>;
   /** Recipient accepts/declines a proposed offer. */

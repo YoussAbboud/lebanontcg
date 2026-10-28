@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { ConversationSummary, Message } from '../lib/types';
 import { MESSAGE_MAX_LENGTH } from '../lib/types';
 import { groupMessages } from '../lib/chat';
+import { formatPhone, normalizePhone, telHref, whatsappHref } from '../lib/phone';
 import { formatPrice, relativeTime, timeOfDay } from '../lib/format';
 import { STATUS_LABELS } from '../lib/status';
 import { glyphOf, thumbBackground } from '../lib/face';
@@ -16,6 +17,24 @@ import { usePageMeta } from '../lib/usePageMeta';
 
 let clientIdCounter = 0;
 const nextClientId = () => `cid-${Date.now()}-${++clientIdCounter}`;
+
+// The last number you shared, remembered on this device only so the next
+// chat can prefill it. Never stored on the server or the profile.
+const phoneKey = (userId: string) => `ltcg:shared-phone:${userId}`;
+function rememberedPhone(userId: string): string {
+  try {
+    return localStorage.getItem(phoneKey(userId)) ?? '';
+  } catch {
+    return '';
+  }
+}
+function rememberPhone(userId: string, phone: string): void {
+  try {
+    localStorage.setItem(phoneKey(userId), phone);
+  } catch {
+    // private mode or storage blocked: prefill is a convenience only
+  }
+}
 
 type InboxFilter = 'all' | 'buying' | 'selling' | 'unread';
 
@@ -124,7 +143,11 @@ export function ChatPage() {
                 ? c.lastMessage.body
                 : c.lastMessage.kind === 'offer'
                   ? `${c.lastMessage.senderId === user.id ? 'You offered' : 'Offered'} ${formatPrice(c.lastMessage.amount ?? 0, c.listing.currency)}`
-                  : `${c.lastMessage.senderId === user.id ? 'You: ' : ''}${c.lastMessage.body}`
+                  : c.lastMessage.kind === 'phone'
+                    ? c.lastMessage.senderId === user.id
+                      ? 'You shared your phone number'
+                      : 'Shared a phone number'
+                    : `${c.lastMessage.senderId === user.id ? 'You: ' : ''}${c.lastMessage.body}`
               : 'No messages yet';
             const cover = c.listing.images[0];
             return (
@@ -186,6 +209,8 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
   const [offerOpen, setOfferOpen] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [offerNote, setOfferNote] = useState('');
+  const [phoneOpen, setPhoneOpen] = useState(false);
+  const [phoneDraft, setPhoneDraft] = useState('');
   const [typing, setTyping] = useState(false);
   const [statusBusy, setStatusBusy] = useState(false);
   const [reviewState, setReviewState] = useState<
@@ -415,6 +440,40 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
     }
   };
 
+  const sharePhone = async () => {
+    const phone = normalizePhone(phoneDraft);
+    if (!conv || !phone) {
+      toast('Enter a phone number, e.g. 70 123 456 or +961 70 123 456');
+      return;
+    }
+    setPhoneOpen(false);
+    const clientId = nextClientId();
+    const optimistic: Message = {
+      id: clientId,
+      conversationId,
+      senderId: meId,
+      kind: 'phone',
+      body: phone,
+      amount: null,
+      offerStatus: null,
+      createdAt: new Date().toISOString(),
+      readAt: null,
+      pending: true,
+      clientId,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    requestAnimationFrame(() => scrollLog(true));
+    try {
+      const real = await client.sharePhone(conversationId, phone, clientId);
+      setMessages((prev) => prev.map((m) => (m.clientId === clientId && m.pending ? { ...real } : m)));
+      rememberPhone(meId, phone);
+      toast('Phone number shared');
+    } catch (err) {
+      setMessages((prev) => prev.filter((m) => m.clientId !== clientId));
+      toast(err instanceof Error ? err.message : 'Could not share your number');
+    }
+  };
+
   const respond = async (m: Message, accept: boolean) => {
     try {
       await client.respondToOffer(conversationId, m.id, accept);
@@ -602,7 +661,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
           <div className="chat-log-empty">
             <p>
               Say hello — ask about condition, make an offer with the <strong>$</strong> button,
-              agree the deal here.
+              share your number with <strong>☎</strong> when you&apos;re ready to meet.
             </p>
           </div>
         )}
@@ -650,6 +709,50 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
                       {m.offerStatus !== 'proposed' && (
                         <div className="mono-label chat-offer-state">
                           {m.offerStatus === 'accepted' ? 'Offer accepted' : 'Offer declined'}
+                        </div>
+                      )}
+                      <div className="mono-value chat-msg-meta">
+                        {m.pending ? 'Sending…' : timeOfDay(m.createdAt)}
+                        {m.id === lastReadOwnId && <span className="chat-seen"> · Seen</span>}
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              if (cluster.kind === 'phone') {
+                const m = cluster.messages[0];
+                return (
+                  <div key={m.id} className={`chat-msgrow ${mine ? 'chat-msgrow-mine' : ''}`}>
+                    <div className={`chat-bubble chat-bubble-phone ${m.pending ? 'chat-bubble-pending' : ''}`}>
+                      {!mine && (
+                        <button
+                          type="button"
+                          className="chat-msg-report"
+                          aria-label="Report this message"
+                          onClick={() => setReportMessage(m)}
+                        >
+                          ⚑
+                        </button>
+                      )}
+                      <div className="mono-label chat-phone-label">
+                        {mine ? 'You shared your number' : 'Phone number'}
+                      </div>
+                      <a className="display chat-phone-number" href={telHref(m.body)}>
+                        {formatPhone(m.body)}
+                      </a>
+                      {!mine && (
+                        <div className="chat-phone-actions">
+                          <a className="btn-acid chat-phone-btn" href={telHref(m.body)}>
+                            Call
+                          </a>
+                          <a
+                            className="btn-outline chat-phone-btn"
+                            href={whatsappHref(m.body)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            WhatsApp
+                          </a>
                         </div>
                       )}
                       <div className="mono-value chat-msg-meta">
@@ -783,6 +886,35 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             </button>
           </div>
         )}
+        {phoneOpen && !composerDisabled && (
+          <form
+            className="chat-phonebar"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void sharePhone();
+            }}
+          >
+            <span className="mono-label chat-offerbar-label">Phone</span>
+            <input
+              type="tel"
+              aria-label="Your phone number"
+              placeholder="+961 70 123 456"
+              autoComplete="tel"
+              inputMode="tel"
+              className="input input-mono chat-phone-input"
+              value={phoneDraft}
+              maxLength={24}
+              onChange={(e) => setPhoneDraft(e.target.value)}
+            />
+            <button type="submit" className="btn-acid">
+              Share number
+            </button>
+            <p className="chat-phonebar-hint">
+              Only @{conv.otherParty.username ?? conv.otherParty.displayName} will see it, here in
+              this chat. It isn&apos;t added to your profile.
+            </p>
+          </form>
+        )}
         <div className="chat-composer-row">
           <button
             type="button"
@@ -790,9 +922,27 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             aria-pressed={offerOpen}
             className={`btn-icon chat-offer-toggle ${offerOpen ? 'icon-on' : ''}`}
             disabled={composerDisabled}
-            onClick={() => setOfferOpen((v) => !v)}
+            onClick={() => {
+              setOfferOpen((v) => !v);
+              setPhoneOpen(false);
+            }}
           >
             $
+          </button>
+          <button
+            type="button"
+            aria-label="Share your phone number"
+            aria-pressed={phoneOpen}
+            title="Share your phone number"
+            className={`btn-icon chat-phone-toggle ${phoneOpen ? 'icon-on' : ''}`}
+            disabled={composerDisabled}
+            onClick={() => {
+              if (!phoneOpen && !phoneDraft) setPhoneDraft(rememberedPhone(meId));
+              setPhoneOpen((v) => !v);
+              setOfferOpen(false);
+            }}
+          >
+            ☎
           </button>
           <input
             type="text"

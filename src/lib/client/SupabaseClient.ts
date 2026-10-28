@@ -160,7 +160,7 @@ interface MessageRow {
   id: string;
   conversation_id: string;
   sender_id: string | null;
-  kind: 'user' | 'system' | 'offer';
+  kind: 'user' | 'system' | 'offer' | 'phone';
   body: string;
   amount: number | string | null;
   offer_status: 'proposed' | 'accepted' | 'declined' | null;
@@ -1384,7 +1384,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
           .from('messages')
           .select('conversation_id')
           .in('conversation_id', convIds)
-          .eq('kind', 'user')
+          .in('kind', ['user', 'phone'])
           .neq('sender_id', me)
           .is('read_at', null),
       ]);
@@ -1472,6 +1472,23 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       if (error.code === '42501') {
         throw new Error(this.suspensionMessage() ?? 'You cannot message this user.');
       }
+      throw new Error(error.message);
+    }
+    return { ...this.mapMessage(data as MessageRow), clientId };
+  }
+
+  async sharePhone(conversationId: string, phone: string, clientId: string): Promise<Message> {
+    const uid = this.uid();
+    const { data, error } = await this.sb
+      .from('messages')
+      .insert({ conversation_id: conversationId, sender_id: uid, kind: 'phone', body: phone })
+      .select()
+      .single();
+    if (error) {
+      if (error.code === '42501') {
+        throw new Error(this.suspensionMessage() ?? 'You cannot message this user.');
+      }
+      if (error.code === '23514') throw new Error('That doesn’t look like a phone number.');
       throw new Error(error.message);
     }
     return { ...this.mapMessage(data as MessageRow), clientId };
@@ -1621,7 +1638,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     const { count } = await this.sb
       .from('messages')
       .select('id', { count: 'exact', head: true })
-      .eq('kind', 'user')
+      .in('kind', ['user', 'phone'])
       .neq('sender_id', this.auth.user.id)
       .is('read_at', null);
     return count ?? 0;

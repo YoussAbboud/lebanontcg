@@ -325,6 +325,30 @@
 .chat-offer-btn { padding: 11px 18px; min-height: 44px; }
 .chat-offer-state { margin-top: 12px; }
 
+/* Shared phone number: the number itself is a tap-to-call link */
+.chat-bubble-phone {
+  max-width: 66%;
+  border-color: var(--acid);
+  background: var(--surface);
+  color: var(--text-1);
+}
+.chat-phone-label { color: var(--acid); }
+.chat-phone-number {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: var(--fs-22);
+  color: var(--text-1);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.chat-phone-number:hover { color: var(--acid); }
+.chat-phone-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.chat-phone-btn { padding: 11px 18px; min-height: 44px; text-decoration: none; }
+
 .chat-typing { padding: 2px 4px; }
 
 .chat-newpill {
@@ -371,6 +395,24 @@
 .chat-offerbar-label { color: var(--acid); }
 .chat-offer-amount-input { width: 120px; }
 .chat-offer-note-input { flex: 1; min-width: 140px; }
+.chat-phonebar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  background: var(--surface);
+  border: 1px solid var(--acid);
+  border-radius: var(--r-panel);
+  padding: 12px;
+  flex-wrap: wrap;
+}
+.chat-phone-input { flex: 1; min-width: 180px; }
+.chat-phonebar-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
 
 .chat-composer-row {
   display: flex;
@@ -378,6 +420,7 @@
   align-items: center;
 }
 .chat-offer-toggle { font-family: var(--font-mono); font-size: 13px; }
+.chat-phone-toggle { font-size: 16px; }
 .chat-input { flex: 1; }
 .chat-send { min-height: 48px; padding: 14px 24px; }
 
@@ -397,7 +440,7 @@
   .chat:not(.chat-thread-open) .chat-placeholder { display: none; }
   .chat-back { display: inline-flex; }
   .chat-log { max-height: 52vh; }
-  .chat-cluster, .chat-bubble-offer { max-width: 86%; }
+  .chat-cluster, .chat-bubble-offer, .chat-bubble-phone { max-width: 86%; }
   .chat-thread-actions { margin-left: 0; }
 }
 

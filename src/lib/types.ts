@@ -255,8 +255,9 @@ export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
-  /** Empty senderId + kind=system for status-change notices. */
-  kind: 'user' | 'system' | 'offer';
+  /** Empty senderId + kind=system for status-change notices; kind=phone
+      carries one E.164 phone number as its body. */
+  kind: 'user' | 'system' | 'offer' | 'phone';
   body: string;
   /** kind=offer only: proposed amount in the listing's currency. */
   amount: number | null;

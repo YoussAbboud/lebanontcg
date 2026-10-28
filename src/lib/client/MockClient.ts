@@ -1756,7 +1756,7 @@ export class MockClient implements MarketplaceClient {
       listing: listingClone,
       otherParty: this.withRating(this.profiles.find((p) => p.id === otherId)!),
       lastMessage: msgs.length ? structuredClone(msgs[msgs.length - 1]) : null,
-      unreadCount: msgs.filter((m) => m.kind === 'user' && m.senderId !== me.id && !m.readAt).length,
+      unreadCount: msgs.filter((m) => (m.kind === 'user' || m.kind === 'phone') && m.senderId !== me.id && !m.readAt).length,
     };
   }
 
@@ -1815,6 +1815,22 @@ export class MockClient implements MarketplaceClient {
   }
 
   async sendMessage(conversationId: string, body: string, clientId: string): Promise<Message> {
+    return this.postMessage(conversationId, 'user', body, clientId, body.slice(0, 140));
+  }
+
+  async sharePhone(conversationId: string, phone: string, clientId: string): Promise<Message> {
+    // Mirrors 0028's phone_shape check.
+    if (!/^\+[1-9]\d{6,14}$/.test(phone)) throw new Error('That doesn’t look like a phone number.');
+    return this.postMessage(conversationId, 'phone', phone, clientId, 'Shared their phone number');
+  }
+
+  private async postMessage(
+    conversationId: string,
+    kind: 'user' | 'phone',
+    body: string,
+    clientId: string,
+    notifyBody: string,
+  ): Promise<Message> {
     const me = this.meActive();
     const conv = this.conversations.find((c) => c.id === conversationId);
     if (!conv || (conv.buyerId !== me.id && conv.sellerId !== me.id)) {
@@ -1830,7 +1846,7 @@ export class MockClient implements MarketplaceClient {
       id: nextId('m'),
       conversationId,
       senderId: me.id,
-      kind: 'user',
+      kind,
       body,
       amount: null,
       offerStatus: null,
@@ -1853,7 +1869,7 @@ export class MockClient implements MarketplaceClient {
         otherId,
         'message',
         `${this.handleOf(me)} · ${l?.title ?? 'a listing'}`,
-        body.slice(0, 140),
+        notifyBody,
         `/chat/${conversationId}`,
         me.id,
         `conv:${conversationId}`,
@@ -1968,7 +1984,7 @@ export class MockClient implements MarketplaceClient {
       if (
         m.conversationId === conversationId &&
         m.senderId !== me.id &&
-        m.kind === 'user' &&
+        (m.kind === 'user' || m.kind === 'phone') &&
         !m.readAt
       ) {
         m.readAt = at;
@@ -2007,7 +2023,7 @@ export class MockClient implements MarketplaceClient {
         .map((c) => c.id),
     );
     return this.messages.filter(
-      (m) => myConvIds.has(m.conversationId) && m.kind === 'user' && m.senderId !== me.id && !m.readAt,
+      (m) => myConvIds.has(m.conversationId) && (m.kind === 'user' || m.kind === 'phone') && m.senderId !== me.id && !m.readAt,
     ).length;
   }
 

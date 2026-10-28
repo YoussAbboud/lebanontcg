@@ -19,7 +19,8 @@
     #h-stage { position: absolute; inset: 0; }
     #h-tools { position: absolute; left: 0; right: 0; top: 640px; display: flex; flex-direction: column; align-items: center; gap: 70px; }
     .h-tool { display: flex; flex-direction: row; align-items: center; gap: 56px; width: 700px; }
-    .h-btn { width: 210px; height: 210px; border-radius: 50%; border: 4px solid #2a3038; display: flex; align-items: center; justify-content: center;
+    /* flex: none — in the vertical row layout a long word ("NUMBER.") would otherwise squeeze the circle */
+    .h-btn { flex: none; width: 210px; height: 210px; border-radius: 50%; border: 4px solid #2a3038; display: flex; align-items: center; justify-content: center;
       color: #7b8590; font-family: 'LTCG Mono', monospace; font-size: 88px; background: #0e1013; }
     .h-word { font-size: 104px; line-height: 1; letter-spacing: 0.02em; }
     #h-line { position: absolute; left: 0; right: 0; top: 300px; text-align: center; font-size: 92px; line-height: 1.04; }

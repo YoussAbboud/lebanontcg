@@ -3,7 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { ConversationSummary, Message } from '../lib/types';
 import { MESSAGE_MAX_LENGTH } from '../lib/types';
 import { groupMessages } from '../lib/chat';
-import { formatPhone, normalizePhone, telHref, whatsappHref } from '../lib/phone';
+import { formatPhone, nationalPart, normalizePhone, telHref, whatsappHref } from '../lib/phone';
+import { DEFAULT_COUNTRY, countryByIso, countryOfPhone } from '../lib/countries';
+import { CountryCodePicker, Flag } from '../components/CountryCodePicker';
 import { formatPrice, relativeTime, timeOfDay } from '../lib/format';
 import { STATUS_LABELS } from '../lib/status';
 import { glyphOf, thumbBackground } from '../lib/face';
@@ -18,19 +20,31 @@ import { usePageMeta } from '../lib/usePageMeta';
 let clientIdCounter = 0;
 const nextClientId = () => `cid-${Date.now()}-${++clientIdCounter}`;
 
-// The last number you shared, remembered on this device only so the next
-// chat can prefill it. Never stored on the server or the profile.
+// The last number you shared (and the country you picked for it),
+// remembered on this device only so the next chat can prefill it. Never
+// stored on the server or the profile.
 const phoneKey = (userId: string) => `ltcg:shared-phone:${userId}`;
-function rememberedPhone(userId: string): string {
+interface RememberedPhone {
+  iso: string;
+  national: string;
+}
+function rememberedPhone(userId: string): RememberedPhone {
+  const blank = { iso: DEFAULT_COUNTRY, national: '' };
   try {
-    return localStorage.getItem(phoneKey(userId)) ?? '';
+    const saved = JSON.parse(localStorage.getItem(phoneKey(userId)) ?? 'null') as {
+      iso?: string;
+      phone?: string;
+    } | null;
+    const country = saved?.iso ? countryByIso(saved.iso) : undefined;
+    if (!country || !saved?.phone) return blank;
+    return { iso: country.iso, national: nationalPart(saved.phone, country.dial) };
   } catch {
-    return '';
+    return blank;
   }
 }
-function rememberPhone(userId: string, phone: string): void {
+function rememberPhone(userId: string, iso: string, phone: string): void {
   try {
-    localStorage.setItem(phoneKey(userId), phone);
+    localStorage.setItem(phoneKey(userId), JSON.stringify({ iso, phone }));
   } catch {
     // private mode or storage blocked: prefill is a convenience only
   }
@@ -211,6 +225,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
   const [offerNote, setOfferNote] = useState('');
   const [phoneOpen, setPhoneOpen] = useState(false);
   const [phoneDraft, setPhoneDraft] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
   const [typing, setTyping] = useState(false);
   const [statusBusy, setStatusBusy] = useState(false);
   const [reviewState, setReviewState] = useState<
@@ -441,11 +456,20 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
   };
 
   const sharePhone = async () => {
-    const phone = normalizePhone(phoneDraft);
+    const country = countryByIso(phoneCountry) ?? countryByIso(DEFAULT_COUNTRY)!;
+    const phone = normalizePhone(phoneDraft, country.dial);
     if (!conv || !phone) {
-      toast('Enter a phone number, e.g. 70 123 456 or +961 70 123 456');
+      toast(
+        country.iso === DEFAULT_COUNTRY
+          ? 'Enter your number, e.g. 70 123 456'
+          : `Enter your number without the +${country.dial}`,
+      );
       return;
     }
+    // A number typed with its own + prefix belongs to that country, not the picked one.
+    const sentIso = phone.startsWith(`+${country.dial}`)
+      ? country.iso
+      : (countryOfPhone(phone)?.iso ?? country.iso);
     setPhoneOpen(false);
     const clientId = nextClientId();
     const optimistic: Message = {
@@ -466,7 +490,7 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
     try {
       const real = await client.sharePhone(conversationId, phone, clientId);
       setMessages((prev) => prev.map((m) => (m.clientId === clientId && m.pending ? { ...real } : m)));
-      rememberPhone(meId, phone);
+      rememberPhone(meId, sentIso, phone);
       toast('Phone number shared');
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.clientId !== clientId));
@@ -738,6 +762,9 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
                         {mine ? 'You shared your number' : 'Phone number'}
                       </div>
                       <a className="display chat-phone-number" href={telHref(m.body)}>
+                        {countryOfPhone(m.body) && (
+                          <Flag iso={countryOfPhone(m.body)!.iso} className="chat-phone-flag" />
+                        )}
                         {formatPhone(m.body)}
                       </a>
                       {!mine && (
@@ -895,10 +922,11 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             }}
           >
             <span className="mono-label chat-offerbar-label">Phone</span>
+            <CountryCodePicker value={phoneCountry} onChange={setPhoneCountry} />
             <input
               type="tel"
               aria-label="Your phone number"
-              placeholder="+961 70 123 456"
+              placeholder={phoneCountry === DEFAULT_COUNTRY ? '70 123 456' : 'Phone number'}
               autoComplete="tel"
               inputMode="tel"
               className="input input-mono chat-phone-input"
@@ -937,7 +965,11 @@ function Thread({ conversationId, onAnyChange }: { conversationId: string; onAny
             className={`btn-icon chat-phone-toggle ${phoneOpen ? 'icon-on' : ''}`}
             disabled={composerDisabled}
             onClick={() => {
-              if (!phoneOpen && !phoneDraft) setPhoneDraft(rememberedPhone(meId));
+              if (!phoneOpen && !phoneDraft) {
+                const saved = rememberedPhone(meId);
+                setPhoneCountry(saved.iso);
+                setPhoneDraft(saved.national);
+              }
               setPhoneOpen((v) => !v);
               setOfferOpen(false);
             }}

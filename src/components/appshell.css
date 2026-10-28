@@ -273,7 +273,9 @@
 .shell-main {
   position: relative;
   flex: 1;
-  z-index: 1;
+  /* Above the footer, so a popover near the bottom of a page (the chat's
+     country-code list) is never painted over by it. */
+  z-index: 2;
 }
 
 .shell-footer {

@@ -334,7 +334,9 @@
 }
 .chat-phone-label { color: var(--acid); }
 .chat-phone-number {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin-top: 6px;
   font-size: var(--fs-22);
   color: var(--text-1);
@@ -342,6 +344,7 @@
   white-space: nowrap;
 }
 .chat-phone-number:hover { color: var(--acid); }
+.chat-phone-flag { width: 24px; height: 18px; }
 .chat-phone-actions {
   display: flex;
   gap: 8px;
@@ -406,7 +409,7 @@
   padding: 12px;
   flex-wrap: wrap;
 }
-.chat-phone-input { flex: 1; min-width: 180px; }
+.chat-phone-input { flex: 1; min-width: 150px; }
 .chat-phonebar-hint {
   flex-basis: 100%;
   margin: 0;

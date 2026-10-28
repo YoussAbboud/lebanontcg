@@ -1,0 +1,106 @@
+/* Country calling-code picker (CountryCodePicker.tsx) */
+.flag {
+  width: 20px;
+  height: 15px;
+  flex: none;
+  border-radius: 2px;
+  object-fit: cover;
+  /* white flags still read on a white-ish surface */
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.ccp { position: relative; flex: none; }
+
+.ccp-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-input);
+  background: var(--input-bg);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-13);
+  cursor: var(--cursor-default);
+  transition: border-color var(--t-fast);
+}
+.ccp-button:hover,
+.ccp-button[aria-expanded='true'] { border-color: var(--acid); }
+.ccp-button:disabled { opacity: 0.5; }
+.ccp-caret { color: var(--muted); font-size: 10px; }
+
+/* Opens upward: the picker lives just above the composer. */
+.ccp-pop {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  z-index: 20;
+  width: min(320px, calc(100vw - 32px));
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-card);
+}
+.ccp-pop.is-down { bottom: auto; top: calc(100% + 8px); }
+.ccp-search { min-height: 40px; }
+
+.ccp-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.ccp-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: var(--r-thumb);
+  cursor: var(--cursor-default);
+}
+.ccp-option.is-active { background: var(--input-bg); }
+.ccp-option[aria-selected='true'] .ccp-name { color: var(--acid); }
+.ccp-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-13);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ccp-dial {
+  font-family: var(--font-mono);
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+.ccp-empty {
+  padding: 12px 10px;
+  font-size: var(--fs-13);
+  color: var(--muted);
+}
+
+/* Narrow screens: a panel fixed just under the sticky header, using the
+   screen's height, so the list is never cut off by the app frame or the
+   keyboard-shrunk viewport. */
+@media (max-width: 560px) {
+  .ccp-pop,
+  .ccp-pop.is-down {
+    position: fixed;
+    top: 92px;
+    bottom: auto;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 116px);
+  }
+  .ccp-list { flex: 1; min-height: 0; max-height: none; }
+}

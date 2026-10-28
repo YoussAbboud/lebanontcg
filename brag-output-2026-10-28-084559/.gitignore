@@ -1,0 +1,9 @@
+work/frames/
+work/frames2/
+work/work-*/
+work/render.mp4
+work/render.log
+work/check.err
+work/.render.*
+work/check-frames/
+work/check-frames/

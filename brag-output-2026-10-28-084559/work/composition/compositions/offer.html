@@ -1,0 +1,158 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 400; src: url('assets/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 600; src: url('assets/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0b0c10; font-family: 'LTCG Sans', sans-serif; color: #f2f5f7; }
+    .bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 1200px 620px at 28% -12%, rgba(123, 92, 255, 0.18), rgba(123, 92, 255, 0) 70%),
+        radial-gradient(ellipse 900px 520px at 92% 112%, rgba(214, 255, 63, 0.07), rgba(214, 255, 63, 0) 70%),
+        #0b0c10;
+    }
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+    .display { font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+    svg.ic { display: block; }
+
+    .stage { position: absolute; inset: 0; }
+    .panel {
+      position: absolute; left: 60px; top: 640px; width: 960px; height: 1160px; border-radius: 30px; overflow: hidden;
+      background: #0e1013; border: 2px solid rgba(255, 255, 255, 0.08); box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+    }
+    .head { position: absolute; left: 0; right: 0; top: 0; height: 132px; display: flex; align-items: center; gap: 22px; padding: 0 34px; border-bottom: 2px solid rgba(255, 255, 255, 0.06); }
+    .thumb { width: 72px; height: 96px; border-radius: 12px; position: relative; flex: none;
+      background: radial-gradient(circle at 35% 22%, #ff9d4d, #9b3a12 80%); border: 2px solid rgba(255, 157, 77, 0.6); }
+    .thumb b { position: absolute; left: 21px; top: 33px; width: 30px; height: 30px; transform: rotate(45deg); border: 7px solid #ffb35c; background: #5a210a; }
+    .who { font-size: 34px; font-weight: 600; display: flex; align-items: center; gap: 14px; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; background: #34d399; box-shadow: 0 0 12px rgba(52, 211, 153, 0.7); }
+    .sub { font-size: 24px; color: #b9c2cc; margin-top: 8px; }
+    /* the taller vertical panel: messages sit lower, nearer the composer, as a chat does */
+    .log { position: absolute; left: 34px; right: 34px; top: 300px; bottom: 150px; }
+    .bub { position: absolute; border-radius: 24px; padding: 20px 26px 16px; font-size: 30px; line-height: 1.35; max-width: 700px; }
+    .theirs { left: 0; background: #16191e; border: 2px solid rgba(255, 255, 255, 0.08); }
+    .mine { right: 0; background: #d6ff3f; color: #08090b; }
+    .meta { font-size: 18px; margin-top: 10px; color: #7b8590; }
+    .mine .meta { color: #4b5512; }
+    .pill { position: absolute; left: 0; right: 0; text-align: center; }
+    .pill span { display: inline-block; font-size: 24px; color: #b9c2cc; padding: 10px 20px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, 0.1); background: #121418; }
+    .card { position: absolute; right: 0; border-radius: 24px; padding: 24px 28px 18px; background: #16191e; border: 2px solid #d6ff3f; }
+    .card .k { font-size: 24px; color: #d6ff3f; }
+    .composer { position: absolute; left: 34px; right: 34px; bottom: 34px; display: flex; gap: 14px; align-items: center; }
+    .tool { width: 76px; height: 76px; border-radius: 50%; border: 2px solid #2a3038; display: flex; align-items: center; justify-content: center; color: #b9c2cc; font-family: 'LTCG Mono', monospace; font-size: 28px; flex: none; }
+    .tool.on { border-color: #d6ff3f; color: #d6ff3f; }
+    .input { flex: 1; height: 76px; border-radius: 999px; border: 2px solid #2a3038; background: #16191e; color: #7b8590; font-size: 28px; display: flex; align-items: center; padding: 0 30px; }
+    .send { height: 76px; padding: 0 34px; border-radius: 999px; background: #8aa324; color: #08090b; display: flex; align-items: center; font-size: 22px; }
+    .bar { position: absolute; left: 34px; right: 34px; bottom: 128px; border: 2px solid #d6ff3f; border-radius: 20px; background: #16191e; padding: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .barlab { font-size: 24px; color: #d6ff3f; }
+    .field { height: 64px; border-radius: 10px; border: 2px solid #2a3038; background: #0e1013; display: flex; align-items: center; padding: 0 18px; font-size: 28px; color: #f2f5f7; white-space: nowrap; }
+    .field.ph { color: #7b8590; }
+    .btn { height: 64px; border-radius: 999px; display: inline-flex; align-items: center; gap: 12px; padding: 0 24px; font-size: 22px; white-space: nowrap; }
+    .btn.acid { background: #d6ff3f; color: #08090b; }
+    .btn.out { border: 2px solid #2a3038; color: #e6eaee; }
+    .hint { flex-basis: 100%; font-size: 22px; color: #7b8590; }
+    .typed { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; font-family: 'LTCG Mono', monospace; }
+    .caret { display: inline-block; width: 3px; height: 30px; background: #d6ff3f; margin-left: 4px; vertical-align: middle; }
+    .tap { position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 5px solid #d6ff3f; opacity: 0; pointer-events: none; }
+
+    .cap { position: absolute; left: 108px; right: 108px; top: 190px; }
+    .cap .k { font-size: 28px; color: #d6ff3f; }
+    .cap .h { font-size: 96px; line-height: 0.98; margin-top: 20px; }
+    .cap .s { font-size: 42px; line-height: 1.28; color: #c9d0d7; margin-top: 26px; }
+
+    #o-m1 { top: 0; }
+    #o-card { top: 176px; width: 470px; }
+    #o-card .v { font-size: 76px; line-height: 1; margin-top: 12px; }
+    #o-card .n { font-size: 26px; margin-top: 12px; color: #e6eaee; }
+    #o-card .st { position: relative; height: 30px; margin-top: 14px; }
+    #o-card .st span { position: absolute; left: 0; top: 0; font-size: 22px; white-space: nowrap; }
+    #o-sent { color: #7b8590; }
+    #o-ok { color: #d6ff3f; }
+    #o-pill { top: 520px; }
+    #o-bar .amt { width: 190px; }
+    #o-bar .note { flex: 1; }
+
+  </style>
+
+  <div id="root" data-composition-id="offer" data-width="1080" data-height="1920">
+    <div class="bg"></div>
+    <div class="stage">
+      <div class="panel">
+        <div class="head">
+          <div class="thumb"><b></b></div>
+          <div>
+            <div class="who">@mayapulls <span class="dot"></span></div>
+            <div class="sub mono" data-layout-ignore>Charizard Base Set Unlimited · Asking $320</div>
+          </div>
+        </div>
+        <div class="log">
+          <div class="bub theirs" id="o-m1">Still available! Price is a bit negotiable for a quick pickup.<div class="meta mono" data-layout-ignore>2:14 pm</div></div>
+          <div class="card" id="o-card">
+            <div class="k mono">Offer · Non-binding</div>
+            <div class="v display">$290</div>
+            <div class="n">Cash, this weekend?</div>
+            <div class="st mono"><span id="o-sent">Sent</span><span id="o-ok">✓ Offer accepted</span></div>
+          </div>
+          <div class="pill" id="o-pill"><span class="mono">Offer accepted · $290</span></div>
+        </div>
+        <div class="bar" id="o-bar">
+          <span class="barlab mono">Offer</span>
+          <div class="field amt">$&nbsp;<span class="typed" id="o-amt">290</span><span class="caret" id="o-c1"></span></div>
+          <div class="field note" data-layout-ignore><span class="typed" id="o-note" style="font-family: 'LTCG Sans', sans-serif;">Cash, this weekend?</span></div>
+          <div class="btn acid mono" id="o-send">Send offer</div>
+        </div>
+        <div class="composer">
+          <div class="tool on">$</div>
+          <div class="tool"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div class="tool"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+          <div class="input">Write a message</div>
+          <div class="send mono">Send</div>
+        </div>
+      </div>
+      <div class="tap" id="o-tap"></div>
+      <div class="cap" id="o-cap">
+        <div class="k mono" id="o-k">01 · Offer</div>
+        <div class="h display" id="o-h">Make an<br>offer.</div>
+        <div class="s" id="o-s">They accept it with one tap.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // Arrive: up and in (the previous scene left up and out)
+      tl.fromTo('.stage', { y: 120, opacity: 0, filter: 'blur(12px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.32, ease: 'expo.out' }, 0);
+      // 4.0 s (local 0) — the seller's reply is already there; it settles in with the stage
+      tl.fromTo('#o-m1', { opacity: 0, y: 24, scale: 0.97, transformOrigin: '0% 100%' }, { opacity: 1, y: 0, scale: 1, duration: 0.36, ease: 'expo.out' }, 0.05);
+      // 4.5 s (local 0.5) — the $ tool opens the offer bar
+      tl.fromTo('#o-bar', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: 'expo.out' }, 0.5);
+      tl.set('#o-amt', { width: '0ch' }, 0);
+      tl.set('#o-amt', { width: '1ch' }, 0.750);
+      tl.set('#o-amt', { width: '2ch' }, 1.000);
+      tl.set('#o-amt', { width: '3ch' }, 1.250);
+      tl.set('#o-note', { width: 'auto', opacity: 0 }, 0);
+      tl.fromTo('#o-note', { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.2 }, 1.25);
+      tl.fromTo('#o-c1', { opacity: 1 }, { opacity: 0, duration: 0.01 }, 1.25);
+      tl.fromTo('#o-k', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, ease: 'power3.out' }, 0.40);
+      tl.fromTo('#o-h', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.34, ease: 'expo.out' }, 0.50);
+      tl.fromTo('#o-s', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out' }, 3.00);
+      // 5.5 s (local 1.5) — Send offer: the bar closes and the offer card lands
+      tl.to('#o-send', { scale: 0.94, duration: 0.08, ease: 'power2.in', yoyo: true, repeat: 1 }, 1.42);
+      tl.to('#o-bar', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.in' }, 1.55);
+      tl.fromTo('#o-card', { opacity: 0, scale: 1.08, filter: 'blur(6px)', transformOrigin: '100% 50%' }, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.42, ease: 'expo.out' }, 1.5);
+      tl.set('#o-ok', { opacity: 0 }, 0);
+      // 7.0 s (local 3.0) — accepted: the state flips and the system pill appears
+      tl.to('#o-sent', { opacity: 0, duration: 0.15 }, 3.0);
+      tl.fromTo('#o-ok', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.25, ease: 'back.out(2)' }, 3.0);
+      tl.to('#o-card', { boxShadow: '0 0 50px -10px rgba(214, 255, 63, 0.7)', duration: 0.3 }, 3.0);
+      tl.fromTo('#o-pill', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.8)' }, 3.25);
+      // Leave: up and out, ending exactly on the seam
+      tl.to('.stage', { y: -120, opacity: 0, filter: 'blur(12px)', duration: 0.24, ease: 'power3.in' }, 4.76);
+
+      window.__timelines['offer'] = tl;
+    })();
+  </script>
+</template>

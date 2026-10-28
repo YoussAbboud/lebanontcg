@@ -1,0 +1,1093 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 2 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/home/user/lebanontcg/brag-output-2026-10-28-082930/work/composition/compositions/meet.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      },
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 2 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/home/user/lebanontcg/brag-output-2026-10-28-082930/work/composition/compositions/phone.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      }
+    ],
+    "filesScanned": 6
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 16,
+    "findings": [
+      {
+        "code": "clipped_text",
+        "severity": "info",
+        "time": 10.5,
+        "selector": "#p-num",
+        "message": "Text content is clipped by its own box.",
+        "rect": {
+          "left": 509.84,
+          "top": 747.5,
+          "right": 661.03,
+          "bottom": 784.5,
+          "width": 151.19,
+          "height": 37
+        },
+        "text": "70 000 000",
+        "fixHint": "Text is 151px x 37px inside 151px x 37px and overflows by up to 17px; widen the text box to at least ~168px, or allow wrapping with max-width/fitTextFontSize.",
+        "overflow": {
+          "right": 17
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/phone.html",
+        "bbox": {
+          "x": 509.84,
+          "y": 747.5,
+          "width": 151.19,
+          "height": 37
+        },
+        "firstSeen": 10.5,
+        "lastSeen": 10.5,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          10.5
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#meet > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 280,
+          "top": 117,
+          "right": 481.3,
+          "bottom": 158,
+          "width": 201.3,
+          "height": 41
+        },
+        "containerSelector": "#m-pick",
+        "text": "@mayapulls",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 280,
+          "y": 117,
+          "width": 201.3,
+          "height": 41
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#m-m1",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 214,
+          "top": 278,
+          "right": 589.45,
+          "bottom": 314,
+          "width": 375.45,
+          "height": 36
+        },
+        "containerSelector": "#m-map",
+        "text": "Got it. Where do we meet?",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 214,
+          "y": 278,
+          "width": 375.45,
+          "height": 36
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#m-bar > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 208,
+          "top": 594.5,
+          "right": 338.56,
+          "bottom": 625.5,
+          "width": 130.56,
+          "height": 31
+        },
+        "containerSelector": "#m-map",
+        "text": "Location",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 208,
+          "y": 594.5,
+          "width": 130.56,
+          "height": 31
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#m-me",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 414.56,
+          "top": 595.5,
+          "right": 758.66,
+          "bottom": 624.5,
+          "width": 344.09,
+          "height": 29
+        },
+        "containerSelector": "#m-map",
+        "text": "Use my current location",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 414.56,
+          "y": 595.5,
+          "width": 344.09,
+          "height": 29
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#m-onmap",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 270,
+          "top": 673.5,
+          "right": 524.33,
+          "bottom": 702.5,
+          "width": 254.33,
+          "height": 29
+        },
+        "containerSelector": "#m-map",
+        "text": "Choose on the map",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 270,
+          "y": 673.5,
+          "width": 254.33,
+          "height": 29
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "div.field.ph",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 584.33,
+          "top": 671,
+          "right": 871.73,
+          "bottom": 705,
+          "width": 287.41,
+          "height": 34
+        },
+        "containerSelector": "#m-map",
+        "text": "Place name (optional)",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 584.33,
+          "y": 671,
+          "width": 287.41,
+          "height": 34
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#m-share",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 232,
+          "top": 751.5,
+          "right": 441.45,
+          "bottom": 780.5,
+          "width": 209.45,
+          "height": 29
+        },
+        "containerSelector": "#m-map",
+        "text": "Share location",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 232,
+          "y": 751.5,
+          "width": 209.45,
+          "height": 29
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#meet > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 215.59,
+          "top": 897.5,
+          "right": 232.41,
+          "bottom": 934.5,
+          "width": 16.81,
+          "height": 37
+        },
+        "containerSelector": "#m-pick",
+        "text": "$",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 215.59,
+          "y": 897.5,
+          "width": 16.81,
+          "height": 37
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#meet > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 488,
+          "top": 899,
+          "right": 708.55,
+          "bottom": 933,
+          "width": 220.55,
+          "height": 34
+        },
+        "containerSelector": "#m-pick",
+        "text": "Write a message",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 488,
+          "y": 899,
+          "width": 220.55,
+          "height": 34
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#meet > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(5)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 980.16,
+          "top": 901.5,
+          "right": 1040,
+          "bottom": 930.5,
+          "width": 59.84,
+          "height": 29
+        },
+        "containerSelector": "#m-use",
+        "text": "Send",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 980.16,
+          "y": 901.5,
+          "width": 59.84,
+          "height": 29
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#m-map",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -270,
+          "top": 32,
+          "right": 1330,
+          "bottom": 1232,
+          "width": 1600,
+          "height": 1200
+        },
+        "containerSelector": "#m-view",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 192,
+          "top": 272,
+          "right": 1068,
+          "bottom": 832,
+          "width": 876,
+          "height": 560
+        },
+        "overflow": {
+          "left": 462,
+          "right": 262,
+          "top": 240,
+          "bottom": 400
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "m-map",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": -270,
+          "y": 32,
+          "width": 1600,
+          "height": 1200
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#m-pinwrap",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 192,
+          "top": 268.76,
+          "right": 1068,
+          "bottom": 828.76,
+          "width": 876,
+          "height": 560
+        },
+        "containerSelector": "#m-view",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 192,
+          "top": 272,
+          "right": 1068,
+          "bottom": 832,
+          "width": 876,
+          "height": 560
+        },
+        "overflow": {
+          "top": 3.24
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 192,
+          "y": 268.76,
+          "width": 876,
+          "height": 560
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 15.167,
+        "selector": "#m-map",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": -270,
+          "top": 32,
+          "right": 1330,
+          "bottom": 1232,
+          "width": 1600,
+          "height": 1200
+        },
+        "containerSelector": "#m-view",
+        "text": "",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 192,
+          "top": 272,
+          "right": 1068,
+          "bottom": 832,
+          "width": 876,
+          "height": 560
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "m-map",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": -270,
+          "y": 32,
+          "width": 1600,
+          "height": 1200
+        },
+        "firstSeen": 15.167,
+        "lastSeen": 15.167,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 17.5,
+        "selector": "#m-mini > img:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -126,
+          "top": 87.8,
+          "right": 1474,
+          "bottom": 1287.8,
+          "width": 1600,
+          "height": 1200
+        },
+        "containerSelector": "#m-mini",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 504,
+          "top": 502.8,
+          "right": 1044,
+          "bottom": 712.8,
+          "width": 540,
+          "height": 210
+        },
+        "overflow": {
+          "left": 630,
+          "right": 430,
+          "top": 415,
+          "bottom": 575
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "hf-media-2",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": -126,
+          "y": 87.8,
+          "width": 1600,
+          "height": 1200
+        },
+        "firstSeen": 17.5,
+        "lastSeen": 17.5,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          17.5
+        ]
+      },
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 17.5,
+        "selector": "#m-mini > img:nth-of-type(1)",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": -126,
+          "top": 87.8,
+          "right": 1474,
+          "bottom": 1287.8,
+          "width": 1600,
+          "height": 1200
+        },
+        "containerSelector": "#m-mini",
+        "text": "",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 504,
+          "top": 502.8,
+          "right": 1044,
+          "bottom": 712.8,
+          "width": 540,
+          "height": 210
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "hf-media-2",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": -126,
+          "y": 87.8,
+          "width": 1600,
+          "height": 1200
+        },
+        "firstSeen": 17.5,
+        "lastSeen": 17.5,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          17.5
+        ]
+      }
+    ],
+    "duration": 21,
+    "samples": [
+      1.167,
+      3.5,
+      5.833,
+      8.167,
+      10.5,
+      12.833,
+      15.167,
+      17.5,
+      19.833
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 16,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 3,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.22:1; WCAG AA requires 3:1.",
+        "text": "Location",
+        "fg": "rgb(214,255,63)",
+        "bg": "rgb(242,214,164)",
+        "ratio": 1.22,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(110,131,32)",
+        "large": true,
+        "selector": "div > div:nth-of-type(4) > div > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(3) > span",
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 208,
+          "y": 594.5,
+          "width": 130.5625,
+          "height": 31
+        },
+        "time": 15.167,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.05:1; WCAG AA requires 4.5:1.",
+        "text": "Use my current location",
+        "fg": "rgb(230,234,238)",
+        "bg": "rgb(242,239,233)",
+        "ratio": 1.05,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(107,109,111)",
+        "large": false,
+        "selector": "#m-me",
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 352.5625,
+          "y": 578,
+          "width": 432.09375,
+          "height": 64
+        },
+        "time": 15.167,
+        "times": [
+          15.167
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 1.2:1; WCAG AA requires 4.5:1.",
+        "text": "Choose on the map",
+        "fg": "rgb(214,255,63)",
+        "bg": "rgb(224,219,210)",
+        "ratio": 1.2,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(86,103,25)",
+        "large": false,
+        "selector": "#m-onmap",
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 208,
+          "y": 656,
+          "width": 342.328125,
+          "height": 64
+        },
+        "time": 15.167,
+        "times": [
+          15.167
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      1.167,
+      5.833,
+      10.5,
+      15.167,
+      19.833
+    ],
+    "checked": 53,
+    "passed": 50
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 3,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 9 text elements stay under it for 0.5 s or more, the smallest \"Send offer\" at 21 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Send offer",
+        "selector": "#o-send",
+        "dataAttributes": {},
+        "sourceFile": "compositions/offer.html",
+        "bbox": {
+          "x": 878.39,
+          "y": 794.36,
+          "width": 149.61,
+          "height": 29
+        },
+        "time": 4.625,
+        "times": [
+          4.125,
+          4.5,
+          4.625,
+          4.625,
+          5.625,
+          5.625,
+          5.625,
+          7.125,
+          7.375
+        ],
+        "fontPx": 20.68,
+        "floorPx": 28,
+        "seconds": 1.125,
+        "elements": [
+          {
+            "selector": "#o-send",
+            "text": "Send offer",
+            "fontPx": 20.68,
+            "time": 4.625,
+            "seconds": 1.125
+          },
+          {
+            "selector": "#offer > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(5)",
+            "text": "Send",
+            "fontPx": 22,
+            "time": 4.125,
+            "seconds": 4.875
+          },
+          {
+            "selector": "#o-sent",
+            "text": "Sent",
+            "fontPx": 22,
+            "time": 5.625,
+            "seconds": 1.5
+          },
+          {
+            "selector": "#o-ok",
+            "text": "✓ Offer accepted",
+            "fontPx": 22,
+            "time": 7.125,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#o-k",
+            "text": "01 · Offer",
+            "fontPx": 24,
+            "time": 4.5,
+            "seconds": 4.5
+          },
+          {
+            "selector": "#o-bar > span:nth-of-type(1)",
+            "text": "Offer",
+            "fontPx": 24,
+            "time": 4.625,
+            "seconds": 1.125
+          },
+          {
+            "selector": "#o-card > div:nth-of-type(1)",
+            "text": "Offer · Non-binding",
+            "fontPx": 24,
+            "time": 5.625,
+            "seconds": 3.375
+          },
+          {
+            "selector": "#o-pill > span:nth-of-type(1)",
+            "text": "Offer accepted · $290",
+            "fontPx": 24,
+            "time": 7.375,
+            "seconds": 1.625
+          },
+          {
+            "selector": "div.n",
+            "text": "Cash, this weekend?",
+            "fontPx": 26,
+            "time": 5.625,
+            "seconds": 3.375
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 6 text elements stay under it for 0.5 s or more, the smallest \"Share number\" at 21 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Share number",
+        "selector": "#p-send",
+        "dataAttributes": {},
+        "sourceFile": "compositions/phone.html",
+        "bbox": {
+          "x": 848.47,
+          "y": 765.73,
+          "width": 179.53,
+          "height": 29
+        },
+        "time": 9.25,
+        "times": [
+          9.125,
+          9.125,
+          9.25,
+          9.25,
+          9.5,
+          11.125
+        ],
+        "fontPx": 20.68,
+        "floorPx": 28,
+        "seconds": 2,
+        "elements": [
+          {
+            "selector": "#p-send",
+            "text": "Share number",
+            "fontPx": 20.68,
+            "time": 9.25,
+            "seconds": 2
+          },
+          {
+            "selector": "#phone > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(5)",
+            "text": "Send",
+            "fontPx": 22,
+            "time": 9.125,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#p-pill > span:nth-of-type(1)",
+            "text": "Offer accepted · $290",
+            "fontPx": 24,
+            "time": 9.125,
+            "seconds": 3.875
+          },
+          {
+            "selector": "#p-bar > span:nth-of-type(1)",
+            "text": "Phone",
+            "fontPx": 24,
+            "time": 9.25,
+            "seconds": 2
+          },
+          {
+            "selector": "#p-k",
+            "text": "02 · Number",
+            "fontPx": 24,
+            "time": 9.5,
+            "seconds": 3.5
+          },
+          {
+            "selector": "#p-card > div:nth-of-type(1)",
+            "text": "You shared your number",
+            "fontPx": 24,
+            "time": 11.125,
+            "seconds": 1.875
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 11 text elements stay under it for 0.5 s or more, the smallest \"Choose on the map\" at 21 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Choose on the map",
+        "selector": "#m-onmap",
+        "dataAttributes": {},
+        "sourceFile": "compositions/meet.html",
+        "bbox": {
+          "x": 270,
+          "y": 678.08,
+          "width": 254.33,
+          "height": 29
+        },
+        "time": 13.25,
+        "times": [
+          13.125,
+          13.25,
+          13.25,
+          13.25,
+          13.5,
+          14.125,
+          14.125,
+          14.125,
+          16.125,
+          16.125,
+          16.125
+        ],
+        "fontPx": 20.68,
+        "floorPx": 28,
+        "seconds": 2.75,
+        "elements": [
+          {
+            "selector": "#m-onmap",
+            "text": "Choose on the map",
+            "fontPx": 20.68,
+            "time": 13.25,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#m-use",
+            "text": "Use this spot",
+            "fontPx": 20.68,
+            "time": 14.125,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#m-foot > span:nth-of-type(2)",
+            "text": "Cancel",
+            "fontPx": 21.88,
+            "time": 14.125,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#meet > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(5)",
+            "text": "Send",
+            "fontPx": 22,
+            "time": 13.125,
+            "seconds": 4.875
+          },
+          {
+            "selector": "#m-me",
+            "text": "Use my current location",
+            "fontPx": 22,
+            "time": 13.25,
+            "seconds": 2.75
+          },
+          {
+            "selector": "div.acts > span:nth-of-type(1)",
+            "text": "Google Maps",
+            "fontPx": 22,
+            "time": 16.125,
+            "seconds": 1.875
+          },
+          {
+            "selector": "div.acts > span:nth-of-type(2)",
+            "text": "Waze",
+            "fontPx": 22,
+            "time": 16.125,
+            "seconds": 1.875
+          },
+          {
+            "selector": "div.d",
+            "text": "Move the map until the pin sits on the spot. Somewhere public.",
+            "fontPx": 23.87,
+            "time": 14.125,
+            "seconds": 1.875
+          },
+          {
+            "selector": "#m-bar > span:nth-of-type(1)",
+            "text": "Location",
+            "fontPx": 24,
+            "time": 13.25,
+            "seconds": 2.75
+          },
+          {
+            "selector": "#m-k",
+            "text": "03 · Meetup",
+            "fontPx": 24,
+            "time": 13.5,
+            "seconds": 4.5
+          },
+          {
+            "selector": "#m-card > div:nth-of-type(1)",
+            "text": "You shared a location",
+            "fontPx": 24,
+            "time": 16.125,
+            "seconds": 1.875
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 168
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "saved": {
+    "id": "355ed6be-ca4c-4884-86cd-e09f6c59a187",
+    "revision": "946c4bb6-172e-478e-9c52-70198677bc8c",
+    "report": "/home/user/lebanontcg/brag-output-2026-10-28-082930/work/composition/.hyperframes/artifacts/checks/355ed6be-ca4c-4884-86cd-e09f6c59a187.json",
+    "attribution": "recorded-revision"
+  },
+  "_meta": {
+    "version": "0.8.203",
+    "latestVersion": "0.8.210",
+    "updateAvailable": true
+  }
+}

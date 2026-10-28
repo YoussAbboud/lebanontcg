@@ -1,0 +1,153 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 400; src: url('assets/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 600; src: url('assets/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0b0c10; font-family: 'LTCG Sans', sans-serif; color: #f2f5f7; }
+    .bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 1200px 620px at 28% -12%, rgba(123, 92, 255, 0.18), rgba(123, 92, 255, 0) 70%),
+        radial-gradient(ellipse 900px 520px at 92% 112%, rgba(214, 255, 63, 0.07), rgba(214, 255, 63, 0) 70%),
+        #0b0c10;
+    }
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+    .display { font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+    svg.ic { display: block; }
+
+    .stage { position: absolute; inset: 0; }
+    .panel {
+      position: absolute; left: 150px; top: 90px; width: 960px; height: 900px; border-radius: 30px; overflow: hidden;
+      background: #0e1013; border: 2px solid rgba(255, 255, 255, 0.08); box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+    }
+    .head { position: absolute; left: 0; right: 0; top: 0; height: 132px; display: flex; align-items: center; gap: 22px; padding: 0 34px; border-bottom: 2px solid rgba(255, 255, 255, 0.06); }
+    .thumb { width: 72px; height: 96px; border-radius: 12px; position: relative; flex: none;
+      background: radial-gradient(circle at 35% 22%, #ff9d4d, #9b3a12 80%); border: 2px solid rgba(255, 157, 77, 0.6); }
+    .thumb b { position: absolute; left: 21px; top: 33px; width: 30px; height: 30px; transform: rotate(45deg); border: 7px solid #ffb35c; background: #5a210a; }
+    .who { font-size: 34px; font-weight: 600; display: flex; align-items: center; gap: 14px; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; background: #34d399; box-shadow: 0 0 12px rgba(52, 211, 153, 0.7); }
+    .sub { font-size: 24px; color: #b9c2cc; margin-top: 8px; }
+    .log { position: absolute; left: 34px; right: 34px; top: 162px; bottom: 150px; }
+    .bub { position: absolute; border-radius: 24px; padding: 20px 26px 16px; font-size: 30px; line-height: 1.35; max-width: 700px; }
+    .theirs { left: 0; background: #16191e; border: 2px solid rgba(255, 255, 255, 0.08); }
+    .mine { right: 0; background: #d6ff3f; color: #08090b; }
+    .meta { font-size: 18px; margin-top: 10px; color: #7b8590; }
+    .mine .meta { color: #4b5512; }
+    .pill { position: absolute; left: 0; right: 0; text-align: center; }
+    .pill span { display: inline-block; font-size: 24px; color: #b9c2cc; padding: 10px 20px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, 0.1); background: #121418; }
+    .card { position: absolute; right: 0; border-radius: 24px; padding: 24px 28px 18px; background: #16191e; border: 2px solid #d6ff3f; }
+    .card .k { font-size: 24px; color: #d6ff3f; }
+    .composer { position: absolute; left: 34px; right: 34px; bottom: 34px; display: flex; gap: 14px; align-items: center; }
+    .tool { width: 76px; height: 76px; border-radius: 50%; border: 2px solid #2a3038; display: flex; align-items: center; justify-content: center; color: #b9c2cc; font-family: 'LTCG Mono', monospace; font-size: 28px; flex: none; }
+    .tool.on { border-color: #d6ff3f; color: #d6ff3f; }
+    .input { flex: 1; height: 76px; border-radius: 999px; border: 2px solid #2a3038; background: #16191e; color: #7b8590; font-size: 28px; display: flex; align-items: center; padding: 0 30px; }
+    .send { height: 76px; padding: 0 34px; border-radius: 999px; background: #8aa324; color: #08090b; display: flex; align-items: center; font-size: 22px; }
+    .bar { position: absolute; left: 34px; right: 34px; bottom: 128px; border: 2px solid #d6ff3f; border-radius: 20px; background: #16191e; padding: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .barlab { font-size: 24px; color: #d6ff3f; }
+    .field { height: 64px; border-radius: 10px; border: 2px solid #2a3038; background: #0e1013; display: flex; align-items: center; padding: 0 18px; font-size: 28px; color: #f2f5f7; white-space: nowrap; }
+    .field.ph { color: #7b8590; }
+    .btn { height: 64px; border-radius: 999px; display: inline-flex; align-items: center; gap: 12px; padding: 0 24px; font-size: 22px; white-space: nowrap; }
+    .btn.acid { background: #d6ff3f; color: #08090b; }
+    .btn.out { border: 2px solid #2a3038; color: #e6eaee; }
+    .hint { flex-basis: 100%; font-size: 22px; color: #7b8590; }
+    .typed { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; font-family: 'LTCG Mono', monospace; }
+    .caret { display: inline-block; width: 3px; height: 30px; background: #d6ff3f; margin-left: 4px; vertical-align: middle; }
+    .tap { position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 5px solid #d6ff3f; opacity: 0; pointer-events: none; }
+
+    .cap { position: absolute; left: 1190px; right: 110px; top: 300px; }
+    .cap .k { font-size: 24px; color: #d6ff3f; }
+    .cap .h { font-size: 92px; line-height: 0.98; margin-top: 22px; }
+    .cap .s { font-size: 40px; line-height: 1.3; color: #c9d0d7; margin-top: 34px; }
+
+    #p-pill { top: 0; }
+    #p-m1 { top: 70px; }
+    #p-card { top: 250px; width: 560px; }
+    #p-card .num { display: flex; align-items: center; gap: 18px; margin-top: 16px; font-size: 54px; line-height: 1; white-space: nowrap; }
+    #p-card .flag { width: 52px; height: 39px; border-radius: 4px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15); }
+    .ccp { height: 64px; display: inline-flex; align-items: center; gap: 12px; padding: 0 18px; border-radius: 10px; border: 2px solid #2a3038; background: #0e1013; font-family: 'LTCG Mono', monospace; font-size: 28px; }
+    .ccp img { width: 34px; height: 26px; border-radius: 3px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15); }
+    .ccp .caret-d { color: #7b8590; font-size: 14px; }
+    #p-bar .num-in { flex: 1; }
+
+  </style>
+
+  <div id="root" data-composition-id="phone" data-width="1920" data-height="1080">
+    <div class="bg"></div>
+    <div class="stage">
+      <div class="panel">
+        <div class="head">
+          <div class="thumb"><b></b></div>
+          <div>
+            <div class="who">@mayapulls <span class="dot"></span></div>
+            <div class="sub mono" data-layout-ignore>Charizard Base Set Unlimited · Asking $320</div>
+          </div>
+        </div>
+        <div class="log">
+          <div class="pill" id="p-pill"><span class="mono">Offer accepted · $290</span></div>
+          <div class="bub theirs" id="p-m1">Deal! Share your number and pick a spot.<div class="meta mono" data-layout-ignore>2:16 pm</div></div>
+          <div class="card" id="p-card">
+            <div class="k mono">You shared your number</div>
+            <div class="num display"><img class="flag" src="assets/img/flag-lb.svg" alt="" />+961 70 000 000</div>
+            <div class="meta mono" data-layout-ignore>2:16 pm · Seen</div>
+          </div>
+        </div>
+        <div class="bar" id="p-bar">
+          <span class="barlab mono">Phone</span>
+          <div class="ccp" id="p-ccp"><img src="assets/img/flag-lb.svg" alt="" />+961<span class="caret-d">▾</span></div>
+          <div class="field num-in"><span class="typed" id="p-num">70 000 000</span><span class="caret" id="p-c"></span></div>
+          <div class="btn acid mono" id="p-send">Share number</div>
+          <div class="hint" data-layout-ignore>Only @mayapulls will see it, here in this chat. It isn&#39;t added to your profile.</div>
+        </div>
+        <div class="composer">
+          <div class="tool">$</div>
+          <div class="tool on"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div class="tool"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+          <div class="input">Write a message</div>
+          <div class="send mono">Send</div>
+        </div>
+      </div>
+      <div class="cap" id="p-cap">
+        <div class="k mono" id="p-k">02 · Number</div>
+        <div class="h display" id="p-h">Share your<br>number.</div>
+        <div class="s" id="p-s">Only they see it. Never on your profile.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // Arrive: up and in (the previous scene left up and out)
+      tl.fromTo('.stage', { y: 120, opacity: 0, filter: 'blur(12px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.32, ease: 'expo.out' }, 0);
+      tl.fromTo('#p-m1', { opacity: 0, y: 24, scale: 0.97, transformOrigin: '0% 100%' }, { opacity: 1, y: 0, scale: 1, duration: 0.36, ease: 'expo.out' }, 0.10);
+      tl.fromTo('#p-bar', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: 'expo.out' }, 0.2);
+      // the flag picker settles on Lebanon
+      tl.fromTo('#p-ccp', { borderColor: '#d6ff3f' }, { borderColor: '#2a3038', duration: 0.5 }, 0.5);
+      // 9.5–10.75 s — the digits, a sixteenth apart
+      tl.set('#p-num', { width: '0ch' }, 0);
+      tl.set('#p-num', { width: '1ch' }, 0.500);
+      tl.set('#p-num', { width: '2ch' }, 0.625);
+      tl.set('#p-num', { width: '3ch' }, 0.750);
+      tl.set('#p-num', { width: '4ch' }, 0.875);
+      tl.set('#p-num', { width: '5ch' }, 1.000);
+      tl.set('#p-num', { width: '6ch' }, 1.125);
+      tl.set('#p-num', { width: '7ch' }, 1.250);
+      tl.set('#p-num', { width: '8ch' }, 1.375);
+      tl.set('#p-num', { width: '9ch' }, 1.500);
+      tl.set('#p-num', { width: '10ch' }, 1.625);
+      tl.fromTo('#p-k', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, ease: 'power3.out' }, 0.40);
+      tl.fromTo('#p-h', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.34, ease: 'expo.out' }, 0.50);
+      tl.fromTo('#p-s', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out' }, 1.00);
+      // 11.0 s (local 2.0) — Share number: the bar closes and the card lands
+      tl.to('#p-send', { scale: 0.94, duration: 0.08, ease: 'power2.in', yoyo: true, repeat: 1 }, 1.92);
+      tl.to('#p-bar', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.in' }, 2.05);
+      tl.fromTo('#p-card', { opacity: 0, scale: 1.08, filter: 'blur(6px)', transformOrigin: '100% 50%' }, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.42, ease: 'expo.out' }, 2.0);
+      // Leave: up and out, ending exactly on the seam
+      tl.to('.stage', { y: -120, opacity: 0, filter: 'blur(12px)', duration: 0.24, ease: 'power3.in' }, 3.76);
+
+      window.__timelines['phone'] = tl;
+    })();
+  </script>
+</template>

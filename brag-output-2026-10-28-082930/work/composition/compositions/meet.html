@@ -1,0 +1,205 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 400; src: url('assets/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 600; src: url('assets/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #0b0c10; font-family: 'LTCG Sans', sans-serif; color: #f2f5f7; }
+    .bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 1200px 620px at 28% -12%, rgba(123, 92, 255, 0.18), rgba(123, 92, 255, 0) 70%),
+        radial-gradient(ellipse 900px 520px at 92% 112%, rgba(214, 255, 63, 0.07), rgba(214, 255, 63, 0) 70%),
+        #0b0c10;
+    }
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+    .display { font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+    svg.ic { display: block; }
+
+    .stage { position: absolute; inset: 0; }
+    .panel {
+      position: absolute; left: 150px; top: 90px; width: 960px; height: 900px; border-radius: 30px; overflow: hidden;
+      background: #0e1013; border: 2px solid rgba(255, 255, 255, 0.08); box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.9);
+    }
+    .head { position: absolute; left: 0; right: 0; top: 0; height: 132px; display: flex; align-items: center; gap: 22px; padding: 0 34px; border-bottom: 2px solid rgba(255, 255, 255, 0.06); }
+    .thumb { width: 72px; height: 96px; border-radius: 12px; position: relative; flex: none;
+      background: radial-gradient(circle at 35% 22%, #ff9d4d, #9b3a12 80%); border: 2px solid rgba(255, 157, 77, 0.6); }
+    .thumb b { position: absolute; left: 21px; top: 33px; width: 30px; height: 30px; transform: rotate(45deg); border: 7px solid #ffb35c; background: #5a210a; }
+    .who { font-size: 34px; font-weight: 600; display: flex; align-items: center; gap: 14px; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; background: #34d399; box-shadow: 0 0 12px rgba(52, 211, 153, 0.7); }
+    .sub { font-size: 24px; color: #b9c2cc; margin-top: 8px; }
+    .log { position: absolute; left: 34px; right: 34px; top: 162px; bottom: 150px; }
+    .bub { position: absolute; border-radius: 24px; padding: 20px 26px 16px; font-size: 30px; line-height: 1.35; max-width: 700px; }
+    .theirs { left: 0; background: #16191e; border: 2px solid rgba(255, 255, 255, 0.08); }
+    .mine { right: 0; background: #d6ff3f; color: #08090b; }
+    .meta { font-size: 18px; margin-top: 10px; color: #7b8590; }
+    .mine .meta { color: #4b5512; }
+    .pill { position: absolute; left: 0; right: 0; text-align: center; }
+    .pill span { display: inline-block; font-size: 24px; color: #b9c2cc; padding: 10px 20px; border-radius: 999px; border: 2px solid rgba(255, 255, 255, 0.1); background: #121418; }
+    .card { position: absolute; right: 0; border-radius: 24px; padding: 24px 28px 18px; background: #16191e; border: 2px solid #d6ff3f; }
+    .card .k { font-size: 24px; color: #d6ff3f; }
+    .composer { position: absolute; left: 34px; right: 34px; bottom: 34px; display: flex; gap: 14px; align-items: center; }
+    .tool { width: 76px; height: 76px; border-radius: 50%; border: 2px solid #2a3038; display: flex; align-items: center; justify-content: center; color: #b9c2cc; font-family: 'LTCG Mono', monospace; font-size: 28px; flex: none; }
+    .tool.on { border-color: #d6ff3f; color: #d6ff3f; }
+    .input { flex: 1; height: 76px; border-radius: 999px; border: 2px solid #2a3038; background: #16191e; color: #7b8590; font-size: 28px; display: flex; align-items: center; padding: 0 30px; }
+    .send { height: 76px; padding: 0 34px; border-radius: 999px; background: #8aa324; color: #08090b; display: flex; align-items: center; font-size: 22px; }
+    .bar { position: absolute; left: 34px; right: 34px; bottom: 128px; border: 2px solid #d6ff3f; border-radius: 20px; background: #16191e; padding: 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+    .barlab { font-size: 24px; color: #d6ff3f; }
+    .field { height: 64px; border-radius: 10px; border: 2px solid #2a3038; background: #0e1013; display: flex; align-items: center; padding: 0 18px; font-size: 28px; color: #f2f5f7; white-space: nowrap; }
+    .field.ph { color: #7b8590; }
+    .btn { height: 64px; border-radius: 999px; display: inline-flex; align-items: center; gap: 12px; padding: 0 24px; font-size: 22px; white-space: nowrap; }
+    .btn.acid { background: #d6ff3f; color: #08090b; }
+    .btn.out { border: 2px solid #2a3038; color: #e6eaee; }
+    .hint { flex-basis: 100%; font-size: 22px; color: #7b8590; }
+    .typed { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; font-family: 'LTCG Mono', monospace; }
+    .caret { display: inline-block; width: 3px; height: 30px; background: #d6ff3f; margin-left: 4px; vertical-align: middle; }
+    .tap { position: absolute; width: 90px; height: 90px; border-radius: 50%; border: 5px solid #d6ff3f; opacity: 0; pointer-events: none; }
+
+    .cap { position: absolute; left: 1190px; right: 110px; top: 300px; }
+    .cap .k { font-size: 24px; color: #d6ff3f; }
+    .cap .h { font-size: 92px; line-height: 0.98; margin-top: 22px; }
+    .cap .s { font-size: 40px; line-height: 1.3; color: #c9d0d7; margin-top: 34px; }
+
+    #m-m1 { top: 0; }
+    #m-bar .loc { flex: 1; }
+    #m-bar .btn.out { color: #e6eaee; }
+    #m-share { opacity: 0.45; }
+    /* the map picker, over the chat panel, with the app's overlay dimming what's under it */
+    #m-scrim { position: absolute; inset: 0; background: rgba(8, 9, 11, 0.78); opacity: 0; }
+    #m-pick { position: absolute; left: 190px; top: 120px; width: 880px; height: 840px; border-radius: 26px; overflow: hidden;
+      background: #16191e; border: 2px solid #2a3038; box-shadow: 0 50px 120px -30px rgba(0, 0, 0, 0.95); }
+    #m-pick .t { padding: 30px 34px 0; font-size: 40px; }
+    #m-pick .d { padding: 10px 34px 0; font-size: 24px; color: #b9c2cc; }
+    #m-view { position: absolute; left: 0; right: 0; top: 150px; height: 560px; overflow: hidden; background: #f2efe9; }
+    /* the meeting point (900, 520) sits under the pin at x = y = 0 */
+    #m-map { position: absolute; left: calc(50% - 900px); top: calc(50% - 520px); width: 1600px; height: 1200px; }
+    .mpin { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -50px 0 0 -23px;
+      border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: #d6ff3f; border: 4px solid #08090b; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45); }
+    .mpin::after { content: ''; position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #08090b; }
+    #m-pinwrap { position: absolute; inset: 0; }
+    #m-foot { position: absolute; left: 0; right: 0; bottom: 0; height: 130px; display: flex; align-items: center; gap: 16px; padding: 0 34px; border-top: 2px solid rgba(255, 255, 255, 0.06); }
+    #m-coords { margin-right: auto; font-size: 26px; color: #b9c2cc; white-space: nowrap; }
+    /* the shared location card */
+    #m-card { top: 120px; width: 600px; }
+    #m-card .place { display: flex; align-items: center; gap: 14px; margin-top: 14px; font-size: 38px; line-height: 1.1; }
+    #m-card .place svg { color: #d6ff3f; }
+    #m-mini { position: relative; height: 210px; margin-top: 16px; border-radius: 14px; overflow: hidden; border: 2px solid #2a3038; background: #f2efe9; }
+    #m-mini img { position: absolute; left: calc(50% - 900px); top: calc(50% - 520px); width: 1600px; height: 1200px; }
+    #m-mini .mpin { width: 34px; height: 34px; margin: -37px 0 0 -17px; border-width: 3px; }
+    #m-mini .mpin::after { width: 10px; height: 10px; margin: -5px 0 0 -5px; }
+    #m-card .co { font-size: 24px; color: #b9c2cc; margin-top: 14px; }
+    #m-card .acts { display: flex; gap: 14px; margin-top: 16px; }
+
+  </style>
+
+  <div id="root" data-composition-id="meet" data-width="1920" data-height="1080">
+    <div class="bg"></div>
+    <div class="stage">
+      <div class="panel">
+        <div class="head">
+          <div class="thumb"><b></b></div>
+          <div>
+            <div class="who">@mayapulls <span class="dot"></span></div>
+            <div class="sub mono" data-layout-ignore>Charizard Base Set Unlimited · Asking $320</div>
+          </div>
+        </div>
+        <div class="log">
+          <div class="bub theirs" id="m-m1">Got it. Where do we meet?<div class="meta mono" data-layout-ignore>2:17 pm</div></div>
+          <div class="card" id="m-card">
+            <div class="k mono">You shared a location</div>
+            <div class="place display"><svg class="ic" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Zaitunay Bay, Beirut</div>
+            <div id="m-mini"><img src="assets/img/beirut-map.svg" alt="" /><span class="mpin"></span></div>
+            <div class="co mono" data-layout-ignore>33.90153, 35.49870</div>
+            <div class="acts"><span class="btn acid mono">Google Maps</span><span class="btn out mono">Waze</span></div>
+          </div>
+        </div>
+        <div class="bar" id="m-bar">
+          <span class="barlab mono">Location</span>
+          <div class="btn out mono" id="m-me"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Use my current location</div>
+          <div class="btn out mono" id="m-onmap"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>Choose on the map</div>
+          <div class="field ph loc">Place name (optional)</div>
+          <div class="btn acid mono" id="m-share">Share location</div>
+          <div class="hint" data-layout-ignore>Meet somewhere public, not at home. Only @mayapulls will see it.</div>
+        </div>
+        <div class="composer">
+          <div class="tool">$</div>
+          <div class="tool"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div class="tool on"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+          <div class="input">Write a message</div>
+          <div class="send mono">Send</div>
+        </div>
+      </div>
+      <div class="tap" id="m-tap1"></div>
+      <div id="m-scrim"></div>
+      <div id="m-pick" data-layout-allow-overlap>
+        <div class="t display">Choose a meeting place</div>
+        <div class="d">Move the map until the pin sits on the spot. Somewhere public.</div>
+        <div id="m-view">
+          <img id="m-map" src="assets/img/beirut-map.svg" alt="" />
+          <div id="m-pinwrap"><span class="mpin"></span></div>
+        </div>
+        <div id="m-foot">
+          <span class="mono" id="m-coords" data-layout-ignore>33.90153, 35.49870</span>
+          <span class="btn out mono">Cancel</span>
+          <span class="btn acid mono" id="m-use">Use this spot</span>
+        </div>
+      </div>
+      <div class="tap" id="m-tap2"></div>
+      <div class="cap" id="m-cap">
+        <div class="k mono" id="m-k">03 · Meetup</div>
+        <div class="h display" id="m-h">Pick a<br>public spot.</div>
+        <div class="s" id="m-s">Opens in Google Maps or Waze.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // Arrive: up and in (the previous scene left up and out)
+      tl.fromTo('.stage', { y: 120, opacity: 0, filter: 'blur(12px)' }, { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.32, ease: 'expo.out' }, 0);
+      tl.fromTo('#m-m1', { opacity: 0, y: 24, scale: 0.97, transformOrigin: '0% 100%' }, { opacity: 1, y: 0, scale: 1, duration: 0.36, ease: 'expo.out' }, 0.05);
+      tl.fromTo('#m-bar', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: 'expo.out' }, 0.15);
+      tl.fromTo('#m-k', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, ease: 'power3.out' }, 0.40);
+      tl.fromTo('#m-h', { opacity: 0, y: 30, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.34, ease: 'expo.out' }, 0.50);
+      tl.fromTo('#m-s', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out' }, 2.50);
+      // 13.5 s (local 0.5) — tap "Choose on the map"
+      tl.set('#m-tap1', { left: 323, top: 643 }, 0);
+      tl.fromTo('#m-tap1', { opacity: 0.9, scale: 0.3 }, { opacity: 0, scale: 1.5, duration: 0.45, ease: 'power2.out', immediateRender: false }, 0.50);
+      tl.to('#m-onmap', { scale: 0.94, duration: 0.08, ease: 'power2.in', yoyo: true, repeat: 1 }, 0.42);
+      tl.to('#m-onmap', { borderColor: '#d6ff3f', color: '#d6ff3f', duration: 0.1 }, 0.5);
+      // 14.0 s (local 1.0) — the picker rises; the map pans under the fixed pin until 15.0
+      tl.fromTo('#m-scrim', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.0);
+      tl.to('#m-scrim', { opacity: 0, duration: 0.22 }, 2.78);
+      tl.fromTo('#m-pick', { opacity: 0, y: 80, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'expo.out' }, 1.0);
+      tl.fromTo('#m-map', { x: 300, y: 180 }, { x: 0, y: 0, duration: 1.0, ease: 'power3.inOut' }, 1.0);
+      tl.fromTo('#m-pinwrap', { y: -14 }, { y: -14, duration: 0.01 }, 1.0);
+      tl.to('#m-pinwrap', { y: 0, duration: 0.28, ease: 'bounce.out' }, 2.0);
+      // coordinates follow the pan (a pure function of time via a tweened proxy)
+      (function () {
+        const el = document.querySelector('#m-coords');
+        const p = { k: 0 };
+        const show = () => {
+          const lat = 33.89611 + (33.90153 - 33.89611) * p.k;
+          const lng = 35.50391 + (35.49870 - 35.50391) * p.k;
+          el.textContent = lat.toFixed(5) + ', ' + lng.toFixed(5);
+        };
+        tl.fromTo(p, { k: 0 }, { k: 1, duration: 1.0, ease: 'power3.inOut', onUpdate: show, onStart: show }, 1.0);
+        tl.set(p, { k: 0, onComplete: show }, 0);
+      })();
+      // 15.5 s (local 2.5) — Use this spot
+      tl.set('#m-tap2', { left: 867, top: 848 }, 0);
+      tl.fromTo('#m-tap2', { opacity: 0.9, scale: 0.3 }, { opacity: 0, scale: 1.5, duration: 0.45, ease: 'power2.out', immediateRender: false }, 2.50);
+      tl.to('#m-use', { scale: 0.94, duration: 0.08, ease: 'power2.in', yoyo: true, repeat: 1 }, 2.42);
+      // 16.0 s (local 3.0) — the picker and bar close, the location card lands
+      tl.to('#m-pick', { opacity: 0, y: 60, duration: 0.22, ease: 'power2.in' }, 2.78);
+      tl.to('#m-bar', { opacity: 0, y: 20, duration: 0.2, ease: 'power2.in' }, 2.8);
+      tl.fromTo('#m-card', { opacity: 0, scale: 1.06, filter: 'blur(6px)', transformOrigin: '100% 0%' }, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.42, ease: 'expo.out' }, 3.0);
+      // Leave: up and out, ending exactly on the seam
+      tl.to('.stage', { y: -120, opacity: 0, filter: 'blur(12px)', duration: 0.24, ease: 'power3.in' }, 4.76);
+
+      window.__timelines['meet'] = tl;
+    })();
+  </script>
+</template>

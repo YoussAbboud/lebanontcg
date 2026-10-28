@@ -335,7 +335,7 @@ export default async function handler(req: any, res: any) {
 async function handle(req: any, res: any) {
   if (req.method !== 'POST') return json(res, 405, { error: 'POST only' });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
   if (!apiKey) {
     return json(res, 503, {
       error:

@@ -218,8 +218,8 @@ async function handle(req: any, res: any) {
   }
 
   // Not set up on this deployment: the listing simply waits for a moderator.
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  const secret = process.env.LISTING_SCREEN_SECRET;
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
+  const secret = process.env.LISTING_SCREEN_SECRET?.trim();
   if (!apiKey || !secret) return json(res, 200, { state: 'pending', checked: false });
 
   let screenId: string;

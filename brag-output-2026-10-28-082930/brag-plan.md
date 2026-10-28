@@ -65,3 +65,17 @@ Transitions: a lift and fade from the hook into the chat; vertical whips (up and
 
 ## Share caption
 Find the card, then set up the whole deal in one chat on LebanonTCG: make an offer, share your number and pick a public spot on the map. No checkout, no fees. www.lebanontcg.com
+
+## As built
+- **Check:** HyperFrames check passed with zero errors. The remaining warnings were weighed and kept:
+  - small UI chrome (button labels, timestamps) under the 28 px type floor, since the captions at 40–92 px carry the message;
+  - the dimmed location bar under the map picker's overlay, which is meant to be unreadable there;
+  - two duplicate-image notes, because the map and the flag appear twice on purpose.
+- **Render:** 21.0 s, 1920×1080, 30 fps, −13.3 LUFS, −1.0 dBFS peak.
+- **Soundtrack:** work/synth.py, 120 BPM. Every cut and effect is on the grid.
+- **Poster and frame 0:** both come from 3.5 s, the three lit tools under "Set up the whole deal in chat."
+- **Fixed after the first stills:**
+  - The "Choose on the map" tap ring was moved onto the button.
+  - A tap ring was faintly visible before its cue; it now only renders from its cue.
+  - "✓ Offer accepted" was enlarged.
+  - The location bar now dims under the map picker, as the app's overlay does.

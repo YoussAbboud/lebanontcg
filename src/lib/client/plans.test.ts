@@ -76,6 +76,18 @@ const listingInput = (title: string) => ({
   description: '',
 });
 
+// Listings are checked right after they're saved (0031); one that stays
+// in review counts towards the listing cooldown (0033), so these go
+// through the whole flow with a photo.
+const photo = { id: 'p', kind: 'new' as const, url: 'data:image/png;base64,p' };
+// Each check takes the mock a moment, and some tests list eight cards.
+vi.setConfig({ testTimeout: 30_000 });
+const listOne = async (title: string) => {
+  const l = await client.createListing(listingInput(title), [photo]);
+  await client.screenListing(l.id);
+  return l;
+};
+
 /** A fresh account: nobody's seeded listings, nobody's seeded plan. */
 const newSeller = async () => {
   await client.signUpWithPassword(`seller${Math.random().toString(36).slice(2, 8)}@plan.dev`, 'hunter2hunter2');
@@ -94,7 +106,7 @@ describe('the switch (0021)', () => {
     client = new MockClient();
     await authSettled(client);
     await newSeller();
-    for (const n of [1, 2, 3, 4, 5]) await client.createListing(listingInput(`Card ${n}`), []);
+    for (const n of [1, 2, 3, 4, 5]) await listOne(`Card ${n}`);
     const e = await client.getEntitlements();
     expect(e?.quotaEnabled).toBe(false);
     expect(e?.canCreateListing).toBe(true);
@@ -118,7 +130,7 @@ describe('the free listing allowance', () => {
       canUsePregrade: false,
     });
 
-    for (const n of [1, 2, 3]) await client.createListing(listingInput(`Card ${n}`), []);
+    for (const n of [1, 2, 3]) await listOne(`Card ${n}`);
 
     const after = await client.getEntitlements();
     expect(after?.listingsCreated).toBe(3);
@@ -131,7 +143,7 @@ describe('the free listing allowance', () => {
   it('does not hand the slot back when a listing is removed', async () => {
     await newSeller();
     const made = [];
-    for (const n of [1, 2, 3]) made.push(await client.createListing(listingInput(`Card ${n}`), []));
+    for (const n of [1, 2, 3]) made.push(await listOne(`Card ${n}`));
     await client.setListingStatus(made[0].id, 'removed');
     const e = await client.getEntitlements();
     expect(e?.listingsCreated).toBe(3);
@@ -142,7 +154,7 @@ describe('the free listing allowance', () => {
 describe('bought listings', () => {
   it('asks, waits, then spends what an admin switched on', async () => {
     await newSeller();
-    for (const n of [1, 2, 3]) await client.createListing(listingInput(`Card ${n}`), []);
+    for (const n of [1, 2, 3]) await listOne(`Card ${n}`);
     const me = client.getAuthState().user!.id;
 
     await client.requestPurchase('credits_5', 'Whish 12345');
@@ -165,7 +177,7 @@ describe('bought listings', () => {
     expect(live?.creditsRemaining).toBe(5);
     expect(live?.canCreateListing).toBe(true);
 
-    for (const n of [4, 5, 6, 7, 8]) await client.createListing(listingInput(`Card ${n}`), []);
+    for (const n of [4, 5, 6, 7, 8]) await listOne(`Card ${n}`);
     const spent = await client.getEntitlements();
     expect(spent?.creditsRemaining).toBe(0);
     await expect(client.createListing(listingInput('Card 9'), [])).rejects.toThrow(
@@ -191,7 +203,7 @@ describe('bought listings', () => {
   it('spends the oldest pack first', async () => {
     await newSeller();
     const me = client.getAuthState().user!.id;
-    for (const n of [1, 2, 3]) await client.createListing(listingInput(`Card ${n}`), []);
+    for (const n of [1, 2, 3]) await listOne(`Card ${n}`);
 
     await signIn(ADMIN);
     await client.adminGrantCredits(me, 2, 'first pack');
@@ -199,7 +211,7 @@ describe('bought listings', () => {
 
     await signIn(me);
     expect((await client.getEntitlements())?.creditsRemaining).toBe(6);
-    for (const n of [4, 5, 6] as const) await client.createListing(listingInput(`Card ${n}`), []);
+    for (const n of [4, 5, 6] as const) await listOne(`Card ${n}`);
     // Three listings drain the 2-pack, then one off the 4-pack.
     expect((await client.getEntitlements())?.creditsRemaining).toBe(3);
   });
@@ -209,7 +221,7 @@ describe('subscriptions', () => {
   it('lifts the listing limit and unlocks Pre-Grade', async () => {
     await newSeller();
     const me = client.getAuthState().user!.id;
-    for (const n of [1, 2, 3]) await client.createListing(listingInput(`Card ${n}`), []);
+    for (const n of [1, 2, 3]) await listOne(`Card ${n}`);
     await client.requestPurchase('monthly', 'Whish');
     await expect(client.requestPurchase('monthly', 'again')).rejects.toThrow(/already have/i);
 
@@ -225,7 +237,7 @@ describe('subscriptions', () => {
     expect(e?.tier).toBe('monthly');
     expect(e?.canUsePregrade).toBe(true);
     for (const n of [4, 5, 6, 7, 8, 9] as const) {
-      await client.createListing(listingInput(`Card ${n}`), []);
+      await listOne(`Card ${n}`);
     }
     expect((await client.getEntitlements())?.canCreateListing).toBe(true);
     // Subscribers never touch credits.

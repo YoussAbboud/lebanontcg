@@ -112,99 +112,96 @@ select 'S12 ...' || ((select count(*) from public.notifications
   || ' (one per suspension)';
 
 -- ---------------------------------------------------------------------------
--- Cooldown
+-- Cooldown (0033: every listing that goes to review counts, however it got there)
 reset role;
-create temp table t_flag (n int, listing uuid);
-insert into public.listings (id, seller_id, title, game, condition, price, review_state)
-  select ('c1000000-0000-0000-0000-00000000000' || n)::uuid, '00000000-0000-0000-0000-0000000000c1',
-         'Card ' || n, 'pokemon', 'NM', 10, 'pending'
-  from generate_series(1, 6) n;
-
+set app.listing_review = '1';
+update public.listings set review_state = 'approved' where seller_id = '00000000-0000-0000-0000-0000000000c1';
+set app.listing_review = '';
 set role authenticated;
 set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000c1';
 select 'C01 no cooldown to start with: ' || (public.my_listing_cooldown() = 0)::text;
 
-reset role;
--- one flag: no cooldown
-insert into public.listing_screens (listing_id, seller_id, verdict, finished_at)
-  values ('c1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '20 minutes'),
-         ('c1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000c1', 'card', now() - interval '19 minutes'),
-         ('c1000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '2 minutes');
-set role authenticated;
-select 'C02 one recent flag, after a good listing: no cooldown: ' || (public.my_listing_cooldown() = 0)::text;
+insert into public.listings (id, seller_id, title, game, condition, price)
+  values ('c1000000-0000-0000-0000-000000000001', auth.uid(), 'Fan one', 'pokemon', 'NM', 10);
+insert into public.listing_images (listing_id, storage_path)
+  values ('c1000000-0000-0000-0000-000000000001', 'x/1.jpg');
+select 'C02 one listing in review (check failed or never ran): no cooldown, its photos went in: '
+  || (public.my_listing_cooldown() = 0
+      and (select count(*) from public.listing_images where listing_id = 'c1000000-0000-0000-0000-000000000001') = 1)::text;
 
-reset role;
--- a check that failed doesn't count either
-insert into public.listing_screens (listing_id, seller_id, verdict, finished_at)
-  values ('c1000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-0000000000c1', 'error', now() - interval '90 seconds');
-set role authenticated;
-select 'C03 a failed check is not a flag: ' || (public.my_listing_cooldown() = 0)::text;
-
-reset role;
-insert into public.listing_screens (listing_id, seller_id, verdict, finished_at)
-  values ('c1000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-0000000000c1', 'unsure', now() - interval '1 minute');
-set role authenticated;
-select 'C04 two flags in a row: about nine minutes left: '
-  || (public.my_listing_cooldown() between 530 and 541)::text;
+insert into public.listings (id, seller_id, title, game, condition, price)
+  values ('c1000000-0000-0000-0000-000000000002', auth.uid(), 'Fan two', 'pokemon', 'NM', 10);
+insert into public.listing_images (listing_id, storage_path)
+  values ('c1000000-0000-0000-0000-000000000002', 'x/2.jpg');
+select 'C03 the second listing''s own photos still go in: '
+  || ((select count(*) from public.listing_images where listing_id = 'c1000000-0000-0000-0000-000000000002') = 1)::text;
+select 'C04 two in review one after the other: ten minutes: '
+  || (public.my_listing_cooldown() between 590 and 600)::text;
 insert into public.listings (seller_id, title, game, condition, price)
-  values (auth.uid(), 'Another', 'pokemon', 'NM', 10);
-select '(expect error above: You can''t list at the moment. Try again in 9 minutes.)';
+  values (auth.uid(), 'Fan three', 'pokemon', 'NM', 10);
+select '(expect error above: You can''t list at the moment. Try again in 10 minutes.)';
 insert into public.listing_images (listing_id, storage_path)
   values ('c0000000-0000-0000-0000-000000000001', 'x/y.jpg');
-select '(expect error above: no new photos either)';
+select '(expect error above: no new photos on another listing either)';
+select 'C05 the third never landed: ' || (count(*) = 0)::text
+  from public.listings where title = 'Fan three';
 
--- A moderator approving one of the flagged listings lifts it.
+-- Removing them doesn't help.
+update public.listings set status = 'removed'
+  where id in ('c1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000002');
+select 'C06 removing the listings keeps the cooldown: ' || (public.my_listing_cooldown() > 0)::text;
+
+-- A moderator approving one takes it back.
 reset role;
 set app.listing_review = '1';
-update public.listings set review_state = 'approved', reviewed_by = '00000000-0000-0000-0000-0000000000c3'
-  where id = 'c1000000-0000-0000-0000-000000000005';
+update public.listings set review_state = 'approved' where id = 'c1000000-0000-0000-0000-000000000002';
 set app.listing_review = '';
 set role authenticated;
-select 'C05 a moderator''s approval takes a flag back: ' || (public.my_listing_cooldown() = 0)::text;
+select 'C07 an approved listing no longer counts: ' || (public.my_listing_cooldown() = 0)::text;
 
--- Two flags five minutes apart with a good one between still count.
+-- In review, approved, in review — within five minutes: still a cooldown.
 reset role;
-delete from public.listing_screens where seller_id = '00000000-0000-0000-0000-0000000000c1';
-insert into public.listing_screens (listing_id, seller_id, verdict, finished_at)
-  values ('c1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '6 minutes'),
-         ('c1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000c1', 'card', now() - interval '4 minutes'),
-         ('c1000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '3 minutes');
+set app.listing_review = '1';
+update public.listings set review_requested_at = now() - interval '4 minutes'
+  where id = 'c1000000-0000-0000-0000-000000000001';
+update public.listings set review_requested_at = now() - interval '3 minutes'
+  where id = 'c1000000-0000-0000-0000-000000000002';
+insert into public.listings (id, seller_id, title, game, condition, price, review_state, review_requested_at)
+  values ('c1000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000000c1', 'Fan four',
+          'pokemon', 'NM', 10, 'pending', now() - interval '1 minute');
+set app.listing_review = '';
 set role authenticated;
-select 'C06 two flags within five minutes: cooldown: '
-  || (public.my_listing_cooldown() between 410 and 421)::text;
+select 'C08 two in review within five minutes, a good one between: cooldown: '
+  || (public.my_listing_cooldown() between 530 and 541)::text;
 
--- ...but the same listing flagged twice is one listing.
+-- ...but seven minutes apart with a good one between: none.
 reset role;
-delete from public.listing_screens where seller_id = '00000000-0000-0000-0000-0000000000c1';
-insert into public.listing_screens (listing_id, seller_id, verdict, finished_at)
-  values ('c1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '3 minutes'),
-         ('c1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '2 minutes');
+set app.listing_review = '1';
+update public.listings set review_requested_at = now() - interval '8 minutes'
+  where id = 'c1000000-0000-0000-0000-000000000001';
+update public.listings set review_requested_at = now() - interval '5 minutes'
+  where id = 'c1000000-0000-0000-0000-000000000002';
+set app.listing_review = '';
 set role authenticated;
-select 'C07 one listing checked twice is not two listings: ' || (public.my_listing_cooldown() = 0)::text;
+select 'C09 far apart with a good one between: none: ' || (public.my_listing_cooldown() = 0)::text;
 
--- Flags 7 minutes apart with a good listing between: no cooldown.
+-- Ten minutes after the second, it's over.
 reset role;
-delete from public.listing_screens where seller_id = '00000000-0000-0000-0000-0000000000c1';
-insert into public.listing_screens (listing_id, seller_id, verdict, finished_at)
-  values ('c1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '8 minutes'),
-         ('c1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000c1', 'card', now() - interval '5 minutes'),
-         ('c1000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '1 minutes');
+set app.listing_review = '1';
+update public.listings set review_state = 'pending', review_requested_at = now() - interval '12 minutes'
+  where id = 'c1000000-0000-0000-0000-000000000002';
+update public.listings set review_requested_at = now() - interval '11 minutes'
+  where id = 'c1000000-0000-0000-0000-000000000003';
+update public.listings set review_requested_at = now() - interval '13 minutes'
+  where id = 'c1000000-0000-0000-0000-000000000001';
+set app.listing_review = '';
 set role authenticated;
-select 'C08 flags far apart with a good listing between: none: ' || (public.my_listing_cooldown() = 0)::text;
-
--- Once ten minutes have passed, it's over.
-reset role;
-delete from public.listing_screens where seller_id = '00000000-0000-0000-0000-0000000000c1';
-insert into public.listing_screens (listing_id, seller_id, verdict, finished_at)
-  values ('c1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '12 minutes'),
-         ('c1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000000c1', 'not_card', now() - interval '11 minutes');
-set role authenticated;
-select 'C09 ten minutes after the second flag it lifts: ' || (public.my_listing_cooldown() = 0)::text;
+select 'C10 ten minutes after the second it lifts: ' || (public.my_listing_cooldown() = 0)::text;
 insert into public.listings (id, seller_id, title, game, condition, price)
   values ('c2000000-0000-0000-0000-000000000001', auth.uid(), 'Back again', 'pokemon', 'NM', 10);
-select 'C10 ...and listing works: ' || (count(*) = 1)::text
+select 'C11 ...and listing works: ' || (count(*) = 1)::text
   from public.listings where id = 'c2000000-0000-0000-0000-000000000001';
-select 'C11 the wait reads naturally: ' || (
+select 'C12 the wait reads naturally: ' || (
   public.format_wait(539) = '8 minutes 59 seconds' and public.format_wait(60) = '1 minute'
   and public.format_wait(61) = '1 minute 1 second' and public.format_wait(9) = '9 seconds')::text;
 reset role;

@@ -140,10 +140,11 @@ only a moderator can approve it.
   table a member writes to refuses the rest. The member's own profile is
   followed over realtime, so an open app locks the moment a moderator
   suspends and unlocks when it's lifted; both are also notified.
-- When the photo check flags two of a seller's listings in a row, or two
-  within five minutes, they can't list or add photos for ten minutes from
-  the second flag. A failed check doesn't count, and nor does a listing a
-  moderator has since approved. The sell page shows the countdown.
+- When two of a seller's listings go to review in a row, or two within
+  five minutes — whatever sent them there: the photo check, a check that
+  failed or never ran — they can't list or add photos for ten minutes
+  from the second (0033). A listing stops counting once it's approved;
+  removing it doesn't help. The sell page shows the countdown.
 
 ## Admin console
 

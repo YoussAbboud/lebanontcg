@@ -66,8 +66,8 @@ const SECTIONS: LegalSection[] = [
           A new listing, and a listing you add new photos to, goes public once its photos are
           checked: an automatic check confirms they show a trading card, and when it can&apos;t, a
           moderator looks. Until then only you can see it. We may decline a listing that isn&apos;t
-          a trading card, and we tell you why. If the check flags two of your listings in a row, or
-          two within five minutes, you can&apos;t list or add photos for ten minutes.
+          a trading card, and we tell you why. If two of your listings go to review in a row, or two
+          within five minutes, you can&apos;t list or add photos for ten minutes.
         </p>
         <p>
           Listings are free for now; <Link to="/plans">subscription plans</Link> will follow and we

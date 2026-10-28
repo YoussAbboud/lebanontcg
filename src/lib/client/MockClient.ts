@@ -663,43 +663,33 @@ export class MockClient implements MarketplaceClient {
     if (l && l.reviewState !== 'approved') throw new Error('This listing is waiting for review.');
   }
 
-  /** 0032's listing_cooldown_until: ten minutes from the second of two
-      flagged listings in a row, or two within five minutes. A failed check
-      doesn't count, nor does a listing a moderator has since approved. */
-  private cooldownUntil(userId: string): number {
-    const approvedByModerator = new Set(
-      this.adminActions.filter((a) => a.kind === 'listing_approve').map((a) => a.targetId),
-    );
-    const done = this.listings
-      .filter((l) => l.sellerId === userId)
-      .flatMap((l) =>
-        (this.screens.get(l.id) ?? [])
-          .filter((sc) => sc.verdict && sc.verdict !== 'error')
-          .map((sc) => ({
-            listingId: l.id,
-            at: new Date(sc.createdAt).getTime(),
-            flagged:
-              (sc.verdict === 'not_card' || sc.verdict === 'unsure') &&
-              !(l.reviewState === 'approved' && approvedByModerator.has(l.id)),
-          })),
-      )
-      .sort((a, b) => a.at - b.at);
+  /** When each listing last went to review (created, or given new photos). */
+  private reviewRequestedAt = new Map<string, number>();
+
+  /** 0033's listing_cooldown_until: every listing in review counts (however
+      it got there) until it's approved. Two in a row, or two within five
+      minutes, pause listing for ten minutes from the second. `exclude`
+      leaves out the listing being edited. */
+  private cooldownUntil(userId: string, exclude: string | null = null): number {
+    const seq = this.listings
+      .filter((l) => l.sellerId === userId && l.id !== exclude && this.reviewRequestedAt.has(l.id))
+      .map((l) => ({ id: l.id, at: this.reviewRequestedAt.get(l.id)!, flagged: l.reviewState !== 'approved' }))
+      .sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
     const now = Date.now();
     let until = 0;
-    done.forEach((d, i) => {
+    seq.forEach((d, i) => {
       if (!d.flagged || d.at <= now - 10 * 60_000) return;
-      const prev = done[i - 1];
-      const inARow = prev && prev.flagged && prev.listingId !== d.listingId;
-      const close = done.some(
-        (e) => e.flagged && e.listingId !== d.listingId && e.at < d.at && e.at >= d.at - 5 * 60_000,
+      const inARow = i > 0 && seq[i - 1].flagged;
+      const close = seq.some(
+        (e) => e.flagged && e.id !== d.id && e.at <= d.at && e.at >= d.at - 5 * 60_000,
       );
       if (inARow || close) until = Math.max(until, d.at + 10 * 60_000);
     });
     return until;
   }
 
-  private requireNoCooldown(userId: string): void {
-    const left = Math.ceil((this.cooldownUntil(userId) - Date.now()) / 1000);
+  private requireNoCooldown(userId: string, exclude: string | null = null): void {
+    const left = Math.ceil((this.cooldownUntil(userId, exclude) - Date.now()) / 1000);
     if (left > 0) throw new Error(`You can't list at the moment. Try again in ${formatWait(left)}.`);
   }
 
@@ -1053,6 +1043,7 @@ export class MockClient implements MarketplaceClient {
     this.requireNoCooldown(me.id);
     this.chargeListingQuota(me.id);
     const id = nextId('l');
+    this.reviewRequestedAt.set(id, Date.now());
     const nowIso = new Date().toISOString();
     const listing: Listing = {
       id,
@@ -1085,7 +1076,7 @@ export class MockClient implements MarketplaceClient {
     const listing = this.listings.find((l) => l.id === id);
     if (!listing) throw new Error('Listing not found');
     if (listing.sellerId !== me.id) throw new Error('Only the seller can edit a listing');
-    if (images.some((img) => img.kind === 'new')) this.requireNoCooldown(me.id);
+    if (images.some((img) => img.kind === 'new')) this.requireNoCooldown(me.id, id);
     const priorPrice = listing.price;
     Object.assign(listing, input);
     // An auction listing's price mirrors the current bid — edits can't move it.
@@ -1104,6 +1095,7 @@ export class MockClient implements MarketplaceClient {
     if (images.some((img) => img.kind === 'new') && listing.reviewState !== 'pending') {
       listing.reviewState = 'pending';
       listing.reviewNote = null;
+      this.reviewRequestedAt.set(id, Date.now());
     }
     listing.images = images.map((img, i) => ({
       id: img.kind === 'existing' ? img.id : nextId('img'),

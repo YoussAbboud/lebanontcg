@@ -15,8 +15,8 @@ export function CooldownBanner({ until, onDone }: { until: number; onDone(): voi
     <div className="sell-cooldown" role="status">
       <strong>You can&apos;t list at the moment. Try again in {formatWait(left)}.</strong>
       <p>
-        Your last listings were held for review because their photos didn&apos;t look like
-        trading cards. Listings need photos of the actual card.
+        Two of your latest listings went to review instead of going live, so listing is paused
+        for a few minutes. Listings need clear photos of the actual card.
       </p>
     </div>
   );

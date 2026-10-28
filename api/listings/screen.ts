@@ -220,13 +220,17 @@ async function handle(req: any, res: any) {
   // Not set up on this deployment: the listing simply waits for a moderator.
   const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
   const secret = process.env.LISTING_SCREEN_SECRET?.trim();
-  if (!apiKey || !secret) return json(res, 200, { state: 'pending', checked: false });
+  if (!apiKey || !secret) {
+    console.warn(`[screen] ${listingId} not checked: ${!apiKey ? 'ANTHROPIC_API_KEY' : 'LISTING_SCREEN_SECRET'} is not set`);
+    return json(res, 200, { state: 'pending', checked: false });
+  }
 
   let screenId: string;
   try {
     screenId = String(await rpc(authHeader, 'claim_listing_screen', { p_listing: listingId }));
   } catch (err) {
     // Not theirs, not pending, or out of checks — moderators decide.
+    console.log(`[screen] ${listingId} not claimed: ${err instanceof Error ? err.message : err}`);
     return json(res, 200, {
       state: 'pending',
       checked: false,
@@ -250,11 +254,21 @@ async function handle(req: any, res: any) {
     reason = `Automatic check failed: ${err instanceof Error ? err.message : 'unknown error'}`;
   }
 
-  const state = await rpc(authHeader, 'record_listing_screen', {
-    p_screen: screenId,
-    p_secret: secret,
-    p_verdict: verdict,
-    p_reason: reason,
-  });
+  let state: unknown;
+  try {
+    state = await rpc(authHeader, 'record_listing_screen', {
+      p_screen: screenId,
+      p_secret: secret,
+      p_verdict: verdict,
+      p_reason: reason,
+    });
+  } catch (err) {
+    // Usually LISTING_SCREEN_SECRET doesn't match the database's.
+    console.error(`[screen] ${listingId} verdict=${verdict} record failed: ${err instanceof Error ? err.message : err}`);
+    return json(res, 200, { state: 'pending', checked: false });
+  }
+  // One line per check (no secrets, no photos) so the Vercel logs show
+  // what happened to a listing.
+  console.log(`[screen] ${listingId} verdict=${verdict} state=${String(state)} reason=${reason.slice(0, 160)}`);
   return json(res, 200, { state, checked: verdict !== 'error' });
 }

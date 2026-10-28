@@ -30,9 +30,22 @@ $$;
 
 -- "zz_" so these run after 0031's own triggers (same-event triggers fire
 -- in name order).
+-- Approved as each row is written (BEFORE, after 0031's guard), so a
+-- multi-row insert never sees its own earlier rows still in review —
+-- which 0033's listing cooldown would otherwise count.
+create or replace function public.dev_autoapprove_new_listing()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.review_state := 'approved';
+  return new;
+end;
+$$;
+
 create trigger zz_dev_autoapprove_listings
-  after insert on public.listings
-  for each row execute function public.dev_autoapprove();
+  before insert on public.listings
+  for each row execute function public.dev_autoapprove_new_listing();
 
 create trigger zz_dev_autoapprove_images
   after insert on public.listing_images

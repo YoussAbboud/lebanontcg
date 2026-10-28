@@ -122,7 +122,7 @@ describe('suspension', () => {
 });
 
 describe('listing cooldown', () => {
-  it('two flagged listings in a row pause listing for ten minutes', async () => {
+  it('two listings in review in a row pause listing for ten minutes', async () => {
     expect(await client.getListingCooldown()).toBe(0);
     const a = await client.createListing(input('junk one'), [photo(1)]);
     await client.screenListing(a.id);
@@ -137,7 +137,9 @@ describe('listing cooldown', () => {
       /can't list at the moment\. Try again in (10 minutes|9 minutes \d+ seconds?)\./,
     );
     // New photos on an existing listing are listing too.
-    const live = (await client.getListingsBySeller(KARIM, ['active']))[0];
+    const live = (await client.getListingsBySeller(KARIM, ['active'])).find(
+      (l) => l.reviewState === 'approved',
+    )!;
     await expect(client.updateListing(live.id, input(live.title), [photo(4)])).rejects.toThrow(
       /can't list/,
     );

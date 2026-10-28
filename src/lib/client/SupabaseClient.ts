@@ -62,6 +62,7 @@ import { CURRENT_STANDARD } from '../pregrade/standards';
 import { PHASH_MISMATCH_COPY } from '../pregrade/phash';
 import { capturesMatchCover } from '../pregrade/phashGate';
 import { toStorageImage } from '../pregrade/decode';
+import { AVATAR_BUDGET, compressToBudget, LISTING_PHOTO_BUDGET } from '../image';
 import type {
   AuctionEvent,
   AuthState,
@@ -668,9 +669,10 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   async uploadAvatar(image: Blob): Promise<string> {
     const uid = this.uid();
     const path = `${uid}/avatar-${Date.now()}.jpg`;
+    const file = await compressToBudget(image, AVATAR_BUDGET);
     const { error } = await this.sb.storage
       .from('listing-images')
-      .upload(path, image, { contentType: 'image/jpeg' });
+      .upload(path, file, { contentType: 'image/jpeg' });
     if (error) throw new Error(`Avatar upload failed: ${error.message}`);
     return path;
   }
@@ -1049,9 +1051,12 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   private async uploadImage(listingId: string, draft: ImageDraft, index: number): Promise<string> {
     const uid = this.uid();
     const path = `${uid}/${listingId}/${Date.now()}-${index}.jpg`;
+    // However big the original (a 12 MP iPhone photo is several MB), only
+    // a compressed copy within the size budget is uploaded.
+    const file = await compressToBudget(draft.file!, LISTING_PHOTO_BUDGET);
     const { error } = await this.sb.storage
       .from('listing-images')
-      .upload(path, draft.file!, { contentType: 'image/jpeg' });
+      .upload(path, file, { contentType: 'image/jpeg' });
     if (error) throw new Error(`Photo upload failed: ${error.message}`);
     return path;
   }

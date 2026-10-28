@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fitWithin, MAX_LONG_EDGE } from './image';
+import { compressionLadder, fitWithin, MAX_LONG_EDGE } from './image';
 
 describe('fitWithin (compression sizing math)', () => {
   it('leaves small images untouched', () => {
@@ -33,5 +33,28 @@ describe('fitWithin (compression sizing math)', () => {
   it('never collapses a dimension to zero', () => {
     expect(fitWithin(10000, 3, 1600).height).toBeGreaterThanOrEqual(1);
     expect(fitWithin(3, 10000, 1600).width).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('compressionLadder (size budget attempts)', () => {
+  const budget = { maxLongEdge: 1600, minLongEdge: 1024, maxBytes: 350 * 1024 };
+
+  it('tries every quality at full size before shrinking', () => {
+    const steps = compressionLadder(4000, budget);
+    expect(steps.slice(0, 4).map((s) => s.longEdge)).toEqual([1600, 1600, 1600, 1600]);
+    expect(steps.slice(0, 4).map((s) => s.quality)).toEqual([0.85, 0.78, 0.7, 0.62]);
+    expect(steps[4].longEdge).toBe(1360);
+  });
+
+  it('never goes below the floor, and ends on it', () => {
+    const steps = compressionLadder(4000, budget);
+    expect(Math.min(...steps.map((s) => s.longEdge))).toBe(1024);
+    expect(steps[steps.length - 1]).toEqual({ longEdge: 1024, quality: 0.62 });
+  });
+
+  it('never upscales a small image', () => {
+    const steps = compressionLadder(800, budget);
+    expect(steps.every((s) => s.longEdge === 800)).toBe(true);
+    expect(steps.length).toBe(4);
   });
 });

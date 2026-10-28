@@ -135,7 +135,13 @@ export interface MarketplaceClient {
   // ---- Listings (read) ---------------------------------------------------
   searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage>;
   getListing(id: string): Promise<ListingWithSeller | null>;
-  getListingsBySeller(sellerId: string, statuses: ListingStatus[]): Promise<Listing[]>;
+  /** Public (approved) listings only, unless `includeInReview` — which
+      only My Listings asks for, to show the seller their own. */
+  getListingsBySeller(
+    sellerId: string,
+    statuses: ListingStatus[],
+    opts?: { includeInReview?: boolean },
+  ): Promise<Listing[]>;
   /** Live updates to one listing (status/price changes). */
   subscribeToListing(id: string, cb: (listing: Listing) => void): Unsubscribe;
 

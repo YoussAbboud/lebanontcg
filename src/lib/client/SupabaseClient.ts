@@ -787,8 +787,9 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
   }
 
   async searchListings(filter: ListingFilter, offset: number, limit: number): Promise<ListingPage> {
-    // RLS hides other people's listings in review; a seller's own still
-    // come back, and browse is for public listings only.
+    // RLS hides other people's listings in review, but a seller (and a
+    // moderator) can still read their own — browse asks the database for
+    // approved ones only, and drops any stragglers here too.
     const page = await this.searchVisibleListings(filter, offset, limit);
     return { ...page, items: page.items.filter((l) => l.reviewState === 'approved') };
   }
@@ -814,7 +815,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
         `${LISTING_SELECT}, seller:profiles!${filter.sellerHasReviews ? 'inner' : 'listings_seller_id_fkey'}(*)`,
         { count: 'exact' },
       )
-      .eq('status', 'active');
+      .eq('status', 'active')
+      .eq('review_state', 'approved');
     if (filter.sellerHasReviews) q = q.gt('seller.rating_count', 0);
 
     if (filter.games.length) q = q.in('game', filter.games);
@@ -993,7 +995,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .from('listings')
       .select('id', { count: 'exact', head: true })
       .eq('seller_id', row.seller_id)
-      .eq('status', 'active');
+      .eq('status', 'active')
+      .eq('review_state', 'approved');
     const [likes, pills] = await Promise.all([
       this.likesFor([row.id]),
       this.pregradePillsFor([row.id]),
@@ -1008,13 +1011,18 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
     };
   }
 
-  async getListingsBySeller(sellerId: string, statuses: ListingStatus[]): Promise<Listing[]> {
-    const { data, error } = await this.sb
+  async getListingsBySeller(
+    sellerId: string,
+    statuses: ListingStatus[],
+    opts?: { includeInReview?: boolean },
+  ): Promise<Listing[]> {
+    let q = this.sb
       .from('listings')
       .select(LISTING_SELECT)
       .eq('seller_id', sellerId)
-      .in('status', statuses)
-      .order('created_at', { ascending: false });
+      .in('status', statuses);
+    if (!opts?.includeInReview) q = q.eq('review_state', 'approved');
+    const { data, error } = await q.order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
     return (data as ListingRow[]).map((row) => this.mapListing(row));
   }

@@ -7,6 +7,7 @@ import { NotificationBell } from './NotificationBell';
 import { Avatar } from './Avatar';
 import flagGif from '../assets/flag.gif';
 import './appshell.css';
+import { useBuildFreshness } from '../lib/freshness';
 import '../styles/ui.css';
 
 export function AppShell() {
@@ -16,6 +17,7 @@ export function AppShell() {
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  useBuildFreshness();
 
   // Two one-time gates, in order: set a password (accounts that predate
   // passwords), then claim a handle (fresh accounts).

@@ -1,9 +1,32 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// One id per build, baked into the bundle and published as /version.json,
+// so a tab left open across a deploy can tell it's running old code
+// (src/lib/freshness.ts) and reload onto the new one.
+const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env;
+const BUILD_ID = env?.VERCEL_GIT_COMMIT_SHA || String(Date.now());
+
+function versionFile(): Plugin {
+  return {
+    name: 'version-file',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: JSON.stringify({ build: BUILD_ID }),
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), versionFile()],
+  define: {
+    __BUILD_ID__: JSON.stringify(BUILD_ID),
+  },
   server: {
     port: 5173,
   },

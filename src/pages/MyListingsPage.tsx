@@ -27,7 +27,11 @@ export function MyListingsPage() {
     if (!user) return;
     setState('loading');
     try {
-      setListings(await client.getListingsBySeller(user.id, ['active', 'reserved', 'sold', 'removed']));
+      setListings(
+        await client.getListingsBySeller(user.id, ['active', 'reserved', 'sold', 'removed'], {
+          includeInReview: true,
+        }),
+      );
       setState('ready');
     } catch {
       setState('error');

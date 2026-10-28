@@ -1015,11 +1015,19 @@ export class MockClient implements MarketplaceClient {
     return l && this.canSee(l) ? this.hydrate(l) : null;
   }
 
-  async getListingsBySeller(sellerId: string, statuses: ListingStatus[]): Promise<Listing[]> {
+  async getListingsBySeller(
+    sellerId: string,
+    statuses: ListingStatus[],
+    opts?: { includeInReview?: boolean },
+  ): Promise<Listing[]> {
     await sleep(netDelay());
     return sortListings(
       this.listings.filter(
-        (l) => l.sellerId === sellerId && statuses.includes(l.status) && this.canSee(l),
+        (l) =>
+          l.sellerId === sellerId &&
+          statuses.includes(l.status) &&
+          this.canSee(l) &&
+          (opts?.includeInReview || l.reviewState === 'approved'),
       ),
       'newest',
     ).map((l) => {

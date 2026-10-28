@@ -112,6 +112,16 @@ describe('suspension', () => {
     await client.setFavorite(listing.id, true);
   });
 
+  it('drops out of Top sellers and the sellers page while suspended', async () => {
+    expect((await client.listSellers(50)).some((s) => s.profile.id === KARIM)).toBe(true);
+    await signIn(ADMIN);
+    await client.adminSetSuspended(KARIM, true, 'Spam');
+    expect((await client.listSellers(50)).some((s) => s.profile.id === KARIM)).toBe(false);
+    expect((await client.getSellerStats(KARIM))?.profile.id).toBe(KARIM);
+    await client.adminSetSuspended(KARIM, false, '');
+    expect((await client.listSellers(50)).some((s) => s.profile.id === KARIM)).toBe(true);
+  });
+
   it('a third warning suspends with a single notice', async () => {
     await signIn(ADMIN);
     for (const r of ['One', 'Two', 'Three']) await client.adminWarnUser(KARIM, r);

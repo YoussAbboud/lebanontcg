@@ -901,6 +901,8 @@ export class MockClient implements MarketplaceClient {
   /** Rank: review count, then rating, then live inventory. */
   private rankedSellers(): SellerStats[] {
     return this.profiles
+      // Suspended accounts are never promoted (Top sellers, /sellers).
+      .filter((p) => !p.suspendedAt)
       .map((p) => this.sellerStatsFor(p, 0))
       .sort(
         (a, b) =>
@@ -917,7 +919,12 @@ export class MockClient implements MarketplaceClient {
   }
 
   async getSellerStats(userId: string): Promise<SellerStats | null> {
-    return this.rankedSellers().find((s) => s.profile.id === userId) ?? null;
+    const ranked = this.rankedSellers();
+    const found = ranked.find((s) => s.profile.id === userId);
+    if (found) return found;
+    // Not in the ranking (suspended): stats without a place on the board.
+    const p = this.profiles.find((x) => x.id === userId);
+    return p ? this.sellerStatsFor(p, ranked.length + 1) : null;
   }
 
   /** Recompute rating fields from the reviews table (mirrors the SQL view). */

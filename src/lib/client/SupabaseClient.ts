@@ -752,6 +752,8 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .from('profiles')
       .select('*')
       .not('username', 'is', null)
+      // Suspended accounts are never promoted (Top sellers, /sellers).
+      .is('suspended_at', null)
       .order('rating_count', { ascending: false })
       .limit(Math.max(limit * 3, 30));
     const profiles = ((data ?? []) as ProfileRow[]).map((p) => this.mapProfile(p));

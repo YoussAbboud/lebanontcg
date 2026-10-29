@@ -155,8 +155,11 @@ no connection — pages themselves always come from the network, so a
 deploy is picked up on the next open. On a phone browser, a couple of
 seconds after the site loads, a sheet slides up (`AddToHomePrompt`)
 with the exact taps for that browser: Share → Add to Home Screen on
-iPhone and iPad, the menu → Add to Home screen on Android (one tap
-where the browser offers `beforeinstallprompt`). "Not now" brings it
+iPhone and iPad (with a note to open the site in Safari first when
+they're in another browser, since only Safari can add to the Home
+Screen), the menu → Add to Home screen on Android (one tap where the
+browser offers `beforeinstallprompt`). The page behind the sheet is
+frozen until it's closed. "Not now" brings it
 back in two weeks, "Don't show again" never; it doesn't appear on
 desktops or once the site is already opened from the home screen
 (`src/lib/install.ts`).

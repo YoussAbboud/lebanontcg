@@ -5,6 +5,7 @@
   inset: 0;
   z-index: 70;
   background: var(--overlay);
+  touch-action: none;
   animation: a2hs-fade 0.25s ease-out;
 }
 
@@ -23,6 +24,11 @@
   border-radius: var(--r-card) var(--r-card) 0 0;
   box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.55);
   color: var(--text-1);
+  /* The page behind is frozen; only the sheet scrolls, and only if the
+     screen is too short for it. */
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   animation: a2hs-up 0.42s cubic-bezier(0.2, 0.9, 0.3, 1);
   outline: none;
 }
@@ -97,6 +103,23 @@
   line-height: 1.45;
   color: var(--text-2);
 }
+
+/* iPhone on a browser other than Safari: where to go first. */
+.a2hs-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 16px 0 -6px;
+  padding: 10px 12px;
+  border: 1px solid var(--warn);
+  border-radius: var(--r-tile);
+  background: rgba(255, 196, 94, 0.08);
+  font-size: var(--fs-13);
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.a2hs-note svg { flex: none; margin-top: 1px; color: var(--warn); }
+.a2hs-note b { color: var(--text-1); font-weight: 600; }
 
 .a2hs-steps {
   list-style: none;

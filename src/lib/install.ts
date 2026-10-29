@@ -30,8 +30,8 @@ export function detectPlatform(userAgent: string, maxTouchPoints = 0): InstallPl
   return 'other';
 }
 
-/** On iOS every browser is Safari underneath, but only Safari keeps the
-    Share button in the bottom toolbar; the others put it in the address bar. */
+/** On iOS the sheet sends people to Safari: Apple only offers "Add to Home
+    Screen" there, so Chrome, Firefox, Edge, Opera and DuckDuckGo get a note. */
 export function detectIosBrowser(userAgent: string): IosBrowser {
   return /CriOS|FxiOS|EdgiOS|OPT\/|DuckDuckGo/i.test(userAgent) ? 'other' : 'safari';
 }

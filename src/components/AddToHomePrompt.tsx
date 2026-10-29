@@ -64,7 +64,11 @@ export function AddToHomePrompt() {
       if (e.key === 'Escape') later();
     };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    const unlock = lockPageScroll(sheetRef.current);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      unlock();
+    };
   }, [open]);
 
   if (!open) return null;
@@ -145,18 +149,28 @@ export function AddToHomePrompt() {
             </button>
           </div>
         ) : platform === 'ios' ? (
-          <ol className="a2hs-steps">
-            <Step n={1} icon={<ShareIcon />}>
-              Tap the <b>Share</b> button{' '}
-              {iosBrowser === 'safari' ? 'at the bottom of the screen' : 'next to the address bar'}.
-            </Step>
-            <Step n={2} icon={<PlusSquareIcon />}>
-              Scroll down and tap <b>Add to Home Screen</b>.
-            </Step>
-            <Step n={3} icon={<CheckIcon />}>
-              Tap <b>Add</b> in the top corner.
-            </Step>
-          </ol>
+          <>
+            {iosBrowser !== 'safari' && (
+              <p className="a2hs-note">
+                <SafariIcon />
+                <span>
+                  On iPhone and iPad this only works in <b>Safari</b>. Open <b>www.lebanontcg.com</b>{' '}
+                  in Safari, then:
+                </span>
+              </p>
+            )}
+            <ol className="a2hs-steps">
+              <Step n={1} icon={<ShareIcon />}>
+                Tap the <b>Share</b> button at the bottom of the screen.
+              </Step>
+              <Step n={2} icon={<PlusSquareIcon />}>
+                Scroll down and tap <b>Add to Home Screen</b>.
+              </Step>
+              <Step n={3} icon={<CheckIcon />}>
+                Tap <b>Add</b> in the top corner.
+              </Step>
+            </ol>
+          </>
         ) : samsung ? (
           <ol className="a2hs-steps">
             <Step n={1} icon={<LinesIcon />}>
@@ -194,6 +208,41 @@ export function AddToHomePrompt() {
       </div>
     </>
   );
+}
+
+/**
+ * Freeze the page behind the sheet. `overflow: hidden` alone isn't enough
+ * on iOS Safari, so the body is pinned in place at its current scroll
+ * offset and touch scrolling outside the sheet is swallowed; everything is
+ * put back, and the page returned to where it was, when the sheet closes.
+ */
+function lockPageScroll(sheet: HTMLElement | null): () => void {
+  const body = document.body;
+  const y = window.scrollY;
+  const prev = {
+    overflow: body.style.overflow,
+    position: body.style.position,
+    top: body.style.top,
+    left: body.style.left,
+    right: body.style.right,
+    width: body.style.width,
+  };
+  body.style.overflow = 'hidden';
+  body.style.position = 'fixed';
+  body.style.top = `-${y}px`;
+  body.style.left = '0';
+  body.style.right = '0';
+  body.style.width = '100%';
+  const onTouch = (e: TouchEvent) => {
+    if (!sheet || !sheet.contains(e.target as Node)) e.preventDefault();
+  };
+  // React's own touch listeners are passive, so this one is attached by hand.
+  document.addEventListener('touchmove', onTouch, { passive: false });
+  return () => {
+    document.removeEventListener('touchmove', onTouch);
+    Object.assign(body.style, prev);
+    window.scrollTo(0, y);
+  };
 }
 
 function Step({ n, icon, children }: { n: number; icon: React.ReactNode; children: React.ReactNode }) {
@@ -250,6 +299,16 @@ function LinesIcon() {
   return (
     <svg {...svg}>
       <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  );
+}
+
+/** Safari's compass. */
+function SafariIcon() {
+  return (
+    <svg {...svg} width={20} height={20}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15.5 8.5l-2 5-5 2 2-5z" fill="currentColor" stroke="none" />
     </svg>
   );
 }

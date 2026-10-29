@@ -103,7 +103,6 @@
         {
           "id": "4e508b54-004c-4711-9b1e-2db109ff4e58",
           "scope": "project",
-          "report": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/composition/.hyperframes/artifacts/checks/4e508b54-004c-4711-9b1e-2db109ff4e58.json",
           "metadata": {
             "ok": true,
             "browserSkipped": false,
@@ -125,7 +124,9 @@
           "revision": "fbc399af-b159-4518-9a74-6290ee792109",
           "inputFingerprint": "7c765dc90665ac5e2014111cd9feb823e75a1624d85352abe4b2a18360bb8c91",
           "inputScope": "local-project-files",
-          "attribution": "recorded-revision"
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "0e4619b5-4356-4dc7-b4b5-6b67e199cf9d"
         }
       ],
       "c9e6c45c-1e47-486f-9ffb-c59339468fbd": [
@@ -819,5 +820,18 @@
         "attribution": "unversioned"
       }
     ]
-  }
+  },
+  "renders": {
+    "latest": {
+      "id": "0e4619b5-4356-4dc7-b4b5-6b67e199cf9d",
+      "completedAt": 1793258905863,
+      "output": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/render.mp4",
+      "status": "completed",
+      "revision": "c9e6c45c-1e47-486f-9ffb-c59339468fbd"
+    },
+    "retainedRevisions": [
+      "c9e6c45c-1e47-486f-9ffb-c59339468fbd"
+    ]
+  },
+  "pendingArtifactCleanup": []
 }

@@ -8,6 +8,7 @@ import { avatarBackground, faceBackground, glyphOf } from '../lib/face';
 import { useApp } from '../state/AppContext';
 import { FanCarousel } from '../components/FanCarousel';
 import { preloadImages } from '../lib/preload';
+import { fanInitialWindow } from '../lib/fan';
 import { LiveBids } from '../components/LiveBids';
 import { ListingCard } from '../components/ListingCard';
 import { listingEyebrow } from '../components/ListingCard';
@@ -50,16 +51,16 @@ export function HomePage() {
       client.listSellers(6).catch(() => []),
     ])
       .then(async ([newest, watched, topSellers]) => {
-        // Hold the skeleton until every picture on the page is in — the
-        // fan, the featured strip, the trending grid, the sellers' and the
-        // listings' avatars: a frame with no picture in it reads as broken.
-        const listings = [...newest.items, ...(watched ? watched.items : [])];
+        // Hold the skeleton only for what's on screen at reveal: the seven
+        // covers the fan opens on. Every other photo slot on the page shows
+        // its own shimmer until its picture paints (.photo-slot), so nothing
+        // ever reads as an empty card and the first paint doesn't wait on
+        // pictures below the fold.
         await preloadImages(
-          [
-            ...listings.map((l) => l.images[0]?.url),
-            ...listings.map((l) => l.seller.avatarUrl),
-            ...topSellers.map((s) => s.profile.avatarUrl),
-          ].filter((u): u is string => Boolean(u)),
+          fanInitialWindow(newest.items)
+            .map((l) => l.images[0]?.url)
+            .filter((u): u is string => Boolean(u)),
+          5000,
         );
         if (cancelled) return;
         setTotal(newest.total);
@@ -196,7 +197,7 @@ export function HomePage() {
                   }}
                 >
                   <div
-                    className="home-strip-face"
+                    className={`home-strip-face ${f.images[0] ? 'photo-slot' : ''}`}
                     style={f.images[0] ? undefined : { background: faceBackground(f.id) }}
                   >
                     {f.images[0] ? (

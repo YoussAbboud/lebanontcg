@@ -1,7 +1,6 @@
 .cardface {
   position: relative;
   overflow: hidden;
-  background: var(--input-bg);
 }
 .cardface img {
   position: absolute;

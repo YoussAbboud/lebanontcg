@@ -21,7 +21,7 @@ export function CardFace({
   const cover = listing.images[0];
   return (
     <div
-      className={`cardface ${className}`}
+      className={`cardface ${cover ? 'photo-slot' : ''} ${className}`}
       style={cover ? undefined : { background: faceBackground(listing.id) }}
     >
       {cover ? (

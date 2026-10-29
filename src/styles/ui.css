@@ -292,6 +292,14 @@ select.input {
   from { background-position: 130% 0; }
   to { background-position: -70% 0; }
 }
+/* A frame that holds a photo shows the same sweep until the photo has
+   painted over it, so a picture still on its way never reads as an empty
+   card. Faces without a photo set their own background inline instead. */
+.photo-slot {
+  background: linear-gradient(100deg, var(--surface) 35%, var(--raised-2) 50%, var(--surface) 65%);
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s infinite linear;
+}
 
 /* ---- Toast ------------------------------------------------------------------------- */
 .toast {

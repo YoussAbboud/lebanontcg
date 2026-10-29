@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ListingWithSeller } from '../lib/types';
 import { formatPrice, relativeTime } from '../lib/format';
 import { faceBackground, glyphOf } from '../lib/face';
+import { FAN_WINDOW, fanInitialActive } from '../lib/fan';
 import { auctionPillLabel, isEffectivelyOver } from '../lib/auction';
 import { useNow } from '../lib/useNow';
 import { Avatar } from './Avatar';
@@ -29,11 +30,11 @@ const DRAG_MIN = 45;
 
 /** At most 7 cards on screen (centre ±3); the rest wait off the edges
     at zero opacity and slide in as the fan rotates through the list. */
-const WINDOW = 3;
+const WINDOW = FAN_WINDOW;
 
 export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
   const navigate = useNavigate();
-  const [active, setActive] = useState(Math.min(2, Math.max(0, items.length - 1)));
+  const [active, setActive] = useState(fanInitialActive(items.length));
   const [hovered, setHovered] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -192,7 +193,7 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
               onBlur={() => setHovered(null)}
             >
               <div
-                className="fan-face"
+                className={`fan-face ${cover ? 'photo-slot' : ''}`}
                 style={cover ? undefined : { background: faceBackground(item.id) }}
               >
                 {cover ? (

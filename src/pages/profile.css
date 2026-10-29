@@ -6,6 +6,7 @@
 }
 
 .profile-hero {
+  position: relative; /* the share icon pins to the corner on phones */
   display: flex;
   flex-wrap: wrap;
   gap: 22px;
@@ -37,6 +38,13 @@
 }
 
 .profile-handle { font-size: var(--fs-28); }
+
+/* Icon-only share, a notch smaller than a full control so it sits with the handle. */
+.profile-share { width: 38px; height: 38px; }
+/* On a phone the handle row is full already, so the icon takes the card's corner. */
+@media (max-width: 640px) {
+  .profile-share { position: absolute; top: 16px; right: 16px; }
+}
 
 .profile-meta { margin-top: 10px; }
 

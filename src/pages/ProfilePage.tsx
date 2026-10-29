@@ -12,6 +12,8 @@ import { useToast } from '../state/ToastContext';
 import { Avatar } from '../components/Avatar';
 import { ListingCard } from '../components/ListingCard';
 import { ReportDialog } from '../components/ReportDialog';
+import { ShareButton } from '../components/ShareButton';
+import { SITE_URL } from '../lib/site';
 import './profile.css';
 import { usePageMeta } from '../lib/usePageMeta';
 import { profileMeta } from '../lib/pageMeta';
@@ -223,6 +225,16 @@ export function ProfilePage() {
               <span className={`rank-chip ${stats.rank === 1 ? 'rank-top' : ''}`}>
                 Rank {String(stats.rank).padStart(2, '0')}
               </span>
+            )}
+            {profile.username && (
+              // The /u/ link carries the seller's own social preview (api/share).
+              <ShareButton
+                className="profile-share"
+                url={`${SITE_URL}/u/${profile.username}`}
+                title={`@${profile.username} on LebanonTCG`}
+                text={`${profile.displayName}'s cards on LebanonTCG`}
+                label={isOwn ? 'Share your profile' : `Share @${profile.username}'s profile`}
+              />
             )}
           </div>
           <div className="mono-label profile-meta">

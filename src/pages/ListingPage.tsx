@@ -11,6 +11,8 @@ import { LikeButton } from '../components/LikeButton';
 import { useLikeCount } from '../lib/likeCounts';
 import { Avatar } from '../components/Avatar';
 import { ReportDialog } from '../components/ReportDialog';
+import { ShareButton } from '../components/ShareButton';
+import { SITE_URL } from '../lib/site';
 import { PregradeListingPanel } from '../components/pregrade/PregradeListingPanel';
 import { ImageLightbox } from '../components/ImageLightbox';
 import { LiveBidPage } from './LiveBidPage';
@@ -265,6 +267,13 @@ export function ListingPage() {
                     : 'Remove'}
                 </button>
               ))}
+              <ShareButton
+                className="ldetail-icon"
+                url={`${SITE_URL}/listing/${listing.id}`}
+                title={`${listing.title} on LebanonTCG`}
+                text={`${listing.title} — ${formatPrice(listing.price, listing.currency)}`}
+                label="Share this listing"
+              />
             </div>
           ) : (
             <div className="ldetail-actions">
@@ -293,6 +302,13 @@ export function ListingPage() {
               >
                 ⚑
               </button>
+              <ShareButton
+                className="ldetail-icon"
+                url={`${SITE_URL}/listing/${listing.id}`}
+                title={`${listing.title} on LebanonTCG`}
+                text={`${listing.title} — ${formatPrice(listing.price, listing.currency)}`}
+                label="Share this listing"
+              />
             </div>
           )}
 

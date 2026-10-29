@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { AuctionDetail, ListingWithSeller } from '../lib/types';
 import { CONDITION_LABELS, FINISH_LABELS, GAME_LABELS } from '../lib/types';
 import { formatTimeLeft, isEffectivelyOver, isEndingSoon } from '../lib/auction';
-import { memberSince } from '../lib/format';
+import { formatPrice, memberSince } from '../lib/format';
 import { glyphOf } from '../lib/face';
 import { useNow } from '../lib/useNow';
 import { useApp } from '../state/AppContext';
@@ -14,6 +14,8 @@ import { AuctionPanel } from '../components/AuctionPanel';
 import { AuctionPriceChart } from '../components/AuctionPriceChart';
 import { ImageLightbox } from '../components/ImageLightbox';
 import { ReportDialog } from '../components/ReportDialog';
+import { ShareButton } from '../components/ShareButton';
+import { SITE_URL } from '../lib/site';
 import { PregradeListingPanel } from '../components/pregrade/PregradeListingPanel';
 import { ReviewBanner } from '../components/ReviewBanner';
 import './livebid.css';
@@ -226,6 +228,12 @@ export function LiveBidPage({
                 </button>
               </>
             )}
+            <ShareButton
+              url={`${SITE_URL}/listing/${listing.id}`}
+              title={`${listing.title} on LebanonTCG`}
+              text={`${listing.title} — live auction, ${formatPrice(listing.price, listing.currency)}`}
+              label="Share this auction"
+            />
           </div>
           {cancelOpen && isOwner && !over && (
             <div className="livebid-cancelform ldetail-cancelform">

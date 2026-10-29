@@ -1,4 +1,5 @@
 import { createClient as createSupabase, type SupabaseClient } from '@supabase/supabase-js';
+import { rankablePool } from '../sellers';
 import type {
   AdminAction,
   AdminActionKind,
@@ -722,7 +723,10 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .from('listings')
       .select('seller_id, game, status')
       .in('seller_id', ids)
-      .in('status', ['active', 'sold']);
+      .in('status', ['active', 'sold'])
+      // Only what the public can see: a seller (or an admin, who reads every
+      // row) would otherwise count listings still in review.
+      .eq('review_state', 'approved');
     const rows = (data ?? []) as { seller_id: string; game: string; status: string }[];
     const stats = profiles.map((p) => {
       const mine = rows.filter((r) => r.seller_id === p.id);
@@ -759,7 +763,7 @@ export class SupabaseMarketplaceClient implements MarketplaceClient {
       .order('rating_count', { ascending: false })
       .limit(Math.max(limit * 3, 30));
     const profiles = ((data ?? []) as ProfileRow[]).map((p) => this.mapProfile(p));
-    return (await this.buildSellerStats(profiles)).slice(0, limit);
+    return rankablePool(await this.buildSellerStats(profiles)).slice(0, limit);
   }
 
   async getSellerStats(userId: string): Promise<SellerStats | null> {

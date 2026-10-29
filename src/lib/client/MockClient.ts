@@ -1,3 +1,4 @@
+import { rankablePool } from '../sellers';
 import type {
   AdminAction,
   AdminActionKind,
@@ -883,7 +884,8 @@ export class MockClient implements MarketplaceClient {
   }
 
   private sellerStatsFor(p: Profile, rank: number): SellerStats {
-    const theirs = this.listings.filter((l) => l.sellerId === p.id);
+    // Only what the public can see: listings still in review don't count.
+    const theirs = this.listings.filter((l) => l.sellerId === p.id && l.reviewState === 'approved');
     const active = theirs.filter((l) => l.status === 'active');
     const gameCounts = new Map<string, number>();
     for (const l of active) gameCounts.set(l.game, (gameCounts.get(l.game) ?? 0) + 1);
@@ -913,16 +915,21 @@ export class MockClient implements MarketplaceClient {
       .map((s, i) => ({ ...s, rank: i + 1 }));
   }
 
+  /** The seller board: ranked sellers with something public to show. */
+  private rankedBoard(): SellerStats[] {
+    return rankablePool(this.rankedSellers());
+  }
+
   async listSellers(limit: number): Promise<SellerStats[]> {
     await sleep(netDelay());
-    return this.rankedSellers().slice(0, limit);
+    return this.rankedBoard().slice(0, limit);
   }
 
   async getSellerStats(userId: string): Promise<SellerStats | null> {
-    const ranked = this.rankedSellers();
+    const ranked = this.rankedBoard();
     const found = ranked.find((s) => s.profile.id === userId);
     if (found) return found;
-    // Not in the ranking (suspended): stats without a place on the board.
+    // Not on the board (suspended, or nothing public yet): stats without a place.
     const p = this.profiles.find((x) => x.id === userId);
     return p ? this.sellerStatsFor(p, ranked.length + 1) : null;
   }

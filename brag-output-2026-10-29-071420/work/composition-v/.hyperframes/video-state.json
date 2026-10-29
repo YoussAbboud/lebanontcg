@@ -1,0 +1,394 @@
+{
+  "version": 1,
+  "historyId": "445df50d-5763-4da6-95ef-909113a00160",
+  "currentRevision": null,
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/chakra-petch-latin-600-normal.woff2": {
+      "hash": "a5888696e9eb1b4bbbecc8eb3922b8369f49d4bddb72263e033cbd17f399be76",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/a5/a5888696e9eb1b4bbbecc8eb3922b8369f49d4bddb72263e033cbd17f399be76"
+    },
+    "assets/fonts/chakra-petch-latin-700-normal.woff2": {
+      "hash": "ce5095dc1cb200aaa939e38067a0677018d10e9f26ec38cdcf1557ac524fc775",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/ce/ce5095dc1cb200aaa939e38067a0677018d10e9f26ec38cdcf1557ac524fc775"
+    },
+    "assets/fonts/inter-latin-400-normal.woff2": {
+      "hash": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/89/8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc"
+    },
+    "assets/fonts/inter-latin-500-normal.woff2": {
+      "hash": "f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/f3/f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f"
+    },
+    "assets/fonts/inter-latin-600-normal.woff2": {
+      "hash": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/f9/f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a"
+    },
+    "assets/fonts/jetbrains-mono-latin-500-normal.woff2": {
+      "hash": "cb182feeed4d798ff6961d3c79f7026279448fca0676438aaecb21f3fc39553a",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/cb/cb182feeed4d798ff6961d3c79f7026279448fca0676438aaecb21f3fc39553a"
+    },
+    "assets/fonts/jetbrains-mono-latin-700-normal.woff2": {
+      "hash": "d0d4e818808f2a0ba39b2b09d1989366f63494e295f003c7ef436697378507e8",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/d0/d0d4e818808f2a0ba39b2b09d1989366f63494e295f003c7ef436697378507e8"
+    },
+    "assets/img/fan.jpg": {
+      "hash": "2a4f5f0f1fb4e6f3c350765e21b95b67b61c843bdaae7f34ee8d16c11f2c341c",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/2a/2a4f5f0f1fb4e6f3c350765e21b95b67b61c843bdaae7f34ee8d16c11f2c341c"
+    },
+    "assets/img/flag.png": {
+      "hash": "95221efd0ef11dc1f955e28e6e68f5b045d5dceec36f62c30c67fd84e7b89baf",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/95/95221efd0ef11dc1f955e28e6e68f5b045d5dceec36f62c30c67fd84e7b89baf"
+    },
+    "assets/vendor/gsap.min.js": {
+      "hash": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/92/92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb"
+    },
+    "compositions/film.html": {
+      "hash": "9aa1b6203c8a9445d40469db5d922ea54299e05299b375ac645580929d895ff4",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/9a/9aa1b6203c8a9445d40469db5d922ea54299e05299b375ac645580929d895ff4"
+    },
+    "hyperframes.json": {
+      "hash": "3af6ecb4d7f8c0cf28a50880f71291f27406c4548e5db2ea2d57430abd99e0e1",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/3a/3af6ecb4d7f8c0cf28a50880f71291f27406c4548e5db2ea2d57430abd99e0e1"
+    },
+    "index.html": {
+      "hash": "43eecbfd430cef7841458997ceb48f8c34872726d9f13dcbb957c088e734b325",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/43/43eecbfd430cef7841458997ceb48f8c34872726d9f13dcbb957c088e734b325"
+    },
+    "package.json": {
+      "hash": "1793f77c7d980a32d206e1b3e705dee9d878937e2bbbf4a2bf2b44b670f5692d",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/17/1793f77c7d980a32d206e1b3e705dee9d878937e2bbbf4a2bf2b44b670f5692d"
+    },
+    "assets/audio/soundtrack.wav": {
+      "hash": "9680cf187b2b3b62e8611d9bef72c5c7c906f1b61438ef11236199d27268fa3e",
+      "content": "/root/.cache/hyperframes/history/445df50d-5763-4da6-95ef-909113a00160/blobs/96/9680cf187b2b3b62e8611d9bef72c5c7c906f1b61438ef11236199d27268fa3e"
+    }
+  },
+  "revisions": {},
+  "checks": {
+    "latest": {
+      "revision": null,
+      "id": "fccaa7bf-70a5-4e9c-aa5c-4db1b576d194"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "id": "fccaa7bf-70a5-4e9c-aa5c-4db1b576d194",
+        "scope": "project",
+        "report": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/composition-v/.hyperframes/artifacts/checks/fccaa7bf-70a5-4e9c-aa5c-4db1b576d194.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793259443911,
+        "contentHash": "8d89f46b3dc93e11e936c178b49d21e8d7d127409350265fc49ab8b6cb30130a",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": null,
+      "id": "11f47345-b804-420d-898a-6ef637768b68-1"
+    },
+    "revisions": {},
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "c5cd8267-cfff-4283-97fc-f7a5f5b9a538-0",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-1.8/frame-00-at-1.8s.png",
+        "time": 1.8,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259446898,
+        "contentHash": "ef0266203ade7844e12d5faf9ba331558d3044896251733a092b3b017a38a0a5",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "c5cd8267-cfff-4283-97fc-f7a5f5b9a538-1",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-1.8/frame-01-at-22.116s.png",
+        "time": 22.116,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259446898,
+        "contentHash": "78c37ce0b1242349e07c3297068dfafd74696ee75e12cbc073c7eff05388d5ba",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "d260b55e-17a1-4d36-9884-0ccde1eb4ecb-0",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-5.4/frame-00-at-5.4s.png",
+        "time": 5.4,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259449880,
+        "contentHash": "5eeba0fc061a0d6d1e64a99eb894a8fd0463e3ce1ab9dee4c5e636579370f013",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "d260b55e-17a1-4d36-9884-0ccde1eb4ecb-1",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-5.4/frame-01-at-22.116s.png",
+        "time": 22.116,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259449880,
+        "contentHash": "78c37ce0b1242349e07c3297068dfafd74696ee75e12cbc073c7eff05388d5ba",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "c5871f58-8b01-425c-b0c3-e15b95350605-0",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-10.2/frame-00-at-10.2s.png",
+        "time": 10.2,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259453294,
+        "contentHash": "d6433709fb58351d91d35a635170ef7f4fb8cec1c1dc3a512ad0bbc35628ba39",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "c5871f58-8b01-425c-b0c3-e15b95350605-1",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-10.2/frame-01-at-22.116s.png",
+        "time": 22.116,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259453294,
+        "contentHash": "78c37ce0b1242349e07c3297068dfafd74696ee75e12cbc073c7eff05388d5ba",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "53cdb82e-6c84-4903-ad38-b6d064855e45-0",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-14.3/frame-00-at-14.3s.png",
+        "time": 14.3,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259455985,
+        "contentHash": "5ee1a4543fdc0dbac01b9c87888949f37957656e3e8fc622c0fd7d0fadee646d",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "53cdb82e-6c84-4903-ad38-b6d064855e45-1",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-14.3/frame-01-at-22.116s.png",
+        "time": 22.116,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259455985,
+        "contentHash": "78c37ce0b1242349e07c3297068dfafd74696ee75e12cbc073c7eff05388d5ba",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "88544283-3e61-43a8-a8c0-088189184073-0",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-16.4/frame-00-at-16.4s.png",
+        "time": 16.4,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259458772,
+        "contentHash": "a78c5524323138d93e04b9fb5a13d4d48241db76d04948f22c2294cfa56087a3",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "88544283-3e61-43a8-a8c0-088189184073-1",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-16.4/frame-01-at-22.116s.png",
+        "time": 22.116,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259458772,
+        "contentHash": "78c37ce0b1242349e07c3297068dfafd74696ee75e12cbc073c7eff05388d5ba",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "cc02a29c-f61e-4dbf-8adb-74e88cf7adcf-0",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-19.2/frame-00-at-19.2s.png",
+        "time": 19.2,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259462001,
+        "contentHash": "70730cd26cf2840596264bb66d13789d11e88289cce2ca4950e9298f76a890b8",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "cc02a29c-f61e-4dbf-8adb-74e88cf7adcf-1",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-19.2/frame-01-at-22.116s.png",
+        "time": 22.116,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259462001,
+        "contentHash": "78c37ce0b1242349e07c3297068dfafd74696ee75e12cbc073c7eff05388d5ba",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "11f47345-b804-420d-898a-6ef637768b68-0",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-21.2/frame-00-at-21.2s.png",
+        "time": 21.2,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259465045,
+        "contentHash": "9e737de7ea3cec7394b40eaab0869d05ced7f76b47369279a587ccbe1cc00ce0",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "11f47345-b804-420d-898a-6ef637768b68-1",
+        "image": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/stills-v/s-21.2/frame-01-at-22.116s.png",
+        "time": 22.116,
+        "metadata": {
+          "width": 1080,
+          "height": 1920,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1793259465045,
+        "contentHash": "78c37ce0b1242349e07c3297068dfafd74696ee75e12cbc073c7eff05388d5ba",
+        "revision": null,
+        "inputFingerprint": "10b48108db7270bd19d9142edb53277831a3d338ceadc4ea49b418446f4850c4",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  }
+}

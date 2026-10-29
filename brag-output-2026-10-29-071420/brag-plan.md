@@ -88,6 +88,9 @@ Audio-coupled idea: bell on the logo.
 **Music mood for this video:** tense, tight, dry — a case being closed.
 **Audio summary:** a clean 100 BPM groove counts the strikes; each verdict gets a pitched "nope", the countdown ticks, the suspension lands as the one big hit with the drums pulled out, and the logo rings out on the final chord.
 
+## The vertical cut (brag-vertical.mp4, 1080×1920)
+Same film, same soundtrack, same beat numbers (work/build_vertical.py re-lays work/build_film.py's timeline). The strikes and the captions sit on top inside the title-safe box; the site panel fills the lower two thirds, with the cooldown banner running under the card at full width. The junk photo is the supplied picture of a desk fan (assets/img/fan.jpg) instead of the drawing — a product shot, nobody in it.
+
 ## As built
 - **Check:** HyperFrames check passed with zero errors; all 54 text contrast checks pass (the greyed Publish pill was changed from faded to grey-with-light-text for this). Warnings weighed and kept: the drawn fan fills its clipped frame and appears twice on purpose; the long UI sentences (the cooldown paragraph, the suspended bar) are secondary to the big captions, which hold to the reading floor.
 - **Taps:** the fingertip targets were read from the layout in Chromium (work/probe.mjs): Publish listing (782, 776) and Reject & warn (604, 822).

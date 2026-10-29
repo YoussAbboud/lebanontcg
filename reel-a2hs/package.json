@@ -1,0 +1,23 @@
+{
+  "name": "lebanontcg-reel-a2hs",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "./render.sh",
+    "still": "remotion still src/index.ts LtcgA2hs",
+    "capture": "node capture/capture.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.484",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "remotion": "4.0.484"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "typescript": "6.0.3",
+    "playwright-core": "^1.62.1"
+  },
+  "description": "LebanonTCG Add to Home Screen reel (video-shotcraft, Remotion)"
+}

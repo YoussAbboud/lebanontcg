@@ -1,0 +1,5 @@
+out/qa/
+out/*.wav
+out/video.mp4
+out/render.log
+node_modules

@@ -1,0 +1,102 @@
+{
+ "air-woosh-quick.mp3": {
+  "dur_s": 1.51,
+  "peak_db": -0.3,
+  "peak_lag_f": 7.0
+ },
+ "bass-hit-short.mp3": {
+  "dur_s": 1.1,
+  "peak_db": -0.3,
+  "peak_lag_f": 2.8
+ },
+ "click-camera.mp3": {
+  "dur_s": 0.35,
+  "peak_db": -7.0,
+  "peak_lag_f": 5.6
+ },
+ "gear-lock-metallic.mp3": {
+  "dur_s": 1.1,
+  "peak_db": -1.1,
+  "peak_lag_f": 7.2
+ },
+ "hit-weak.mp3": {
+  "dur_s": 0.59,
+  "peak_db": -5.6,
+  "peak_lag_f": 4.7
+ },
+ "impact-deep-whoosh.mp3": {
+  "dur_s": 4.06,
+  "peak_db": -0.9,
+  "peak_lag_f": 16.6
+ },
+ "lock-quick.mp3": {
+  "dur_s": 1.13,
+  "peak_db": -0.3,
+  "peak_lag_f": 0.8
+ },
+ "riser-cine.mp3": {
+  "dur_s": 4.81,
+  "peak_db": -0.1,
+  "peak_lag_f": 22.6
+ },
+ "sparkle-touch.mp3": {
+  "dur_s": 2.33,
+  "peak_db": -5.2,
+  "peak_lag_f": 14.4
+ },
+ "sparkle.mp3": {
+  "dur_s": 4.55,
+  "peak_db": -8.2,
+  "peak_lag_f": 43.9
+ },
+ "sweep-short.mp3": {
+  "dur_s": 0.61,
+  "peak_db": -5.8,
+  "peak_lag_f": 13.8
+ },
+ "switch-click-quick.mp3": {
+  "dur_s": 1.04,
+  "peak_db": -0.1,
+  "peak_lag_f": 0.6
+ },
+ "switch-light.mp3": {
+  "dur_s": 0.17,
+  "peak_db": -10.8,
+  "peak_lag_f": 2.0
+ },
+ "switch-tap.mp3": {
+  "dur_s": 1.11,
+  "peak_db": -0.6,
+  "peak_lag_f": 0.5
+ },
+ "swoosh-quick.mp3": {
+  "dur_s": 0.78,
+  "peak_db": -3.9,
+  "peak_lag_f": 8.6
+ },
+ "transition-snap.mp3": {
+  "dur_s": 0.57,
+  "peak_db": -5.6,
+  "peak_lag_f": 3.5
+ },
+ "transition-soft.mp3": {
+  "dur_s": 1.27,
+  "peak_db": -0.9,
+  "peak_lag_f": 13.3
+ },
+ "typewriter-hit-hard.mp3": {
+  "dur_s": 1.1,
+  "peak_db": -0.9,
+  "peak_lag_f": 1.5
+ },
+ "typewriter-hit-soft.mp3": {
+  "dur_s": 0.53,
+  "peak_db": -3.7,
+  "peak_lag_f": 4.7
+ },
+ "whoosh-big.mp3": {
+  "dur_s": 2.32,
+  "peak_db": -1.5,
+  "peak_lag_f": 21.5
+ }
+}

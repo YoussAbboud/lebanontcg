@@ -63,7 +63,17 @@ export function SellersPage() {
         </div>
       )}
 
-      {sellers && (
+      {sellers && sellers.length === 0 && (
+        <div className="empty-dashed">
+          <h3>No sellers yet</h3>
+          <p>Sellers show up here once one of their listings is live.</p>
+          <button className="btn-acid" onClick={() => navigate('/sell')}>
+            List a card
+          </button>
+        </div>
+      )}
+
+      {sellers && sellers.length > 0 && (
         <div className="sellers-grid">
           {sellers.map((s) => (
             <article

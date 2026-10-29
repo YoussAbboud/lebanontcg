@@ -50,12 +50,16 @@ export function HomePage() {
       client.listSellers(6).catch(() => []),
     ])
       .then(async ([newest, watched, topSellers]) => {
-        // Hold the skeleton until the fan's and the featured strip's photos
-        // are in: a card frame with no picture in it reads as broken.
+        // Hold the skeleton until every picture on the page is in — the
+        // fan, the featured strip, the trending grid, the sellers' and the
+        // listings' avatars: a frame with no picture in it reads as broken.
+        const listings = [...newest.items, ...(watched ? watched.items : [])];
         await preloadImages(
-          [...newest.items, ...(watched ? watched.items : [])]
-            .map((l) => l.images[0]?.url)
-            .filter((u): u is string => Boolean(u)),
+          [
+            ...listings.map((l) => l.images[0]?.url),
+            ...listings.map((l) => l.seller.avatarUrl),
+            ...topSellers.map((s) => s.profile.avatarUrl),
+          ].filter((u): u is string => Boolean(u)),
         );
         if (cancelled) return;
         setTotal(newest.total);

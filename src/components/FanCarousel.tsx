@@ -200,7 +200,7 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
                     className="fan-photo"
                     src={cover.url}
                     alt=""
-                    loading="lazy"
+                    decoding="async"
                     draggable={false}
                     style={
                       isTilting

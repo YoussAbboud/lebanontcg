@@ -7,6 +7,7 @@ import { formatPrice } from '../lib/format';
 import { avatarBackground, faceBackground, glyphOf } from '../lib/face';
 import { useApp } from '../state/AppContext';
 import { FanCarousel } from '../components/FanCarousel';
+import { preloadImages } from '../lib/preload';
 import { LiveBids } from '../components/LiveBids';
 import { ListingCard } from '../components/ListingCard';
 import { listingEyebrow } from '../components/ListingCard';
@@ -48,7 +49,14 @@ export function HomePage() {
         .catch(() => null),
       client.listSellers(6).catch(() => []),
     ])
-      .then(([newest, watched, topSellers]) => {
+      .then(async ([newest, watched, topSellers]) => {
+        // Hold the skeleton until the fan's and the featured strip's photos
+        // are in: a card frame with no picture in it reads as broken.
+        await preloadImages(
+          [...newest.items, ...(watched ? watched.items : [])]
+            .map((l) => l.images[0]?.url)
+            .filter((u): u is string => Boolean(u)),
+        );
         if (cancelled) return;
         setTotal(newest.total);
         // The fan rotates through the whole newest page, seven on screen

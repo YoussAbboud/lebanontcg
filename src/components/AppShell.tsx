@@ -4,6 +4,7 @@ import { useApp } from '../state/AppContext';
 import { rememberReturnTo } from '../lib/returnTo';
 import { UserSwitcher } from './UserSwitcher';
 import { NotificationBell } from './NotificationBell';
+import { AddToHomePrompt } from './AddToHomePrompt';
 import { Avatar } from './Avatar';
 import flagGif from '../assets/flag.gif';
 import './appshell.css';
@@ -269,6 +270,7 @@ export function AppShell() {
           <Link to="/settings">Settings</Link>
         </nav>
       </footer>
+      <AddToHomePrompt />
     </div>
   );
 }

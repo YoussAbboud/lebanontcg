@@ -1,0 +1,161 @@
+/* "Add to Home Screen" sheet: slides up over the page on phones. */
+
+.a2hs-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: var(--overlay);
+  animation: a2hs-fade 0.25s ease-out;
+}
+
+.a2hs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 71;
+  margin: 0 auto;
+  max-width: 520px;
+  padding: 14px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.55);
+  color: var(--text-1);
+  animation: a2hs-up 0.42s cubic-bezier(0.2, 0.9, 0.3, 1);
+  outline: none;
+}
+
+@keyframes a2hs-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes a2hs-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .a2hs, .a2hs-backdrop { animation: none; }
+}
+
+.a2hs-grab {
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 2px;
+  background: var(--raised-2);
+}
+
+.a2hs-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--input-bg);
+}
+.a2hs-close:hover { color: var(--text-1); }
+
+.a2hs-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-right: 28px;
+}
+
+/* The icon as it will sit on the home screen, label and all. */
+.a2hs-tile-wrap { flex: none; text-align: center; }
+.a2hs-tile {
+  width: 64px;
+  height: 64px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--face-border);
+}
+.a2hs-tile img { display: block; width: 100%; height: 100%; }
+.a2hs-tile-label {
+  margin-top: 6px;
+  font-size: var(--fs-11);
+  color: var(--text-2);
+  letter-spacing: 0.01em;
+}
+
+.a2hs-title {
+  font-size: 19px;
+  line-height: 1.1;
+  letter-spacing: var(--track-display);
+  text-transform: uppercase;
+}
+.a2hs-sub {
+  margin-top: 6px;
+  font-size: var(--fs-13);
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.a2hs-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0 14px;
+  padding: 0;
+}
+.a2hs-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-tile);
+  background: var(--input-bg);
+  font-size: var(--fs-14);
+  line-height: 1.4;
+  color: var(--text-2);
+}
+.a2hs-step b { color: var(--text-1); font-weight: 600; }
+.a2hs-step-n { flex: none; width: 14px; color: var(--acid); }
+.a2hs-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--acid);
+}
+.a2hs-step-text { flex: 1; min-width: 0; }
+
+.a2hs-native { margin: 18px 0 14px; }
+.a2hs-install {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  font-size: var(--fs-15);
+}
+
+.a2hs-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.a2hs-later { flex: 1; min-height: 44px; }
+.a2hs-never {
+  flex: 1;
+  min-height: 44px;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.a2hs-never:hover { color: var(--text-2); }

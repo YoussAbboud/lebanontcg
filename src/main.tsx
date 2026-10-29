@@ -11,6 +11,17 @@ import App from './App';
 import { createClient } from './lib/client';
 import { AppProvider } from './state/AppContext';
 import { ToastProvider } from './state/ToastContext';
+import { captureInstallPrompt } from './lib/install';
+
+// Home-screen install: catch the browser's install event before React is
+// up, and register the service worker that makes the site installable
+// (public/sw.js) — on real builds only, so dev never serves stale code.
+captureInstallPrompt();
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+  });
+}
 
 const rootEl = document.getElementById('root')!;
 const root = ReactDOM.createRoot(rootEl);

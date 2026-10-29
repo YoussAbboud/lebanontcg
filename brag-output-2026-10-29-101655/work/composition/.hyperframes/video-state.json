@@ -1,0 +1,747 @@
+{
+  "version": 1,
+  "historyId": "07643a1e-989e-4aed-a65d-62fee3fbeb11",
+  "currentRevision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+  "pendingChanges": false,
+  "files": {
+    "assets/fonts/chakra-petch-latin-600-normal.woff2": {
+      "hash": "a5888696e9eb1b4bbbecc8eb3922b8369f49d4bddb72263e033cbd17f399be76",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/a5/a5888696e9eb1b4bbbecc8eb3922b8369f49d4bddb72263e033cbd17f399be76"
+    },
+    "assets/fonts/chakra-petch-latin-700-normal.woff2": {
+      "hash": "ce5095dc1cb200aaa939e38067a0677018d10e9f26ec38cdcf1557ac524fc775",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/ce/ce5095dc1cb200aaa939e38067a0677018d10e9f26ec38cdcf1557ac524fc775"
+    },
+    "assets/fonts/inter-latin-400-normal.woff2": {
+      "hash": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/89/8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc"
+    },
+    "assets/fonts/inter-latin-500-normal.woff2": {
+      "hash": "f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/f3/f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f"
+    },
+    "assets/fonts/inter-latin-600-normal.woff2": {
+      "hash": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/f9/f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a"
+    },
+    "assets/fonts/jetbrains-mono-latin-500-normal.woff2": {
+      "hash": "cb182feeed4d798ff6961d3c79f7026279448fca0676438aaecb21f3fc39553a",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/cb/cb182feeed4d798ff6961d3c79f7026279448fca0676438aaecb21f3fc39553a"
+    },
+    "assets/fonts/jetbrains-mono-latin-700-normal.woff2": {
+      "hash": "d0d4e818808f2a0ba39b2b09d1989366f63494e295f003c7ef436697378507e8",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/d0/d0d4e818808f2a0ba39b2b09d1989366f63494e295f003c7ef436697378507e8"
+    },
+    "assets/img/flag.png": {
+      "hash": "95221efd0ef11dc1f955e28e6e68f5b045d5dceec36f62c30c67fd84e7b89baf",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/95/95221efd0ef11dc1f955e28e6e68f5b045d5dceec36f62c30c67fd84e7b89baf"
+    },
+    "assets/img/home-3x.png": {
+      "hash": "68d1cf97393d1994dbbe42449c1ef22387e60af260434252fdd8d6f8ec7822f4",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/68/68d1cf97393d1994dbbe42449c1ef22387e60af260434252fdd8d6f8ec7822f4"
+    },
+    "assets/img/icon.png": {
+      "hash": "698063c5f25e9b0c0eaed1aa03d68e96758dc802fbf8b03638aa443a205549f6",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/69/698063c5f25e9b0c0eaed1aa03d68e96758dc802fbf8b03638aa443a205549f6"
+    },
+    "assets/img/sheet-android-4x.png": {
+      "hash": "1970967a4e2ddd0de55e02d316ec21348fc3b58b3ac5ba9b1b81a52c12290d4c",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/19/1970967a4e2ddd0de55e02d316ec21348fc3b58b3ac5ba9b1b81a52c12290d4c"
+    },
+    "assets/img/sheet-ios-4x.png": {
+      "hash": "f23066bc7c9f8eb8e9bcbe3369c0287fa93436b886090bd048140b7c65000004",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/f2/f23066bc7c9f8eb8e9bcbe3369c0287fa93436b886090bd048140b7c65000004"
+    },
+    "assets/vendor/gsap.min.js": {
+      "hash": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/92/92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb"
+    },
+    "compositions/film.html": {
+      "hash": "9cb6e4feb79ce06a257a061d6c31bd1edb2ecd951f97a3192bad891e9828845f",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/9c/9cb6e4feb79ce06a257a061d6c31bd1edb2ecd951f97a3192bad891e9828845f"
+    },
+    "hyperframes.json": {
+      "hash": "3af6ecb4d7f8c0cf28a50880f71291f27406c4548e5db2ea2d57430abd99e0e1",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/3a/3af6ecb4d7f8c0cf28a50880f71291f27406c4548e5db2ea2d57430abd99e0e1"
+    },
+    "index.html": {
+      "hash": "480f9d66ae0281c67bf3000336b5237ed6d7b43f5186d406633509d888e98404",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/48/480f9d66ae0281c67bf3000336b5237ed6d7b43f5186d406633509d888e98404"
+    },
+    "package.json": {
+      "hash": "1793f77c7d980a32d206e1b3e705dee9d878937e2bbbf4a2bf2b44b670f5692d",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/17/1793f77c7d980a32d206e1b3e705dee9d878937e2bbbf4a2bf2b44b670f5692d"
+    },
+    "assets/audio/soundtrack.wav": {
+      "hash": "c3e530d62b37a39536dddb13169a2114f307897093e60ab085e91d9cacd331a7",
+      "content": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/c3/c3e530d62b37a39536dddb13169a2114f307897093e60ab085e91d9cacd331a7"
+    }
+  },
+  "revisions": {
+    "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1793269532341,
+      "endedAt": 1793269532347,
+      "files": {
+        "compositions/film.html": {
+          "before": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/f8/f86c86c3057170027a36a73d0077546e919c558878542030ae4fcbb999a9fb5c",
+          "after": "/root/.cache/hyperframes/history/07643a1e-989e-4aed-a65d-62fee3fbeb11/blobs/9c/9cb6e4feb79ce06a257a061d6c31bd1edb2ecd951f97a3192bad891e9828845f"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+      "id": "d7f847fd-2191-42b8-8fb2-a3dfdde27b5d"
+    },
+    "revisions": {
+      "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a": [
+        {
+          "id": "d7f847fd-2191-42b8-8fb2-a3dfdde27b5d",
+          "scope": "project",
+          "report": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/composition/.hyperframes/artifacts/checks/d7f847fd-2191-42b8-8fb2-a3dfdde27b5d.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1793269537538,
+          "contentHash": "fa6463533b28496de2aa19d5ac44da6f965814d95963af352fa87571f020cbec",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "id": "0dad4fd2-d77b-426f-8547-073634e36ecc",
+        "scope": "project",
+        "report": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/composition/.hyperframes/artifacts/checks/0dad4fd2-d77b-426f-8547-073634e36ecc.json",
+        "metadata": {
+          "ok": false,
+          "browserSkipped": true,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 3000,
+            "contrast": true,
+            "strict": false,
+            "snapshots": false,
+            "browserGpuMode": "auto"
+          }
+        },
+        "createdAt": 1793269368637,
+        "contentHash": "485d852920f779e651d6beccfce613a64f24ca2147616a8c8dbf2cd518582b15",
+        "revision": null,
+        "inputFingerprint": "1e77ccf1cc70a05858f9d0a2a98a3c3d81a37535cb793b99084e2e8899318003",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+      "id": "c8ffcfba-115e-4577-a5bc-65e5501eca00-1"
+    },
+    "revisions": {
+      "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a": [
+        {
+          "scope": "full",
+          "id": "4fbcc6b2-6986-4c7d-8a89-6c263a42c78d-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_0.8.png/frame-00-at-0.8s.png",
+          "time": 0.8,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269550415,
+          "contentHash": "da436b94d10f93f17c93d9865520ae5a0e01927eb65350d19026aa1683ee5a64",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "4fbcc6b2-6986-4c7d-8a89-6c263a42c78d-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_0.8.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269550415,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "4f416915-292d-42c5-9ff2-bdfd77cf3c95-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_1.9.png/frame-00-at-1.9s.png",
+          "time": 1.9,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269555996,
+          "contentHash": "0f922cbd25fde02a3eaa32c7179a4ced41f5ad6401565b052c94feffc1d176b0",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "4f416915-292d-42c5-9ff2-bdfd77cf3c95-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_1.9.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269555996,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "14fa674f-f701-44e6-bd8f-3f1c068617ef-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_3.3.png/frame-00-at-3.3s.png",
+          "time": 3.3,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269559205,
+          "contentHash": "2026a5a1230459412c6d455d84d47070f58b8bd869f0bc39e62307bcbab9bf98",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "14fa674f-f701-44e6-bd8f-3f1c068617ef-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_3.3.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269559205,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "b75ccf6b-1396-4dfb-89a5-91ca43276aef-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_4.0.png/frame-00-at-4s.png",
+          "time": 4,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269562478,
+          "contentHash": "26b7869603921229fd3b31fd387d1f56b521f953e01a17f28c95d7463a3323d7",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "b75ccf6b-1396-4dfb-89a5-91ca43276aef-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_4.0.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269562478,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "4f872d4c-6b9c-4f96-baa3-4fda811269f9-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_5.0.png/frame-00-at-5s.png",
+          "time": 5,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269565756,
+          "contentHash": "3221d6ddd0eb6d11c7462a7a5ec2425dc1bd96e838c9b9fd3cc2f3c16a406304",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "4f872d4c-6b9c-4f96-baa3-4fda811269f9-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_5.0.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269565756,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "8e492f00-a689-40d2-b445-d342a53bb3fd-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_5.9.png/frame-00-at-5.9s.png",
+          "time": 5.9,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269569324,
+          "contentHash": "bb5974e8dee4cbb9e76650465e45b6ae5cd458a35410d6ce37350bb32828971d",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "8e492f00-a689-40d2-b445-d342a53bb3fd-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_5.9.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269569324,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "60d0a4cd-d5e8-4f77-9835-dec19c7b828f-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_7.4.png/frame-00-at-7.4s.png",
+          "time": 7.4,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269572612,
+          "contentHash": "47b58960dd608587fb68d89f45321f07b6c6e64835d70fe5a07756e2f8f89e82",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "60d0a4cd-d5e8-4f77-9835-dec19c7b828f-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_7.4.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269572613,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "1c3ff9b7-173a-4bdc-b8ab-7d3f4f092b89-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_8.4.png/frame-00-at-8.4s.png",
+          "time": 8.4,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269576109,
+          "contentHash": "f49a9a4357b4f7a82a7db4f2898896b38985896259ec1cd53bbcf6b95c07a2ce",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "1c3ff9b7-173a-4bdc-b8ab-7d3f4f092b89-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_8.4.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269576109,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "272fb82c-3f02-4b4f-8722-86e9c6a038e3-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_10.3.png/frame-00-at-10.3s.png",
+          "time": 10.3,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269579550,
+          "contentHash": "54627cb5ba7a86800f8dc33b96fb2d269883d5aad6c3216b4cdab7c58118836b",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "272fb82c-3f02-4b4f-8722-86e9c6a038e3-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_10.3.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269579550,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "eb561303-12bd-4728-a67b-4a1ca9df6231-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_11.4.png/frame-00-at-11.4s.png",
+          "time": 11.4,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269583088,
+          "contentHash": "9128c67d9989ad95b65c2d4c6563f25076572c237c64e707fc5e281d2dab1041",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "eb561303-12bd-4728-a67b-4a1ca9df6231-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_11.4.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269583088,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "1add296b-f266-4d17-871a-8310167c8892-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_12.3.png/frame-00-at-12.3s.png",
+          "time": 12.3,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269586607,
+          "contentHash": "a550083a1482ab2396ab77a60e850d9cda5015167cbb38757112d69e3d7da078",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "1add296b-f266-4d17-871a-8310167c8892-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_12.3.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269586608,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "97929043-7582-40cc-aac3-309c763a59f6-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_13.3.png/frame-00-at-13.3s.png",
+          "time": 13.3,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269590180,
+          "contentHash": "839f05b17425665a9f96b03b3f33d7c9d161362b1bc9561a47ac6566f9577648",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "97929043-7582-40cc-aac3-309c763a59f6-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_13.3.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269590181,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "31ce8a62-2422-4187-b416-e5ba0dcea354-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_15.5.png/frame-00-at-15.5s.png",
+          "time": 15.5,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269593522,
+          "contentHash": "061d7a0a22c84b1a1a64692244ec00e29a3745b68bd2c79bcce2e52673f5442f",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "31ce8a62-2422-4187-b416-e5ba0dcea354-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_15.5.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269593522,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "c8ffcfba-115e-4577-a5bc-65e5501eca00-0",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_17.5.png/frame-00-at-17.5s.png",
+          "time": 17.5,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269596774,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "c8ffcfba-115e-4577-a5bc-65e5501eca00-1",
+          "image": "/home/user/lebanontcg/brag-output-2026-10-29-101655/work/snaps/s_17.5.png/frame-01-at-17.668s.png",
+          "time": 17.668,
+          "metadata": {
+            "width": 1080,
+            "height": 1920,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1793269596774,
+          "contentHash": "7e61339bc45f0e01ca52a621f38d3238c4b967f140e6350ceb515cab6cdd33b5",
+          "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a",
+          "inputFingerprint": "0724c39fc77c6267b03d188ca4664af50a1cb7f7285f1a6f338138eb9891c459",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "ad4835e3-e64a-4121-919a-2257b99555a3",
+      "completedAt": 1793269681892,
+      "output": "/home/user/lebanontcg/brag-output-2026-10-29-101655/brag.mp4",
+      "status": "completed",
+      "revision": "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a"
+    },
+    "retainedRevisions": [
+      "3bb97c1b-bd9d-44da-8cf6-5e91c9877b8a"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

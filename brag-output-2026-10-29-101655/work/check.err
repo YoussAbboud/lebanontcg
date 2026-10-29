@@ -1,0 +1,5 @@
+[hyperframes] browserGpuMode probe → software (probe failed (This operation was aborted))
+
+  4 HyperFrames skills out of date or missing.
+  Run: npx hyperframes skills update
+

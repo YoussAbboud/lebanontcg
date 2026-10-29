@@ -390,5 +390,16 @@
         "attribution": "unversioned"
       }
     ]
-  }
+  },
+  "renders": {
+    "latest": {
+      "id": "ac66e1cd-b2b4-47b7-90e0-9ea7a7d4587a",
+      "completedAt": 1793259539850,
+      "output": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/render-v.mp4",
+      "status": "completed",
+      "revision": null
+    },
+    "retainedRevisions": []
+  },
+  "pendingArtifactCleanup": []
 }

@@ -96,3 +96,4 @@ Same film, same soundtrack, same beat numbers (work/build_vertical.py re-lays wo
 - **Taps:** the fingertip targets were read from the layout in Chromium (work/probe.mjs): Publish listing (782, 776) and Reject & warn (604, 822).
 - **Render:** 1920×1080, 30 fps, 22.8 s (684 frames), −14.9 LUFS, −1.6 dBFS peak. The hits on beats 1, 8, 16 and 26 land within 24 ms of the grid.
 - **Poster and frame 0:** both from 1.8 s — the fan listing, Publish listing, and "This is not a Charizard."
+- **Vertical render:** 1080×1920, 30 fps, 22.8 s (684 frames), −14.9 LUFS, −1.6 dBFS peak; check passed with zero errors and all 54 text contrast checks passing. Poster and frame 0 from 1.8 s, as in the landscape cut.

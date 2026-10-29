@@ -1,0 +1,826 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 2 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/composition/compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      },
+      {
+        "code": "gsap_timeline_set_initial_hide",
+        "severity": "warning",
+        "message": "Initial hidden state for \"#k2\" is set via tl.set(...) at position 0 inside the paused timeline. A zero-duration set at 0 does not render while the playhead sits exactly at 0, so frame 0 shows the un-hidden state.",
+        "selector": "#k2",
+        "dataAttributes": {},
+        "sourceFile": "/home/user/lebanontcg/brag-output-2026-10-29-071420/work/composition/compositions/film.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Use gsap.set(...) (immediate, outside the timeline) for initial states, or author the hidden state directly in CSS/attributes."
+      }
+    ],
+    "filesScanned": 2
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 6,
+    "findings": [
+      {
+        "code": "container_overflow",
+        "severity": "warning",
+        "time": 1.267,
+        "selector": "#k1 > div:nth-of-type(2) > svg:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 148,
+          "top": 388,
+          "right": 528,
+          "bottom": 688,
+          "width": 380,
+          "height": 300
+        },
+        "containerSelector": "#k1 > div:nth-of-type(2)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 148,
+          "top": 388,
+          "right": 524,
+          "bottom": 688,
+          "width": 376,
+          "height": 300
+        },
+        "overflow": {
+          "right": 4
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 148,
+          "y": 388,
+          "width": 380,
+          "height": 300
+        },
+        "firstSeen": 1.267,
+        "lastSeen": 6.333,
+        "occurrences": 3,
+        "heldMs": 0,
+        "times": [
+          1.267,
+          3.8,
+          6.333
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "warning",
+        "time": 8.867,
+        "selector": "#k2 > div:nth-of-type(2) > svg:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 148,
+          "top": 388,
+          "right": 528,
+          "bottom": 688,
+          "width": 380,
+          "height": 300
+        },
+        "containerSelector": "#k2 > div:nth-of-type(2)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 148,
+          "top": 388,
+          "right": 524,
+          "bottom": 688,
+          "width": 376,
+          "height": 300
+        },
+        "overflow": {
+          "right": 4
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 148,
+          "y": 388,
+          "width": 380,
+          "height": 300
+        },
+        "firstSeen": 8.867,
+        "lastSeen": 11.4,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8.867,
+          11.4
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 13.374,
+        "selector": "#sell > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 146,
+          "top": 222,
+          "right": 293.69,
+          "bottom": 274,
+          "width": 147.69,
+          "height": 52
+        },
+        "containerSelector": "#adm > div:nth-of-type(1)",
+        "text": "REVIEW",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 146,
+          "y": 222,
+          "width": 147.69,
+          "height": 52
+        },
+        "firstSeen": 13.374,
+        "lastSeen": 13.374,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.374
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 13.933,
+        "selector": "div.ph > svg:nth-of-type(1) > rect:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 122,
+          "top": 481,
+          "right": 388,
+          "bottom": 691,
+          "width": 266,
+          "height": 210
+        },
+        "containerSelector": "div.ph > svg:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 180,
+          "top": 481,
+          "right": 330,
+          "bottom": 691,
+          "width": 150,
+          "height": 210
+        },
+        "overflow": {
+          "left": 58,
+          "right": 58
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 122,
+          "y": 481,
+          "width": 266,
+          "height": 210
+        },
+        "firstSeen": 13.933,
+        "lastSeen": 13.933,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.933
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 13.933,
+        "selector": "div.ph > svg:nth-of-type(1) > rect:nth-of-type(2)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 122,
+          "top": 640.6,
+          "right": 388,
+          "bottom": 691,
+          "width": 266,
+          "height": 50.4
+        },
+        "containerSelector": "div.ph > svg:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 180,
+          "top": 481,
+          "right": 330,
+          "bottom": 691,
+          "width": 150,
+          "height": 210
+        },
+        "overflow": {
+          "left": 58,
+          "right": 58
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 122,
+          "y": 640.6,
+          "width": 266,
+          "height": 50.4
+        },
+        "firstSeen": 13.933,
+        "lastSeen": 13.933,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.933
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 13.933,
+        "selector": "div.ph > svg:nth-of-type(1) > rect:nth-of-type(3)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 122,
+          "top": 639.2,
+          "right": 388,
+          "bottom": 642,
+          "width": 266,
+          "height": 2.8
+        },
+        "containerSelector": "div.ph > svg:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 180,
+          "top": 481,
+          "right": 330,
+          "bottom": 691,
+          "width": 150,
+          "height": 210
+        },
+        "overflow": {
+          "left": 58,
+          "right": 58
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 122,
+          "y": 639.2,
+          "width": 266,
+          "height": 2.8
+        },
+        "firstSeen": 13.933,
+        "lastSeen": 13.933,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.933
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 14.775,
+        "selector": "div.ttl.display",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 178,
+          "top": 390,
+          "right": 406.2,
+          "bottom": 432,
+          "width": 228.2,
+          "height": 42
+        },
+        "containerSelector": "div.head > div:nth-of-type(2) > div:nth-of-type(1)",
+        "text": "RARE PIKACHU",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 178,
+          "y": 390,
+          "width": 228.2,
+          "height": 42
+        },
+        "firstSeen": 14.775,
+        "lastSeen": 14.775,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          14.775
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 14.775,
+        "selector": "div.top > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 863.47,
+          "top": 399,
+          "right": 1060,
+          "bottom": 421,
+          "width": 196.53,
+          "height": 22
+        },
+        "containerSelector": "#bidb",
+        "text": "CHECK: NOT A CARD",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 863.47,
+          "y": 399,
+          "width": 196.53,
+          "height": 22
+        },
+        "firstSeen": 14.775,
+        "lastSeen": 14.775,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          14.775
+        ]
+      }
+    ],
+    "duration": 22.8,
+    "samples": [
+      1.267,
+      3.8,
+      6.333,
+      8.867,
+      11.4,
+      13.933,
+      16.467,
+      19,
+      21.533
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 8,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      1.267,
+      6.333,
+      11.4,
+      16.467,
+      21.533
+    ],
+    "checked": 54,
+    "passed": 54
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 7,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "first_frame_empty",
+        "severity": "warning",
+        "message": "Frame 0 shows only the background, and the first frame is the thumbnail on social players: have the title or key image already on screen at 0 s instead of entering from nothing; see references/review.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Two of your latest listings went to review instead of goi...\" (28 words) is on screen 3.70 s (±0.01 s), under its 6.68 s floor: hold it about 0.5 s + 0.3 s a word (8.90 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Two of your latest listings went to review instead of going live, so listing is paused for a few minutes. Listings need clear photos of the actual card.",
+        "selector": "#cool > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 624.85,
+          "y": 486.9,
+          "width": 435.9599999999999,
+          "height": 115.87
+        },
+        "time": 9.671,
+        "words": 28,
+        "seconds": 3.699,
+        "floorSeconds": 6.675
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 31 text elements stay under it for 0.5 s or more, the smallest \"Moderation\" at 14 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Moderation",
+        "selector": "div.k.mono",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 700,
+          "y": 212.22,
+          "width": 95.2,
+          "height": 18
+        },
+        "time": 15.075,
+        "times": [
+          0.125,
+          0.125,
+          0.125,
+          0.374,
+          2.616,
+          4.859,
+          4.859,
+          8.223,
+          9.095,
+          9.095,
+          9.718,
+          13.58,
+          13.58,
+          13.58,
+          13.58,
+          13.58,
+          14.826,
+          14.826,
+          14.826,
+          14.826,
+          14.826,
+          14.826,
+          15.075,
+          15.075,
+          15.075,
+          15.698,
+          15.698,
+          15.698,
+          15.948,
+          16.072,
+          16.072
+        ],
+        "fontPx": 14,
+        "floorPx": 28,
+        "seconds": 0.624,
+        "elements": [
+          {
+            "selector": "div.k.mono",
+            "text": "Moderation",
+            "fontPx": 14,
+            "time": 15.075,
+            "seconds": 0.624
+          },
+          {
+            "selector": "#lockline",
+            "text": "Your account is suspended — you can read this chat but not reply.",
+            "fontPx": 16,
+            "time": 16.072,
+            "seconds": 2.617
+          },
+          {
+            "selector": "#lockline > span:nth-of-type(1)",
+            "text": "Contact support",
+            "fontPx": 16,
+            "time": 16.072,
+            "seconds": 2.617
+          },
+          {
+            "selector": "div.top > span:nth-of-type(1)",
+            "text": "Check: not a card",
+            "fontPx": 16.81,
+            "time": 13.58,
+            "seconds": 1.371
+          },
+          {
+            "selector": "#k1-v > span:nth-of-type(1)",
+            "text": "Check: not a card",
+            "fontPx": 17,
+            "time": 4.859,
+            "seconds": 3.24
+          },
+          {
+            "selector": "#k2-v > span:nth-of-type(1)",
+            "text": "Check: not a card",
+            "fontPx": 17,
+            "time": 9.095,
+            "seconds": 4.361
+          },
+          {
+            "selector": "div.b",
+            "text": "Posting junk listings.",
+            "fontPx": 17,
+            "time": 15.075,
+            "seconds": 0.624
+          },
+          {
+            "selector": "#acard > div:nth-of-type(5) > span:nth-of-type(1)",
+            "text": "Approve",
+            "fontPx": 18.79,
+            "time": 13.58,
+            "seconds": 1.371
+          },
+          {
+            "selector": "#acard > div:nth-of-type(5) > span:nth-of-type(2)",
+            "text": "Reject",
+            "fontPx": 18.79,
+            "time": 13.58,
+            "seconds": 1.371
+          },
+          {
+            "selector": "#rw",
+            "text": "Reject & warn",
+            "fontPx": 18.79,
+            "time": 13.58,
+            "seconds": 1.371
+          },
+          {
+            "selector": "#likeb",
+            "text": "♡ 12",
+            "fontPx": 19,
+            "time": 14.826,
+            "seconds": 1.122
+          },
+          {
+            "selector": "#bidb",
+            "text": "Message seller",
+            "fontPx": 19,
+            "time": 14.826,
+            "seconds": 1.122
+          },
+          {
+            "selector": "#pub1",
+            "text": "Publish listing",
+            "fontPx": 20.79,
+            "time": 8.223,
+            "seconds": 5.233
+          },
+          {
+            "selector": "#cool > p:nth-of-type(1)",
+            "text": "Two of your latest listings went to review instead of going live, so listing is paused for a few minutes. Listings need clear photos of the actual card.",
+            "fontPx": 20.92,
+            "time": 9.718,
+            "seconds": 3.738
+          },
+          {
+            "selector": "#pub2",
+            "text": "Checking your photos…",
+            "fontPx": 21,
+            "time": 2.616,
+            "seconds": 5.607
+          },
+          {
+            "selector": "#k1-v > div:nth-of-type(1)",
+            "text": "The photos do not show a trading card.",
+            "fontPx": 21,
+            "time": 4.859,
+            "seconds": 3.24
+          },
+          {
+            "selector": "#k2-v > div:nth-of-type(1)",
+            "text": "The photos do not show a trading card.",
+            "fontPx": 21,
+            "time": 9.095,
+            "seconds": 4.361
+          },
+          {
+            "selector": "#acard > div:nth-of-type(3)",
+            "text": "The photos do not show a trading card.",
+            "fontPx": 21.75,
+            "time": 13.58,
+            "seconds": 1.371
+          },
+          {
+            "selector": "#sell > div:nth-of-type(2)",
+            "text": "This is how your card appears in the grid.",
+            "fontPx": 22,
+            "time": 0.125,
+            "seconds": 13.331
+          },
+          {
+            "selector": "span.lab.mono",
+            "text": "Strikes",
+            "fontPx": 22,
+            "time": 0.374,
+            "seconds": 18.315
+          },
+          {
+            "selector": "div.v",
+            "text": "Warning 3 of 3 — Rare Pikachu",
+            "fontPx": 22,
+            "time": 15.075,
+            "seconds": 0.624
+          },
+          {
+            "selector": "div.bub",
+            "text": "Still available! Price is a bit negotiable for a quick pickup.",
+            "fontPx": 23,
+            "time": 14.826,
+            "seconds": 3.863
+          },
+          {
+            "selector": "#ph1",
+            "text": "Write a message",
+            "fontPx": 23,
+            "time": 14.826,
+            "seconds": 0.997
+          },
+          {
+            "selector": "#susp",
+            "text": "Posting junk listings. You can browse and read your chats, but you can't list, message, like, bid, report or review. to appeal.",
+            "fontPx": 23,
+            "time": 15.698,
+            "seconds": 2.991
+          },
+          {
+            "selector": "#susp > b:nth-of-type(1)",
+            "text": "Your account is suspended.",
+            "fontPx": 23,
+            "time": 15.698,
+            "seconds": 2.991
+          },
+          {
+            "selector": "#susp > span:nth-of-type(1)",
+            "text": "Contact support",
+            "fontPx": 23,
+            "time": 15.698,
+            "seconds": 2.991
+          },
+          {
+            "selector": "#ph2",
+            "text": "Your account is suspended",
+            "fontPx": 23,
+            "time": 15.948,
+            "seconds": 2.741
+          },
+          {
+            "selector": "div.note",
+            "text": "LebanonTCG doesn't handle payment or shipping.",
+            "fontPx": 24,
+            "time": 0.125,
+            "seconds": 9.469
+          },
+          {
+            "selector": "div.note > b:nth-of-type(1)",
+            "text": "Listings go live once a quick check confirms the photos show a card.",
+            "fontPx": 24,
+            "time": 0.125,
+            "seconds": 9.469
+          },
+          {
+            "selector": "div.head > div:nth-of-type(2) > div:nth-of-type(1)",
+            "text": "@mayapulls",
+            "fontPx": 26,
+            "time": 14.826,
+            "seconds": 3.863
+          },
+          {
+            "selector": "#comp > div:nth-of-type(1)",
+            "text": "$",
+            "fontPx": 26,
+            "time": 14.826,
+            "seconds": 1.122
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Posting junk listings. You can browse and read your chats...\" (28 words) is on screen 2.97 s (±0.01 s), under its 6.68 s floor: hold it about 0.5 s + 0.3 s a word (8.90 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Posting junk listings. You can browse and read your chats, but you can't list, message, like, bid, report or review. to appeal. Your account is suspended. Contact support",
+        "selector": "#susp",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 144.62,
+          "y": 221.14,
+          "width": 884.08,
+          "height": 95.59000000000003
+        },
+        "time": 15.636,
+        "words": 28,
+        "seconds": 2.967,
+        "floorSeconds": 6.675
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"On the spot — no reload, no way around it.\" (9 words) is on screen 2.34 s (±0.01 s), under its 2.40 s floor: hold it about 0.5 s + 0.3 s a word (3.20 s here) before it leaves or changes; see references/motion.md.",
+        "text": "On the spot — no reload, no way around it.",
+        "selector": "#c4b > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 1240,
+          "y": 458.13,
+          "width": 550.81,
+          "height": 82
+        },
+        "time": 16.267,
+        "words": 9,
+        "seconds": 2.336,
+        "floorSeconds": 2.4
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"We connect collectors. You handle the deal.\" (7 words) is on screen 1.73 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "We connect collectors. You handle the deal.",
+        "selector": "#tag",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 482.69,
+          "y": 720.78,
+          "width": 954.6099999999999,
+          "height": 40
+        },
+        "time": 21.072,
+        "words": 7,
+        "seconds": 1.732,
+        "floorSeconds": 2
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"www.lebanontcg.com\" (3 words) is on screen 1.60 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "www.lebanontcg.com",
+        "selector": "#url",
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": 726,
+          "y": 791.25,
+          "width": 468,
+          "height": 53
+        },
+        "time": 21.203,
+        "words": 3,
+        "seconds": 1.6,
+        "floorSeconds": 2
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 183
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

@@ -6,6 +6,7 @@ import { faceBackground, glyphOf } from '../lib/face';
 import { FAN_WINDOW, fanInitialActive } from '../lib/fan';
 import { auctionPillLabel, isEffectivelyOver } from '../lib/auction';
 import { useNow } from '../lib/useNow';
+import { useMediaQuery } from '../lib/useMediaQuery';
 import { Avatar } from './Avatar';
 import './fancarousel.css';
 
@@ -34,6 +35,9 @@ const WINDOW = FAN_WINDOW;
 
 /** One card a second while the fan deals itself in. */
 const DEAL_MS = 1000;
+/** How many cards the deal covers: on a phone only the three that fit on
+    screen (centre ±1); the rest show as soon as they're there. */
+const DEAL_PHONE = 3;
 
 /** Indices in dealing order: the centre, then alternating right and left. */
 function dealOrderFor(n: number, active: number): number[] {
@@ -72,11 +76,12 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
   // what appears is always a finished card, never a frame waiting on one.
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(() => new Set());
   const [dealt, setDealt] = useState(reduced ? Infinity : 0);
+  const phone = useMediaQuery('(max-width: 640px)');
   hoveredRef.current = hovered;
   pausedRef.current = paused;
 
   const n = items.length;
-  const dealOrder = dealOrderFor(n, fanInitialActive(n));
+  const dealOrder = dealOrderFor(n, fanInitialActive(n)).slice(0, phone ? DEAL_PHONE : undefined);
   const allDealt = dealt >= dealOrder.length;
 
   const markLoaded = (id: string) =>
@@ -160,7 +165,8 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
           if (off > (n - 1) / 2) off -= n;
           const trueAbs = Math.abs(off);
           const outsideWindow = trueAbs > WINDOW;
-          const undealt = !outsideWindow && dealOrder.indexOf(i) >= dealt;
+          const pos = dealOrder.indexOf(i);
+          const undealt = !outsideWindow && pos >= 0 && pos >= dealt;
           const abs = Math.min(trueAbs, 3);
           const isCentre = off === 0;
           const auction = item.auction ?? null;

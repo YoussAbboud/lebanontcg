@@ -1,0 +1,108 @@
+{
+ "offset_probes": [
+  {
+   "src": "lock-quick.mp3",
+   "from": 203,
+   "measured_f": 0.01,
+   "corr": 1.0
+  },
+  {
+   "src": "switch-tap.mp3",
+   "from": 349,
+   "measured_f": -0.01,
+   "corr": 1.0
+  },
+  {
+   "src": "transition-snap.mp3",
+   "from": 411,
+   "measured_f": 0.0,
+   "corr": 0.877
+  },
+  {
+   "src": "switch-click-quick.mp3",
+   "from": 456,
+   "measured_f": 0.0,
+   "corr": 0.992
+  },
+  {
+   "src": "typewriter-hit-hard.mp3",
+   "from": 562,
+   "measured_f": -3.64,
+   "corr": 0.149
+  }
+ ],
+ "output_offset_f": 0.0,
+ "bgm_lag_ms": -0.33,
+ "render_grid": {
+  "bpm": 124.009,
+  "t0": 1.0056,
+  "maxres_ms": 14.1
+ },
+ "detector_bias_f": 0.34,
+ "output_delay_f": 0.04,
+ "events": [
+  {
+   "name": "sheet_lands_b8",
+   "picture_frame": 116,
+   "design_beat_frame": 116.87,
+   "err_f": -0.87
+  },
+  {
+   "name": "step1_bite_b14",
+   "picture_frame": 204,
+   "design_beat_frame": 203.96,
+   "err_f": 0.04
+  },
+  {
+   "name": "android_tap_b24",
+   "picture_frame": 349,
+   "design_beat_frame": 349.11,
+   "err_f": -0.11
+  },
+  {
+   "name": "icon_lands_b28.5",
+   "picture_frame": 406,
+   "design_beat_frame": 414.43,
+   "err_f": -8.43
+  },
+  {
+   "name": "lockup_lands_b37.5",
+   "picture_frame": 545,
+   "design_beat_frame": 545.07,
+   "err_f": -0.07
+  }
+ ],
+ "cuts": [
+  {
+   "name": "b6_sheet",
+   "frame": 88,
+   "err_vs_design_f": 0.16
+  },
+  {
+   "name": "b12_steps",
+   "frame": 175,
+   "err_vs_design_f": 0.07
+  },
+  {
+   "name": "b23_android",
+   "frame": 335,
+   "err_vs_design_f": 0.4
+  },
+  {
+   "name": "b26_home",
+   "frame": 378,
+   "err_vs_design_f": -0.14
+  },
+  {
+   "name": "b31_launch",
+   "frame": 451,
+   "err_vs_design_f": 0.28
+  },
+  {
+   "name": "b36_end",
+   "frame": 523,
+   "err_vs_design_f": -0.29
+  }
+ ],
+ "max_abs_err_f": 8.43
+}

@@ -79,3 +79,9 @@ Audio intent: the beat returns for "No junk.", then one chord and the bell.
 
 **Music mood for this video:** heavy, dry, half-time — every verdict is a hit.
 **Audio summary:** a half-time beat under a tense Dm–Bb–Gm–A loop; reverse swells into the stamps, a slap and a thump on each, ticks on the typed titles and the countdown, the drums drop for the suspension's alarm, and the logo rings on the final chord.
+
+## As built
+- **Check:** HyperFrames check passed with zero layout errors and all 51 text contrast checks passing. Fixed on the way: the typed titles' line box, the parked stamps (they now sit side by side between the headline and the next stamp, the sentence fading as they shrink), the stage hidden under the outro cover, the small reading text raised to the 28 px floor, and the log moved under the listing block. The second verdict stamp carries only "CHECK: NOT A CARD" — its sentence was read on the first. One beat added (34 at 90 BPM, 22.67 s) so the lockup, tag and URL each hold two full seconds.
+- **Countdown:** 57 → 54 on beats 16–18; the cooldown stamp leaves on 19 so the last number holds a beat. The cooldown headline holds 15 → 20.
+- **Render:** 1080×1920, 30 fps, 22.67 s (680 frames). The mix was normalized after the render to −15.0 LUFS integrated, −0.9 dBFS peak (two-pass loudnorm; the half-time groove came out of the synth at −17.6).
+- **Poster and frame 0:** both from 3.0 s — the first stamp settled on the fan under "Listed as a Charizard.", strike one lit.

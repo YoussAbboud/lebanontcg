@@ -1,0 +1,184 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 2
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 2,
+    "findings": [
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 1.259,
+        "selector": "#pic",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -10.04,
+          "top": -16.07,
+          "right": 1090.04,
+          "bottom": 1939.64,
+          "width": 1100.09,
+          "height": 1955.71
+        },
+        "containerSelector": "#photo",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "left": 10.04,
+          "right": 10.04,
+          "top": 16.07,
+          "bottom": 19.64
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "pic",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": -10.04,
+          "y": -16.07,
+          "width": 1100.09,
+          "height": 1955.71
+        },
+        "firstSeen": 1.259,
+        "lastSeen": 1.259,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.259
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 8.815,
+        "selector": "#shake",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -9.32,
+          "top": 6.66,
+          "right": 1070.68,
+          "bottom": 1926.66,
+          "width": 1080,
+          "height": 1920
+        },
+        "containerSelector": "#film > div:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "left": 9.32,
+          "bottom": 6.66
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/film.html",
+        "bbox": {
+          "x": -9.32,
+          "y": 6.66,
+          "width": 1080,
+          "height": 1920
+        },
+        "firstSeen": 8.815,
+        "lastSeen": 8.815,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          8.815
+        ]
+      }
+    ],
+    "duration": 22.6667,
+    "samples": [
+      1.259,
+      3.778,
+      6.296,
+      8.815,
+      11.333,
+      13.852,
+      16.37,
+      18.889,
+      21.407
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 2,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      1.259,
+      6.296,
+      11.333,
+      16.37,
+      21.407
+    ],
+    "checked": 51,
+    "passed": 51
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 182
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

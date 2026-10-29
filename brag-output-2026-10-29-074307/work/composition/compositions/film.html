@@ -1,0 +1,236 @@
+<template>
+  <style>
+    @font-face { font-family: 'Chakra Petch'; font-weight: 700; src: url('assets/fonts/chakra-petch-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 400; src: url('assets/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Sans'; font-weight: 600; src: url('assets/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 500; src: url('assets/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'LTCG Mono'; font-weight: 700; src: url('assets/fonts/jetbrains-mono-latin-700-normal.woff2') format('woff2'); }
+    #root { position: absolute; inset: 0; overflow: hidden; background: #08090b; font-family: 'LTCG Sans', sans-serif; color: #f2f5f7; }
+    .mono { font-family: 'LTCG Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; }
+    .display { font-family: 'Chakra Petch', sans-serif; font-weight: 700; text-transform: uppercase; }
+
+    /* ---- the photo, full bleed ------------------------------------------------------------- */
+    #shake { position: absolute; inset: 0; }
+    #photo { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
+    #photo img { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; object-position: 50% 42%; transform-origin: 50% 45%; }
+    #vig { position: absolute; inset: 0; z-index: 1; background:
+      linear-gradient(to bottom, rgba(8, 9, 11, 0.92) 0%, rgba(8, 9, 11, 0.35) 30%, rgba(8, 9, 11, 0.1) 52%, rgba(8, 9, 11, 0.55) 78%, rgba(8, 9, 11, 0.96) 100%); }
+    #tint { position: absolute; inset: 0; z-index: 2; background: #ff5c8a; mix-blend-mode: multiply; opacity: 0; }
+
+    /* ---- the headline, top, inside the title-safe box -------------------------------------- */
+    .hl { position: absolute; z-index: 3; left: 60px; top: 250px; width: 960px; font-size: 100px; line-height: 1.0; letter-spacing: 0.01em; opacity: 0; }
+    .hl.mid { font-size: 72px; line-height: 1.04; }
+    .hl .sm { display: block; margin-top: 22px; font-size: 30px; line-height: 1.4; color: #d6ff3f; letter-spacing: 0.1em; }
+    #h5 .sm { color: #ff5c8a; }
+    #strikes { position: absolute; z-index: 3; left: 60px; top: 176px; display: flex; align-items: center; gap: 16px; }
+    #strikes .lab { font-size: 28px; color: #b9c2cc; margin-right: 6px; }
+    .sdot { width: 32px; height: 32px; border-radius: 50%; border: 3px solid rgba(255, 255, 255, 0.35); background: rgba(8, 9, 11, 0.5); }
+
+    /* ---- the listing's own words, bottom left ---------------------------------------------- */
+    #lst { position: absolute; z-index: 3; left: 60px; top: 1180px; width: 960px; }
+    #lst .t { font-size: 60px; line-height: 1.3; white-space: nowrap; }
+    .typed { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom; font-family: 'LTCG Mono', monospace; font-weight: 700; }
+    #lst .m { margin-top: 12px; font-size: 28px; color: #b9c2cc; }
+    #lst .tag { display: inline-flex; align-items: center; height: 48px; padding: 0 20px; margin-top: 16px; border-radius: 999px; border: 2px solid #ffc45e; color: #ffc45e; font-size: 26px; opacity: 0; }
+    #lst .only { margin-top: 12px; font-size: 28px; color: #ffc45e; opacity: 0; }
+    #lst2 { position: absolute; left: 0; top: 0; width: 100%; opacity: 0; }
+
+    /* ---- the stamps ------------------------------------------------------------------------ */
+    .stamp { position: absolute; left: 50%; top: 50%; z-index: 5; padding: 26px 40px; border: 10px double currentColor; border-radius: 18px;
+      text-align: center; white-space: nowrap; opacity: 0; background: rgba(8, 9, 11, 0.22); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5); }
+    .stamp .a { font-size: 78px; line-height: 1; }
+    .stamp .b { margin-top: 14px; font-size: 28px; letter-spacing: 0.12em; }
+    #s1, #s2 { color: #ff5c8a; }
+    #s1 { margin-top: -150px; }
+    #s2 { margin-top: 40px; }
+    #s3 { color: #ffc45e; white-space: normal; width: 900px; padding: 34px 44px; }
+    #s3 .a { font-size: 66px; line-height: 1.05; }
+    #s3 .b { font-size: 36px; line-height: 1.3; margin-top: 18px; letter-spacing: 0.06em; }
+    #s3 .b .sec { display: inline-grid; }
+    #s3 .b .sec span { grid-area: 1 / 1; opacity: 0; }
+    #s4 { color: #ff5c8a; white-space: normal; width: 940px; padding: 40px 44px; border-width: 12px; }
+    #s4 .a { font-size: 104px; line-height: 0.98; }
+    #s4 .b { font-size: 28px; line-height: 1.35; margin-top: 22px; color: #f2f5f7; letter-spacing: 0.08em; }
+
+    /* ---- the moderation log, above the listing --------------------------------------------- */
+    #log { position: absolute; z-index: 3; left: 60px; top: 1440px; width: 960px; font-size: 28px; line-height: 1.5; color: #b9c2cc; }
+    #log div { opacity: 0; white-space: nowrap; }
+    #log b { color: #f2f5f7; font-weight: 500; }
+    #log .no { color: #ff5c8a; }
+    #log .warn { color: #ffc45e; }
+
+    /* ---- the outro ------------------------------------------------------------------------- */
+    #out { position: absolute; inset: 0; background: #08090b; opacity: 0; z-index: 25; }
+    #nojunk { position: absolute; left: 0; right: 0; top: 870px; text-align: center; font-size: 170px; line-height: 1; color: #d6ff3f; opacity: 0; }
+    #lock { position: absolute; left: 0; right: 0; top: 640px; display: flex; flex-direction: column; align-items: center; gap: 34px; opacity: 0; }
+    #lock img { width: 170px; height: 170px; }
+    #lock .w { font-size: 112px; line-height: 1; letter-spacing: 0.04em; }
+    #tag { position: absolute; left: 60px; right: 60px; top: 1130px; text-align: center; font-size: 30px; line-height: 1.6; letter-spacing: 0.14em; color: #b9c2cc; opacity: 0; }
+    #url { position: absolute; left: 0; right: 0; top: 1280px; text-align: center; font-size: 40px; letter-spacing: 0.05em; text-transform: none; color: #d6ff3f; opacity: 0; }
+
+  </style>
+
+  <div id="root" data-composition-id="film" data-width="1080" data-height="1920">
+    <div id="shake">
+      <div id="photo"><img id="pic" src="assets/img/fan.jpg" alt="" /></div>
+      <div id="vig"></div>
+      <div id="tint"></div>
+
+      <div id="strikes"><span class="lab mono">Strikes</span><span class="sdot" id="d1"></span><span class="sdot" id="d2"></span><span class="sdot" id="d3"></span></div>
+
+      <div class="hl display" id="h1">Listed as a Charizard.</div>
+      <div class="hl display mid" id="h2">Every listing is checked before it goes live.<span class="sm mono" id="h2s">Not a card? Nobody sees it.</span></div>
+      <div class="hl display" id="h3">They try again.</div>
+      <div class="hl display mid" id="h4">Two in a row? Ten minutes on the bench.<span class="sm mono">The clock is on their screen.</span></div>
+      <div class="hl display" id="h5a">They keep going.</div>
+      <div class="hl display mid" id="h5">Three warnings. Suspended.<span class="sm mono">On the spot — no reload, no way around it.</span></div>
+
+      <div id="log">
+        <div id="l1"><b>12:04:11</b> · Check: <span class="no">not a card</span> · listing in review</div>
+        <div id="l2"><b>12:05:38</b> · Check: <span class="no">not a card</span> · listing in review</div>
+        <div id="l3"><b>12:05:39</b> · <span class="warn">Listing cooldown</span> · 10 minutes</div>
+        <div id="l4"><b>12:16:02</b> · Moderator · Rejected listing</div>
+        <div id="l5"><b>12:16:02</b> · Moderator · Warned user · <span class="warn">3 of 3</span></div>
+        <div id="l6"><b>12:16:03</b> · Moderator · <span class="no">Suspended user</span></div>
+      </div>
+
+      <div id="lst">
+        <div id="lst1">
+          <div class="t display"><span class="typed" id="t1">CHARIZARD HOLO</span></div>
+          <div class="m mono" id="m1" data-layout-ignore>$320 · Pokémon · Base Set · @junkdealer</div>
+        </div>
+        <div id="lst2">
+          <div class="t display"><span class="typed" id="t2">RARE PIKACHU</span></div>
+          <div class="m mono" id="m2" data-layout-ignore>$50 · Pokémon · Base Set · @junkdealer</div>
+        </div>
+        <div class="tag mono" id="tag1" data-layout-ignore>In review</div>
+        <div class="only mono" id="only1" data-layout-ignore>Only you can see this listing for now.</div>
+      </div>
+
+      <div class="stamp display" id="s1" data-layout-allow-overlap data-layout-allow-occlusion><div class="a" data-layout-allow-occlusion>Check: not a card</div><div class="b mono">The photos do not show a trading card.</div></div>
+      <div class="stamp display" id="s2" data-layout-allow-overlap data-layout-allow-occlusion><div class="a" data-layout-allow-occlusion>Check: not a card</div></div>
+      <div class="stamp display" id="s3" data-layout-allow-overlap><div class="a">You can't list at the moment.</div><div class="b mono">Try again in 9 minutes <span class="sec"><span id="s57">57</span><span id="s56">56</span><span id="s55">55</span><span id="s54">54</span></span> seconds.</div></div>
+      <div class="stamp display" id="s4" data-layout-allow-overlap><div class="a">Your account is suspended.</div><div class="b mono">You can't list, message, like, bid, report or review.</div></div>
+    </div>
+
+    <div id="out">
+      <div id="nojunk" class="display">No junk.</div>
+      <div id="lock"><img src="assets/img/flag.png" alt="" /><div class="w display">LebanonTCG.</div></div>
+      <div id="tag" class="mono">We connect collectors. You handle the deal.</div>
+      <div id="url" class="mono">www.lebanontcg.com</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // Beats at 90 BPM: beat n is at n x 0.6667 s. The soundtrack uses the same beat numbers.
+      const tl = gsap.timeline({ paused: true });
+      // ---- 1 · The listing (0-4): the photo pushes in, the title types, the line lands on 1 ------
+      tl.fromTo('#pic', { scale: 1.12 }, { scale: 1.0, duration: 2.667, ease: 'power2.out' }, 0);
+      tl.fromTo('#strikes', { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.2);
+      tl.set('#t1', { width: '0ch' }, 0);
+      tl.set('#t1', { width: '1ch' }, 0.3333);
+      tl.set('#t1', { width: '2ch' }, 0.3809);
+      tl.set('#t1', { width: '3ch' }, 0.4285);
+      tl.set('#t1', { width: '4ch' }, 0.4761);
+      tl.set('#t1', { width: '5ch' }, 0.5237);
+      tl.set('#t1', { width: '6ch' }, 0.5713);
+      tl.set('#t1', { width: '7ch' }, 0.6189);
+      tl.set('#t1', { width: '8ch' }, 0.6665);
+      tl.set('#t1', { width: '9ch' }, 0.7141);
+      tl.set('#t1', { width: '10ch' }, 0.7617);
+      tl.set('#t1', { width: '11ch' }, 0.8093);
+      tl.set('#t1', { width: '12ch' }, 0.8569);
+      tl.set('#t1', { width: '13ch' }, 0.9045);
+      tl.set('#t1', { width: '14ch' }, 0.9521);
+      tl.fromTo('#m1', { opacity: 0 }, { opacity: 1, duration: 0.2 }, 1.1667);
+      tl.fromTo('#h1', { opacity: 0, y: 40, scale: 1.08, filter: 'blur(8px)' }, { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 0.6667);
+      // ---- 2 · Strike one (4-11) ------------------------------------------------------------
+      tl.set('#s1', { xPercent: -50, yPercent: -50 }, 0);
+      tl.fromTo('#s1', { opacity: 0, scale: 1.7, rotation: -13, xPercent: -50, yPercent: -50 }, { opacity: 1, scale: 1, rotation: -7, xPercent: -50, yPercent: -50, duration: 0.16, ease: 'power4.in', immediateRender: false }, 2.5067);
+      tl.fromTo('#shake', { x: 0, y: 0 }, { x: -14, y: 10, duration: 0.05, yoyo: true, repeat: 5, ease: 'none', immediateRender: false }, 2.6667);
+      tl.to('#d1', { backgroundColor: '#ff5c8a', borderColor: '#ff5c8a', boxShadow: '0 0 22px rgba(255, 92, 138, 0.8)', duration: 0.12 }, 2.6667);
+      tl.fromTo('#d1', { scale: 1.5 }, { scale: 1, duration: 0.4, ease: 'back.out(2)', immediateRender: false }, 2.6667);
+      tl.fromTo('#l1', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.22, ease: 'expo.out' }, 3.0);
+      tl.to('#pic', { filter: 'saturate(0.2) brightness(0.55)', duration: 0.4 }, 4.0);
+      tl.fromTo('#tag1', { opacity: 0, scale: 0.8, transformOrigin: '0% 50%' }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2)' }, 4.0);
+      tl.fromTo('#only1', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, ease: 'expo.out' }, 4.3333);
+      tl.to('#h1', { opacity: 0, y: -40, duration: 0.2, ease: 'power2.in' }, 4.1333);
+      tl.fromTo('#h2', { opacity: 0, y: 40, scale: 1.08, filter: 'blur(8px)' }, { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 4.3333);
+      tl.set('#h2s', { opacity: 0 }, 0);
+      tl.fromTo('#h2s', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: 'expo.out' }, 5.3333);
+      // ---- 3 · Strike two (11-19): the stamp moves aside, a new listing, the same answer ------
+      tl.to('#h2', { opacity: 0, y: -40, duration: 0.2, ease: 'power2.in' }, 7.1333);
+      tl.fromTo('#h3', { opacity: 0, y: 40, scale: 1.08, filter: 'blur(8px)' }, { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 7.3333);
+      tl.to('#s1', { x: -240, y: -210, scale: 0.45, rotation: -9, opacity: 0.85, duration: 0.4, ease: 'power3.inOut' }, 7.3333);
+      tl.to('#s1 .b', { opacity: 0, duration: 0.2 }, 7.3333);
+      tl.to('#pic', { filter: 'saturate(1) brightness(1)', duration: 0.3 }, 7.3333);
+      tl.to(['#tag1', '#only1'], { opacity: 0, duration: 0.15 }, 7.3333);
+      tl.to('#lst1', { opacity: 0, y: -16, duration: 0.2 }, 7.3333);
+      tl.fromTo('#lst2', { opacity: 0 }, { opacity: 1, duration: 0.1 }, 7.3333);
+      tl.fromTo('#m2', { opacity: 0 }, { opacity: 1, duration: 0.2 }, 8.1667);
+      tl.set('#t2', { width: '0ch' }, 0);
+      tl.set('#t2', { width: '1ch' }, 7.3333);
+      tl.set('#t2', { width: '2ch' }, 7.3889);
+      tl.set('#t2', { width: '3ch' }, 7.4444);
+      tl.set('#t2', { width: '4ch' }, 7.4999);
+      tl.set('#t2', { width: '5ch' }, 7.5555);
+      tl.set('#t2', { width: '6ch' }, 7.611);
+      tl.set('#t2', { width: '7ch' }, 7.6665);
+      tl.set('#t2', { width: '8ch' }, 7.7221);
+      tl.set('#t2', { width: '9ch' }, 7.7776);
+      tl.set('#t2', { width: '10ch' }, 7.8331);
+      tl.set('#t2', { width: '11ch' }, 7.8887);
+      tl.set('#t2', { width: '12ch' }, 7.9442);
+      tl.set('#s2', { xPercent: -50, yPercent: -50 }, 0);
+      tl.fromTo('#s2', { opacity: 0, scale: 1.7, rotation: -1, xPercent: -50, yPercent: -50 }, { opacity: 1, scale: 1, rotation: 5, xPercent: -50, yPercent: -50, duration: 0.16, ease: 'power4.in', immediateRender: false }, 8.5067);
+      tl.fromTo('#shake', { x: 0, y: 0 }, { x: -14, y: 10, duration: 0.05, yoyo: true, repeat: 5, ease: 'none', immediateRender: false }, 8.6667);
+      tl.to('#d2', { backgroundColor: '#ff5c8a', borderColor: '#ff5c8a', boxShadow: '0 0 22px rgba(255, 92, 138, 0.8)', duration: 0.12 }, 8.6667);
+      tl.fromTo('#d2', { scale: 1.5 }, { scale: 1, duration: 0.4, ease: 'back.out(2)', immediateRender: false }, 8.6667);
+      tl.fromTo('#l2', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.22, ease: 'expo.out' }, 9.0);
+      tl.to('#pic', { filter: 'saturate(0.2) brightness(0.55)', duration: 0.4 }, 9.0);
+      tl.fromTo('#tag1', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2)', immediateRender: false }, 9.0);
+      // beat 15 — the cooldown lands over both verdicts; the seconds tick on the beat
+      tl.to('#s2', { x: 240, y: -400, scale: 0.45, rotation: 7, opacity: 0.85, duration: 0.4, ease: 'power3.inOut' }, 10.0);
+      tl.set('#s3', { xPercent: -50, yPercent: -50 }, 0);
+      tl.fromTo('#s3', { opacity: 0, scale: 1.5, rotation: -9, xPercent: -50, yPercent: -50 }, { opacity: 1, scale: 1, rotation: -3, xPercent: -50, yPercent: -50, duration: 0.16, ease: 'power4.in', immediateRender: false }, 9.8400);
+      tl.fromTo('#shake', { x: 0, y: 0 }, { x: -14, y: 10, duration: 0.05, yoyo: true, repeat: 5, ease: 'none', immediateRender: false }, 10.0);
+      tl.fromTo('#l3', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.22, ease: 'expo.out' }, 10.3333);
+      tl.to('#h3', { opacity: 0, y: -40, duration: 0.2, ease: 'power2.in' }, 9.8000);
+      tl.fromTo('#h4', { opacity: 0, y: 40, scale: 1.08, filter: 'blur(8px)' }, { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 10.0);
+      tl.set('#s57', { opacity: 1 }, 0);
+      tl.set('#s57', { opacity: 0 }, 10.6667);
+      tl.set('#s56', { opacity: 1 }, 10.6667);
+      tl.set('#s56', { opacity: 0 }, 11.3333);
+      tl.set('#s55', { opacity: 1 }, 11.3333);
+      tl.set('#s55', { opacity: 0 }, 12.0);
+      tl.set('#s54', { opacity: 1 }, 12.0);
+      // ---- 4 · Strike three (19-27): the moderator's log, then the slam --------------------
+      tl.to('#h4', { opacity: 0, y: -40, duration: 0.2, ease: 'power2.in' }, 13.1333);
+      tl.fromTo('#h5a', { opacity: 0, y: 40, scale: 1.08, filter: 'blur(8px)' }, { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 13.3333);
+      tl.to('#s3', { opacity: 0, scale: 0.9, duration: 0.25, ease: 'power2.in' }, 12.6667);
+      tl.fromTo('#l4', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.22, ease: 'expo.out' }, 12.6667);
+      tl.fromTo('#l5', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.22, ease: 'expo.out' }, 13.3333);
+      tl.to('#d3', { backgroundColor: '#ff5c8a', borderColor: '#ff5c8a', boxShadow: '0 0 22px rgba(255, 92, 138, 0.8)', duration: 0.12 }, 13.3333);
+      tl.fromTo('#d3', { scale: 1.5 }, { scale: 1, duration: 0.4, ease: 'back.out(2)', immediateRender: false }, 13.3333);
+      tl.fromTo('#l6', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.22, ease: 'expo.out' }, 14.0);
+      tl.to('#tint', { opacity: 0.55, duration: 0.12 }, 14.6667);
+      tl.to(['#s1', '#s2', '#lst', '#strikes'], { opacity: 0.25, duration: 0.2 }, 14.6667);
+      tl.set('#s4', { xPercent: -50, yPercent: -50 }, 0);
+      tl.fromTo('#s4', { opacity: 0, scale: 1.6, rotation: -10, xPercent: -50, yPercent: -50 }, { opacity: 1, scale: 1, rotation: -4, xPercent: -50, yPercent: -50, duration: 0.16, ease: 'power4.in', immediateRender: false }, 14.5067);
+      tl.fromTo('#shake', { x: 0, y: 0 }, { x: -14, y: 10, duration: 0.05, yoyo: true, repeat: 5, ease: 'none', immediateRender: false }, 14.6667);
+      tl.to('#h5a', { opacity: 0, y: -40, duration: 0.2, ease: 'power2.in' }, 14.8000);
+      tl.fromTo('#h5', { opacity: 0, y: 40, scale: 1.08, filter: 'blur(8px)' }, { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 15.0);
+      // ---- 5 · Outro (27-33) ----------------------------------------------------------------
+      tl.to('#out', { opacity: 1, duration: 0.15 }, 17.8500);
+      tl.set('#shake', { opacity: 0 }, 18.0);
+      tl.fromTo('#nojunk', { opacity: 0, scale: 1.3, filter: 'blur(12px)' }, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.3, ease: 'expo.out' }, 18.0);
+      tl.fromTo('#shake', { x: 0, y: 0 }, { x: 10, y: -8, duration: 0.05, yoyo: true, repeat: 3, ease: 'none', immediateRender: false }, 18.0);
+      tl.to('#nojunk', { opacity: 0, scale: 0.9, duration: 0.22, ease: 'power2.in' }, 19.4467);
+      tl.fromTo('#lock', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.4)' }, 19.6667);
+      tl.fromTo('#tag', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out' }, 20.0);
+      tl.fromTo('#url', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: 'power3.out' }, 20.1667);
+      window.__timelines['film'] = tl;
+    })();
+  </script>
+</template>

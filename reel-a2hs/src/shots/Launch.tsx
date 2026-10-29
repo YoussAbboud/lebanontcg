@@ -1,16 +1,16 @@
 // S6 · Launch — a fingertip taps the icon (press squash), and it opens as a window (transition/shot-transitions C,
-// portal-wipe): the icon's rect grows to the screen over 40 f on bezier(0.7,0,0.3,1); the real page grows inside from
+// portal-wipe): the icon's rect grows to the screen over 34 f on bezier(0.7,0,0.3,1); the real page grows inside from
 // 0.66 → 1 with the same t (the window and its contents share one progress); the icon face fades within the first
-// 28 % of the travel. Then a true hold on the app view — the site with no browser bar.
+// 45 % of the travel. Then a true hold (≥30 f) on the app view — the site with no browser bar (S1–S4 had one).
 import React from 'react';
 import { Easing, interpolate, useCurrentFrame } from 'remotion';
 import { HomePage, SCREEN, Screen, TapRing } from '../Screen';
 import { EASE, mix, ramp, softShadow } from '../fixtures/Polish';
 import { AppIcon, HomeWall, ICON_R, ICON_RECT, TILE } from './HomeScreen';
 
-export const TAP = 6;
-export const WIN0 = 10;
-export const WIN1 = 50;
+export const TAP = 4;
+export const WIN0 = 8;
+export const WIN1 = 42;
 
 export const Launch: React.FC = () => {
   const f = useCurrentFrame();
@@ -34,8 +34,8 @@ export const Launch: React.FC = () => {
           <div style={{ position: 'absolute', width: SCREEN.w, height: SCREEN.h, left: '50%', top: '50%', transform: `translate(-50%, -50%) scale(${inner.toFixed(4)})` }}>
             <HomePage />
           </div>
-          {t < 0.3 && (
-            <div style={{ position: 'absolute', left: 0, top: 0, width: TILE, height: TILE, transform: `scale(${(w / TILE).toFixed(4)}, ${(h / TILE).toFixed(4)})`, transformOrigin: '0 0', opacity: Math.max(0, 1 - t * 3.6) }}>
+          {t < 0.46 && (
+            <div style={{ position: 'absolute', left: 0, top: 0, width: TILE, height: TILE, transform: `scale(${(w / TILE).toFixed(4)}, ${(h / TILE).toFixed(4)})`, transformOrigin: '0 0', opacity: Math.max(0, 1 - t * 2.2) }}>
               <AppIcon size={TILE} />
             </div>
           )}

@@ -1,10 +1,10 @@
 # LebanonTCG — "Add to Home Screen" reel (editable Remotion project)
 
-A 20.8-second 9:16 feature film for lebanontcg.com's new install-to-home-screen sheet, built with the video-shotcraft
+A 21.3-second 9:16 feature film for lebanontcg.com's new install-to-home-screen sheet, built with the video-shotcraft
 skill in autonomous free-creation mode.
 
 - **Renders:** `out/lebanontcg-a2hs.mp4` (with music) and `out/lebanontcg-a2hs-nobgm.mp4` (sound effects only, same picture).
-- **Format:** 1080×1920, 30 fps, 625 frames.
+- **Format:** 1080×1920, 30 fps, 639 frames (44 beats at 124.01 BPM).
 - **Design record:** `DESIGN-SPEC.md` — brief, decisions, shot mapping, the beat-locked storyboard and what changed in the build.
 
 ## Run it

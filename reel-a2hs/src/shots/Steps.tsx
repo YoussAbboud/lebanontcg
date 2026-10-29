@@ -1,10 +1,12 @@
-// S3 · Steps — the camera pushes into the sheet's three steps (1 → 1.3, professional curve, 20 f). A reticle
-// (effects/fui-hud-moves · reticle-lock-on) flies in from the bottom right, overshoots and bites step 1 on b13 with the
+// S3 · Steps — the camera pushes into the sheet's three steps (1 → 1.12, professional curve, 20 f). A reticle
+// (effects/fui-hud-moves · reticle-lock-on) flies in from the bottom right, overshoots and bites step 1 on b14 with the
 // label SHARE; the real step card lifts off the sheet (1.03×, accent outline) while the others dim. Each step holds a
-// person's pace (≥43 f): step 2 on b16, step 3 on b19. The reticle is used once in the film.
+// person's pace (≥43 f): step 2 on b17, step 3 on b20. The reticle is used once in the film, and it is drawn in a layer
+// above the (clipped) screen so its dash starts outside the frame, not inside the window.
 import React from 'react';
 import { Easing, interpolate, useCurrentFrame } from 'remotion';
 import { HomePage, IOS, Overlay, SCREEN, Screen, Sheet, SheetPatch, centre, rectL } from '../Screen';
+import { ReticleLayer } from './Reticle';
 
 const SCREEN_W = SCREEN.w;
 import { SHOTS, localBeat } from '../timing';
@@ -65,9 +67,11 @@ export const Steps: React.FC = () => {
     background: under ? 'rgba(8,9,11,0.9)' : C.accent,
   });
 
+  const camera: React.CSSProperties = { position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: `${o.x.toFixed(1)}px ${o.y.toFixed(1)}px` };
   return (
-    <Screen>
-      <div style={{ position: 'absolute', inset: 0, transform: `scale(${push.toFixed(5)})`, transformOrigin: `${o.x.toFixed(1)}px ${o.y.toFixed(1)}px` }}>
+    <>
+    <Screen bar={1}>
+      <div style={camera}>
         <HomePage />
         <Overlay opacity={1} />
         <Sheet variant="ios" />
@@ -98,21 +102,6 @@ export const Steps: React.FC = () => {
             </SheetPatch>
           );
         })}
-        {/* reticle (once in the film): flies in, overshoots, bites step 1 */}
-        {f >= FLY_IN && retOp > 0 && (
-          <SpeedBlur vx={fly1.x - fly0.x} vy={fly1.y - fly0.y} amount={0.3} max={22}>
-            <div style={{ position: 'absolute', left: 0, top: 0, transform: `translate(${fly.x.toFixed(2)}px, ${fly.y.toFixed(2)}px)`, opacity: retOp }}>
-              {corners.map((c, i) => (
-                <div key={i} style={{ position: 'absolute', left: c.x, top: c.y, transform: `scale(${c.sx}, ${c.sy})`, transformOrigin: '0 0' }}>
-                  <div style={stroke(ARM, THICK, true)} />
-                  <div style={stroke(THICK, ARM, true)} />
-                  <div style={stroke(ARM, THICK, false)} />
-                  <div style={stroke(THICK, ARM, false)} />
-                </div>
-              ))}
-            </div>
-          </SpeedBlur>
-        )}
         {/* the bite label: a dark capsule above step 1's right end (back ease, overshoot), with the reticle only */}
         {active === 0 && (() => {
           const r = rectL(IOS.steps[0].box);
@@ -123,16 +112,34 @@ export const Steps: React.FC = () => {
                 position: 'absolute', right: SCREEN_W - (r.x + r.w - 6), top: r.y - 52, transform: `scale(${t.toFixed(3)})`, transformOrigin: '100% 100%', opacity: Math.min(1, t * 1.5),
                 display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', padding: '8px 14px 8px 12px', borderRadius: 10,
                 background: 'linear-gradient(180deg, #23272e 0%, #15181d 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 1px rgba(0,0,0,0.4), 0 12px 24px -8px rgba(0,0,0,0.6)',
-                fontFamily: FONT.mono, fontWeight: 700, fontSize: 26, letterSpacing: '0.12em', color: C.ink,
+                fontFamily: FONT.mono, fontWeight: 700, fontSize: 30, letterSpacing: '0.12em', color: C.ink,
               }}
             >
               <span style={{ width: 10, height: 10, borderRadius: 5, background: C.accent, boxShadow: `0 0 0 4px rgba(211,252,59,0.22)` }} />
               SHARE
-              <span style={{ fontWeight: 500, fontSize: 20, color: 'rgba(255,255,255,0.5)', padding: '2px 6px', borderRadius: 5, background: 'rgba(255,255,255,0.07)' }}>1/3</span>
+              <span style={{ fontWeight: 500, fontSize: 26, color: 'rgba(255,255,255,0.6)', padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.07)' }}>1/3</span>
             </div>
           );
         })()}
       </div>
     </Screen>
+    {/* the reticle, above the screen and unclipped: same camera, no overflow */}
+    {f >= FLY_IN && retOp > 0 && (
+      <ReticleLayer camera={camera}>
+        <SpeedBlur vx={fly1.x - fly0.x} vy={fly1.y - fly0.y} amount={0.3} max={22}>
+          <div style={{ position: 'absolute', left: 0, top: 0, transform: `translate(${fly.x.toFixed(2)}px, ${fly.y.toFixed(2)}px)`, opacity: retOp }}>
+            {corners.map((c, i) => (
+              <div key={i} style={{ position: 'absolute', left: c.x, top: c.y, transform: `scale(${c.sx}, ${c.sy})`, transformOrigin: '0 0' }}>
+                <div style={stroke(ARM, THICK, true)} />
+                <div style={stroke(THICK, ARM, true)} />
+                <div style={stroke(ARM, THICK, false)} />
+                <div style={stroke(THICK, ARM, false)} />
+              </div>
+            ))}
+          </div>
+        </SpeedBlur>
+      </ReticleLayer>
+    )}
+    </>
   );
 };

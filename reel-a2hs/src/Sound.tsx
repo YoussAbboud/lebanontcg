@@ -1,7 +1,8 @@
 // Sound — BGM bed + declarative SFX pin table (sound-design.md §4.1/§4.6). Real-object sounds only.
 // Every pin names the picture event it lands on; `from` is computed so the file's PEAK lands on that frame:
 //   from = targetPeakFrame − sourcePeakLag − OUTPUT_AUDIO_OFFSET_F
-// Peak lags: analysis/sfx_peaks.json (33 ms envelope argmax). Output offset: analysis/av_offset.json (measured after render).
+// Peak lags: analysis/sfx_peaks.json (33 ms envelope argmax). Output offset: analysis/av_offset.json (measured on the
+// delivery path; av_backtest.json is the per-render check).
 // Sources: traced Mixkit URLs in the video-shotcraft skill's assets/audio/ATTRIBUTION.md; BGM = bgm-tech-house.mp3
 // (Mixkit Stock Music Free License; the skill's attribution notes it cannot be traced to one catalogue entry).
 import React from 'react';
@@ -31,33 +32,34 @@ export const SFX: Pin[] = [
   // S2 · the sheet rises into the drop (b8): a quick air whoosh peaking on the landing, a soft hit as it lands
   pin(S.sheet.from + SHEET_LAND, 'air-woosh-quick.mp3', 0.6, 'sheet rises (whoosh into the landing, b8)'),
   pin(S.sheet.from + SHEET_LAND + 1, 'hit-weak.mp3', 0.4, 'sheet lands'),
-  // S3 · push into the steps; the reticle bites step 1 (b13); a switch tap as each step lifts
-  pin(S.steps.from + 10, 'sweep-short.mp3', 0.45, 'camera pushes into the steps'),
+  // S3 · push into the steps; the reticle bites step 1 (b14); a switch tap as each step lifts
+  pin(S.steps.from + 10, 'sweep-short.mp3', 0.6, 'camera pushes into the steps'),
   pin(beatF(14), 'lock-quick.mp3', 0.55, 'reticle bites step 1 (b14)'),
   pin(beatF(17), 'switch-tap.mp3', 0.42, 'step 2 lifts (b17)'),
   pin(beatF(20), 'switch-click-quick.mp3', 0.4, 'step 3 lifts (b20)'),
-  // S4 · the Android sheet arrives; the tap on its button (b23)
-  pin(S.android.from + 6, 'transition-soft.mp3', 0.28, 'iOS sheet → Android sheet'),
+  // S4 · the Android sheet arrives; the tap on its button (b24)
+  pin(S.android.from + 8, 'transition-soft.mp3', 0.42, 'iOS sheet → Android sheet'),
   pin(S.android.from + ANDROID_TAP, 'switch-tap.mp3', 0.7, 'tap on Add to Home Screen (b24)'),
-  // S5 · the icon lifts and flies; snap + sparkle on the landing (b27.5)
+  // S5 · the icon lifts and flies; snap + sparkle on the landing (b28.5)
   pin(S.home.from + 8, 'swoosh-quick.mp3', 0.55, 'icon lifts off the sheet'),
-  pin(S.home.from + ICON_LAND, 'transition-snap.mp3', 0.6, 'icon lands in its slot (b28.5)'),
-  pin(S.home.from + ICON_LAND + 4, 'sparkle-touch.mp3', 0.35, 'the label settles'),
+  pin(S.home.from + ICON_LAND, 'transition-snap.mp3', 0.85, 'icon lands in its slot (b28.5)'),
+  pin(S.home.from + ICON_LAND + 4, 'sparkle-touch.mp3', 0.55, 'the label settles'),
   // S6 · tap on the icon; the window opens into the app view
   pin(S.launch.from + LAUNCH_TAP, 'switch-click-quick.mp3', 0.7, 'tap on the icon'),
   pin(S.launch.from + WIN1 - 2, 'whoosh-big.mp3', 0.5, 'the window grows into the app'),
-  // S7 · riser → deep impact on the lockup landing (film peak, b36.5) → sparkle; one key on the wordmark, a click on the URL
-  pin(S.end.from + LOCK_LAND, 'riser-cine.mp3', 0.45, 'riser into the lockup'),
+  // S7 · riser → deep impact on the lockup landing (film peak, b37.5) → sparkle; one key on the wordmark, a click on the URL
+  pin(S.end.from + LOCK_LAND, 'riser-cine.mp3', 0.45, 'riser into the lockup (ends with the impact)', Math.round(PEAK_F['riser-cine.mp3']) + 12),
   pin(S.end.from + LOCK_LAND, 'impact-deep-whoosh.mp3', 0.55, 'icon brakes into place (b37.5)'),
   pin(S.end.from + LETTERS0 + 6, 'sparkle.mp3', 0.3, 'wordmark sets (sparkle)'),
   pin(S.end.from + LETTERS0, 'typewriter-hit-hard.mp3', 0.5, 'first letter'),
   pin(S.end.from + URL0 + 4, 'switch-click-quick.mp3', 0.4, 'URL'),
 ];
 
-// BGM: 0.38 under the effects; ducked ~5 dB under the sheet landing, the window opening and the lockup impact
+// BGM: 0.38 under the effects; ducked ~5 dB under the sheet landing, the icon landing, the window opening and the lockup impact
 const BGM_LEVEL = 0.38;
 const DUCK: [number, number, number][] = [
   [S.sheet.from + SHEET_LAND - 10, S.sheet.from + SHEET_LAND + 8, 0.56],
+  [S.home.from + ICON_LAND - 8, S.home.from + ICON_LAND + 14, 0.55],
   [S.launch.from + WIN1 - 20, S.launch.from + WIN1 + 6, 0.6],
   [S.end.from + LOCK_LAND - 12, S.end.from + LOCK_LAND + 16, 0.5],
 ];
@@ -68,13 +70,15 @@ const bgmVolume = (f: number) => {
 };
 
 export const sfxDuration = (s: Pin) => s.dur ?? 90;
+/** Every cut ends with a 6 f fade so no file is hard-stopped mid-tail. */
+const sfxVolume = (s: Pin) => (fr: number) => s.volume * interpolate(fr, [sfxDuration(s) - 6, sfxDuration(s) - 1], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
 
 export const Sound: React.FC<{ bgm: boolean }> = ({ bgm }) => (
   <>
     {bgm && <Audio src={staticFile('audio/bgm.mp3')} trimBefore={BGM_START_FRAMES} volume={bgmVolume} />}
     {SFX.map((s, i) => (
       <Sequence key={i} from={s.from} durationInFrames={sfxDuration(s)} name={`sfx · ${s.note}`}>
-        <Audio src={staticFile(`sfx/${s.src}`)} volume={s.volume} />
+        <Audio src={staticFile(`sfx/${s.src}`)} volume={sfxVolume(s)} />
       </Sequence>
     ))}
   </>

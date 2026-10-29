@@ -16,22 +16,22 @@
    "src": "transition-snap.mp3",
    "from": 411,
    "measured_f": 0.0,
-   "corr": 0.877
+   "corr": 0.855
   },
   {
    "src": "switch-click-quick.mp3",
    "from": 456,
-   "measured_f": 0.0,
-   "corr": 0.992
+   "measured_f": -2.01,
+   "corr": 1.0
   },
   {
    "src": "typewriter-hit-hard.mp3",
    "from": 562,
-   "measured_f": -3.64,
-   "corr": 0.149
+   "measured_f": -0.01,
+   "corr": 0.774
   }
  ],
- "output_offset_f": 0.0,
+ "output_offset_f": -0.01,
  "bgm_lag_ms": -0.33,
  "render_grid": {
   "bpm": 124.009,
@@ -43,9 +43,9 @@
  "events": [
   {
    "name": "sheet_lands_b8",
-   "picture_frame": 116,
+   "picture_frame": 117,
    "design_beat_frame": 116.87,
-   "err_f": -0.87
+   "err_f": 0.13
   },
   {
    "name": "step1_bite_b14",
@@ -61,9 +61,9 @@
   },
   {
    "name": "icon_lands_b28.5",
-   "picture_frame": 406,
+   "picture_frame": 413,
    "design_beat_frame": 414.43,
-   "err_f": -8.43
+   "err_f": -1.43
   },
   {
    "name": "lockup_lands_b37.5",
@@ -104,5 +104,5 @@
    "err_vs_design_f": -0.29
   }
  ],
- "max_abs_err_f": 8.43
+ "max_abs_err_f": 1.43
 }

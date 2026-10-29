@@ -3,25 +3,100 @@
  "beat": 0.483833,
  "bgm_start_frames": 370,
  "probes": [
-  { "src": "lock-quick.mp3", "from": 203 },
-  { "src": "switch-tap.mp3", "from": 349 },
-  { "src": "transition-snap.mp3", "from": 411 },
-  { "src": "switch-click-quick.mp3", "from": 456 },
-  { "src": "typewriter-hit-hard.mp3", "from": 562 }
+  {
+   "src": "lock-quick.mp3",
+   "from": 203
+  },
+  {
+   "src": "switch-tap.mp3",
+   "from": 349
+  },
+  {
+   "src": "transition-snap.mp3",
+   "from": 411
+  },
+  {
+   "src": "switch-click-quick.mp3",
+   "from": 456
+  },
+  {
+   "src": "typewriter-hit-hard.mp3",
+   "from": 562
+  }
  ],
  "cuts": [
-  { "name": "b6_sheet", "beat": 6, "frame": 88 },
-  { "name": "b12_steps", "beat": 12, "frame": 175 },
-  { "name": "b23_android", "beat": 23, "frame": 335 },
-  { "name": "b26_home", "beat": 26, "frame": 378 },
-  { "name": "b31_launch", "beat": 31, "frame": 451 },
-  { "name": "b36_end", "beat": 36, "frame": 523 }
+  {
+   "name": "b6_sheet",
+   "beat": 6,
+   "frame": 88
+  },
+  {
+   "name": "b12_steps",
+   "beat": 12,
+   "frame": 175
+  },
+  {
+   "name": "b23_android",
+   "beat": 23,
+   "frame": 335
+  },
+  {
+   "name": "b26_home",
+   "beat": 26,
+   "frame": 378
+  },
+  {
+   "name": "b31_launch",
+   "beat": 31,
+   "frame": 451
+  },
+  {
+   "name": "b36_end",
+   "beat": 36,
+   "frame": 523
+  }
  ],
  "events": [
-  { "name": "sheet_lands_b8", "beat": 8, "detect": "motion_stop", "window": [104, 130], "thr": 0.6 },
-  { "name": "step1_bite_b14", "beat": 14, "frame": 204 },
-  { "name": "android_tap_b24", "beat": 24, "frame": 349 },
-  { "name": "icon_lands_b28.5", "beat": 28.5, "detect": "appear", "window": [404, 426], "box": [564, 800, 704, 940], "thr": 10 },
-  { "name": "lockup_lands_b37.5", "beat": 37.5, "frame": 545 }
+  {
+   "name": "sheet_lands_b8",
+   "beat": 8,
+   "detect": "motion_stop",
+   "window": [
+    104,
+    130
+   ],
+   "thr": 0.6
+  },
+  {
+   "name": "step1_bite_b14",
+   "beat": 14,
+   "frame": 204
+  },
+  {
+   "name": "android_tap_b24",
+   "beat": 24,
+   "frame": 349
+  },
+  {
+   "name": "icon_lands_b28.5",
+   "beat": 28.5,
+   "detect": "arrive",
+   "window": [
+    396,
+    444
+   ],
+   "box": [
+    564,
+    750,
+    704,
+    890
+   ],
+   "thr": 3
+  },
+  {
+   "name": "lockup_lands_b37.5",
+   "beat": 37.5,
+   "frame": 545
+  }
  ]
 }

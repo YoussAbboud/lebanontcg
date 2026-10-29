@@ -1,0 +1,13 @@
+{
+ "output_audio_offset_f": 0.0,
+ "measured_on": "2026-10-29",
+ "pipeline": {
+  "remotion": "4.0.484",
+  "audio": "Remotion WAV \u2192 ffmpeg aac 320k",
+  "sample_rate": 48000,
+  "container": "mp4",
+  "fps": 30
+ },
+ "method": "cross-correlation of sharp SFX sources against the no-BGM delivery at their pinned frames (analysis/av_check.py, probes in pins.json)",
+ "note": "av_backtest.json is the per-render check; re-measure if Remotion, ffmpeg or the mux path changes"
+}

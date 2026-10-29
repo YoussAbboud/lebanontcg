@@ -16,7 +16,7 @@ export const SheetRise: React.FC = () => {
   const p = ramp(f, LAND - SHEET_RISE_F, SHEET_RISE_F, SHEET_EASE);
   const h = rectL(IOS.box).h;
   return (
-    <Screen>
+    <Screen bar={1}>
       <HomePage />
       <Overlay opacity={dim} />
       <Sheet variant="ios" dy={(1 - p) * h} />

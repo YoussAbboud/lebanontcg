@@ -76,6 +76,15 @@ for e in pins['events']:
         d = np.abs(fr - fr[0]).mean(1)
         idx = next((i for i in range(len(d)) if d[i] > e['thr']), None)
         f = a + idx if idx is not None else None
+    elif e.get('detect') == 'arrive':
+        # first frame whose region (x0,y0,x1,y1) matches the window's LAST frame within `thr` (the object is in place;
+        # a settle bump or a landing flash may still be decaying)
+        a, b = e['window']; x0, y0, x1, y1 = e['box']
+        raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', with_bgm, '-vf', f"select='between(n,{a},{b})',crop={x1-x0}:{y1-y0}:{x0}:{y0},format=gray", '-vsync', '0', '-f', 'rawvideo', '-'], capture_output=True).stdout
+        fr = np.frombuffer(raw, np.uint8).reshape(-1, (x1 - x0) * (y1 - y0)).astype(float)
+        d = np.abs(fr - fr[-1]).mean(1)
+        idx = next((i for i in range(len(d)) if d[i] < e['thr']), None)
+        f = a + idx if idx is not None else None
     elif e.get('detect') == 'min_width':
         # frame where the object in the band is narrowest (columns differing from the stage colour)
         a, b = e['window']; y0, y1 = e['band']

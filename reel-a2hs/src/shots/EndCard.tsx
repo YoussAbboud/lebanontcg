@@ -1,5 +1,5 @@
 // S7 · End — outro/logo-shrink-wordmark-lockup, adapted: the app view fades to the stage; the icon (5.4× → 1×,
-// in-out cubic) brakes with a +6 % overshoot on b36.5 (one shockwave ring, two scale ghosts only while fast), shifts
+// in-out cubic, fading in over its first 8 f as the app view leaves) brakes with a +6 % overshoot on b37.5 (one shockwave ring, two scale ghosts only while fast), shifts
 // left to make room, the wordmark letters slide in with a focus blur (dot last), the tagline fades in as a whole line,
 // and the URL closes. The icon never rotates. Holds ≥1 s.
 import React from 'react';
@@ -24,7 +24,7 @@ export const TAG0 = LETTERS0 + 18; // 58
 export const URL0 = TAG0 + 6; // 64
 
 const scaleAt = (f: number) => {
-  const k = seg(f, 3, LAND, E.inOutCubic);
+  const k = seg(f, 0, LAND, E.inOutCubic);
   const brake = Math.sin(seg(f, LAND, LAND + 8) * Math.PI) * 0.06;
   return lerp(k, 5.4, 1) * (1 + brake);
 };
@@ -32,13 +32,14 @@ const scaleAt = (f: number) => {
 export const EndCard: React.FC<Partial<typeof END_DEFAULTS>> = (props) => {
   const { wordmark, tagline, url, wordSize, tagSize, urlSize } = { ...END_DEFAULTS, ...props };
   const f = useCurrentFrame();
-  const fade = seg(f, 0, 10, E.outQuad);
+  const fade = seg(f, 0, 12, E.outQuad);
+  const enter = seg(f, 0, 8, E.outQuad);
   const s = scaleAt(f);
   const shift = seg(f, LAND + 6, LAND + 18, E.inOutCubic) * SHIFT;
   const ds = Math.abs(scaleAt(f) - scaleAt(f - 1));
   const trail = Math.min(1, ds / 0.35);
   const wave = seg(f, LAND, LAND + 18, E.outCubic);
-  const haloR = lerp(seg(f, 3, LAND + 2, E.inOutCubic), 520, 130);
+  const haloR = lerp(seg(f, 0, LAND + 2, E.inOutCubic), 520, 130);
   const haloA = 0.35 - 0.22 * seg(f, LAND + 2, LAND + 20, E.outCubic);
   const letters = [...wordmark];
   const L0 = LETTERS0;
@@ -66,9 +67,9 @@ export const EndCard: React.FC<Partial<typeof END_DEFAULTS>> = (props) => {
       {wave > 0 && wave < 1 && (
         <div style={{ position: 'absolute', left: 540 - lerp(wave, 90, 330), top: CY - lerp(wave, 90, 330), width: lerp(wave, 180, 660), height: lerp(wave, 180, 660), borderRadius: '50%', boxSizing: 'border-box', border: `${lerp(wave, 3, 1).toFixed(2)}px solid rgba(211,252,59,${(0.55 * (1 - wave)).toFixed(3)})`, boxShadow: `0 0 ${lerp(wave, 8, 20)}px rgba(211,252,59,${(0.35 * (1 - wave)).toFixed(3)})` }} />
       )}
-      {trail > 0.02 && f > 3 && icon(scaleAt(f - 2), 0.16 * trail)}
-      {trail > 0.02 && f > 3 && icon(scaleAt(f - 1), 0.3 * trail)}
-      {f >= 3 && icon(s, 1)}
+      {trail > 0.02 && f > 2 && icon(scaleAt(f - 2), 0.16 * trail * enter)}
+      {trail > 0.02 && f > 1 && icon(scaleAt(f - 1), 0.3 * trail * enter)}
+      {icon(s, enter)}
       {/* wordmark letters, staggered, with a focus blur; the dot is the last to land */}
       <div style={{ position: 'absolute', left: 540 + ROW_LEFT, top: CY - wordSize * 0.55, height: wordSize * 1.1, display: 'flex', alignItems: 'center' }}>
         {letters.map((ch, i) => {

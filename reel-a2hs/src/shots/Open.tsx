@@ -10,7 +10,7 @@ export const Open: React.FC = () => {
   const f = useCurrentFrame();
   const s = mix(1.04, 1, ramp(f, 0, 24, PRO));
   return (
-    <Screen>
+    <Screen bar={1}>
       <div style={{ position: 'absolute', inset: 0, transform: `scale(${s.toFixed(5)})`, transformOrigin: '50% 40%' }}>
         <HomePage />
       </div>

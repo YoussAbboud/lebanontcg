@@ -3,9 +3,11 @@
 import React from 'react';
 import { Img, staticFile } from 'remotion';
 import layout from './layout.json';
-import { C } from './theme';
+import { C, FONT } from './theme';
 
-export const SCREEN = { x: 140, y: 400, w: 800, h: 1421, r: 50 };
+export const SCREEN = { x: 140, y: 350, w: 800, h: 1421, r: 50 };
+/** The neutral browser toolbar's height (S1–S4: the page is in a browser; S6's app view has none). */
+export const BAR = 72;
 export const S = SCREEN.w / layout.vw; // 2.0513 local px per CSS px
 export const L = (v: number) => v * S;
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -16,18 +18,37 @@ export const IOS = layout.sheetIos;
 export const ANDROID = layout.sheetAndroid;
 
 /** The rounded window. `fade` dissolves its contents (and the window itself) into the stage. */
-export const Screen: React.FC<{ children?: React.ReactNode; fade?: number; style?: React.CSSProperties }> = ({ children, fade = 0, style }) => (
+export const Screen: React.FC<{ children?: React.ReactNode; fade?: number; bar?: number; style?: React.CSSProperties }> = ({ children, fade = 0, bar = 0, style }) => (
   <div
     style={{
-      position: 'absolute', left: SCREEN.x, top: SCREEN.y, width: SCREEN.w, height: SCREEN.h, borderRadius: SCREEN.r, overflow: 'hidden',
+      position: 'absolute', left: SCREEN.x, top: SCREEN.y, width: SCREEN.w, height: SCREEN.h + BAR * bar, borderRadius: SCREEN.r, overflow: 'hidden',
       background: '#08090b', opacity: 1 - fade,
       boxShadow: '0 0 0 1px rgba(255,255,255,0.06), 0 40px 90px -30px rgba(0,0,0,0.7), 0 12px 30px rgba(0,0,0,0.35)',
       ...style,
     }}
   >
     {children}
+    {bar > 0 && <BrowserBar opacity={bar} />}
   </div>
 );
+
+/** A neutral, unbranded browser toolbar under the page viewport: back/forward, the address pill, a share glyph. It is
+    the visible difference between "the site in a browser" (S1–S4) and "opened as an app" (S6). */
+export const BrowserBar: React.FC<{ opacity: number }> = ({ opacity }) => {
+  const g = 'rgba(242,245,247,0.55)';
+  return (
+    <div style={{ position: 'absolute', left: 0, top: SCREEN.h, width: SCREEN.w, height: BAR, opacity, background: '#15181d', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', padding: '0 28px', gap: 22, boxSizing: 'border-box' }}>
+      <span style={{ width: 16, height: 16, borderLeft: `3px solid ${g}`, borderBottom: `3px solid ${g}`, transform: 'rotate(45deg)', marginLeft: 6 }} />
+      <span style={{ width: 16, height: 16, borderRight: `3px solid rgba(242,245,247,0.25)`, borderTop: `3px solid rgba(242,245,247,0.25)`, transform: 'rotate(45deg)' }} />
+      <span style={{ flex: 1, height: 46, borderRadius: 14, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT.sans, fontWeight: 500, fontSize: 26, color: '#f2f5f7', letterSpacing: '0.01em' }}>lebanontcg.com</span>
+      <span style={{ position: 'relative', width: 26, height: 30 }}>
+        <span style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 20, border: `3px solid ${g}`, borderTop: 'none', borderRadius: '0 0 4px 4px', boxSizing: 'border-box' }} />
+        <span style={{ position: 'absolute', left: 11.5, top: 0, width: 3, height: 20, background: g }} />
+        <span style={{ position: 'absolute', left: 6, top: 1, width: 10, height: 10, borderLeft: `3px solid ${g}`, borderTop: `3px solid ${g}`, transform: 'rotate(45deg)' }} />
+      </span>
+    </div>
+  );
+};
 
 /** The home page's first screen (a 3× capture; sheet suppressed). */
 export const HomePage: React.FC<{ style?: React.CSSProperties }> = ({ style }) => (

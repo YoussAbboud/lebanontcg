@@ -7,7 +7,7 @@ export const W = 1080;
 export const H = 1920;
 export const BGM_START_FRAMES = 370;
 export const SOURCE_BEAT0 = 0.0251; // film-time seconds of beat 0 (source analysis only)
-export const OUTPUT_AUDIO_OFFSET_SEC = 0; // measured after render (analysis/av_offset.json)
+export const OUTPUT_AUDIO_OFFSET_SEC = 0; // measured on the delivery path (analysis/av_offset.json)
 export const BEAT_INT = 0.483833;
 export const beatT = (n: number) => SOURCE_BEAT0 + OUTPUT_AUDIO_OFFSET_SEC + n * BEAT_INT;
 export const beatF = (n: number) => Math.round(beatT(n) * FPS);

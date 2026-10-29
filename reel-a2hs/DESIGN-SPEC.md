@@ -71,7 +71,7 @@ Tokens:
 
 Each technique is the hero exactly once (the reticle once, the step lift once as a set-piece, the travel once, the portal once).
 
-## Stage 3 — Storyboard (beat-locked, 610 f)
+## Stage 3 — Storyboard (beat-locked, 610 f as planned; see "As built" for the 639 f grid)
 
 Beat frames: b0 1 · b6 88 · b8 117 · b12 175 · b13 189 · b16 233 · b19 276 · b22 320 · b23 334 · b25 363 · b27.5 400 · b30 436 · b31 451 · b35 509 · b36.5 531 · b38 553 · b40 582 · b42 610.
 
@@ -108,3 +108,35 @@ Brand: `public/icon-512.png` (the site's icon), `public/brand-card.svg` (the fla
 | home | 363 | 73 | dissolve 0–12; icon flight 0–37 (lands b27.5 = local 37); label 43; hold | 380, 400, 430 |
 | launch | 436 | 73 | tap 6; window 10–50; hold 50–73 | 442, 470, 500 |
 | end | 509 | 101 | screen fade 0–12; icon shrink 3–22 (brake 22–28, lands b36.5 = local 22); shift 29–44; letters 44–66; tagline 73; url 80 | 531, 560, 600 |
+
+## As built (stages 6–7: what changed in the build, and the review pass)
+
+The storyboard above is the intent; `src/timing.ts` is the as-built grid. Final length **639 f = 21.3 s** (44 beats at
+124.01 BPM; the spec's 610 f grew by two beats so the URL holds ≥1.5 s).
+
+**Re-timed beats.** Every cut moved to the nearest beat once the shot lengths were set: S3 b12–b23 (bite b14, steps
+b14/b17/b20), S4 b23–b26 (tap b24), S5 b26–b31 (icon lands b28.5), S6 b31–b36, S7 b36–b44 (lockup lands b37.5; shift
+28–40, letters 40–70, tag 58, URL 64). Push 1.3× → 1.12× (1.3 cropped the step text). Screen 800×1421 at (140, 350),
+scale 2.051 (the spec's 844×1500 did not leave room for the captions). Captions 64/34 px (spec 72/36) so the two-line
+pairs clear the screen. Step text 32.2 px effective (the 32 px floor), reticle label 30/26 px.
+
+**Review fixes (independent final review, stage 7).**
+- *"No browser bar" was asserted, not shown*: S1–S4 now render the page in a neutral, unbranded browser (a 72 px toolbar
+  under the viewport: back/forward, the address pill `lebanontcg.com`, a share glyph — `Screen bar`), which fades with
+  the S5 dissolve; S6's app view has none, so the sub-line is a visible change.
+- *Reticle fly-in was clipped* by the window's overflow: the reticle is drawn in an unclipped layer above the screen
+  (`shots/Reticle.tsx`) under the same camera, so the dash starts outside the 1080×1920 frame.
+- *S7 icon popped in*: the icon now fades in over its first 8 f while the app view leaves (12 f); the shrink starts at
+  frame 0.
+- *Caption breathing*: c1–c6 re-timed (`CAPTIONS`) so every caption is fully formed ≥30 f before its exit; blur-slide
+  amplitude reduced (head 28 px / 8 px blur, sub 14 px / 5 px) so mid-frames no longer smear.
+- *S4 handover*: no crossfade; the iOS sheet drops out (6 f) and the Android sheet rises into place (6–14), nothing
+  doubles. *S5 duplicate icon*: the sheet's tile is empty from the first frame of the lift. *S6 hold*: tap 4, window
+  8–42 (34 f), app view holds 30 f. Home-screen clock 10:52 (neutral).
+- *Audio*: BGM ducked under the icon landing; snap 0.85 / sparkle-touch 0.55 / sweep 0.6 / transition-soft 0.42;
+  riser-cine ends 12 f after the impact; every SFX cut ends in a 6 f fade. Offset record: `analysis/av_offset.json`
+  (0 f on this pipeline) + `analysis/av_backtest.json` (per-render back-test).
+
+**Not changed (recorded):** the plain 12 f dissolve into the drawn home screen (the page shows through the grid for a
+few frames — accepted as the site "becoming" the phone); the S6 window's centred inner page (text fragments at small
+sizes are hidden longer by the icon face, which now fades over the first 45 % of the travel).

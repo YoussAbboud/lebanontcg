@@ -37,7 +37,8 @@
   border-radius: var(--r-card);
   overflow: hidden;
   transform-style: preserve-3d;
-  transition: transform var(--fan-move), filter var(--fan-move), box-shadow var(--fan-move);
+  transition: transform var(--fan-move), filter var(--fan-move), box-shadow var(--fan-move),
+    opacity 600ms var(--ease-out);
   box-shadow: var(--shadow-fan);
 }
 .fan-card-centre {

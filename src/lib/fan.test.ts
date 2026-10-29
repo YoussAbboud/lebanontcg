@@ -1,17 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { fanInitialActive, fanInitialWindow } from './fan';
+import { fanInitialActive } from './fan';
 
-describe('fanInitialWindow', () => {
-  it('is everything when the list fits on screen', () => {
-    expect(fanInitialWindow([])).toEqual([]);
-    expect(fanInitialWindow(['a'])).toEqual(['a']);
-    expect(fanInitialWindow([1, 2, 3, 4, 5, 6, 7])).toEqual([1, 2, 3, 4, 5, 6, 7]);
-  });
-
-  it('is the seven around the opening card, wrapping past the start', () => {
-    const items = Array.from({ length: 15 }, (_, i) => i);
+describe('fanInitialActive', () => {
+  it('opens on the third card, or the last one when there are fewer', () => {
+    expect(fanInitialActive(0)).toBe(0);
+    expect(fanInitialActive(1)).toBe(0);
+    expect(fanInitialActive(2)).toBe(1);
     expect(fanInitialActive(15)).toBe(2);
-    // centre 2, three to each side: 14 wraps in from the end
-    expect(fanInitialWindow(items)).toEqual([0, 1, 2, 3, 4, 5, 14]);
   });
 });

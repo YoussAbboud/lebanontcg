@@ -32,6 +32,21 @@ const DRAG_MIN = 45;
     at zero opacity and slide in as the fan rotates through the list. */
 const WINDOW = FAN_WINDOW;
 
+/** One card a second while the fan deals itself in. */
+const DEAL_MS = 1000;
+
+/** Indices in dealing order: the centre, then alternating right and left. */
+function dealOrderFor(n: number, active: number): number[] {
+  const order: number[] = [];
+  for (let off = 0; off <= Math.min(WINDOW, n - 1); off++) {
+    for (const sign of off === 0 ? [1] : [1, -1]) {
+      const i = (((active + sign * off) % n) + n) % n;
+      if (!order.includes(i)) order.push(i);
+    }
+  }
+  return order;
+}
+
 export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
   const navigate = useNavigate();
   const [active, setActive] = useState(fanInitialActive(items.length));
@@ -52,19 +67,38 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
+  // The deal: cards come in one at a time, one a second, centre first and
+  // then outwards — and a card isn't dealt until its photo has arrived, so
+  // what appears is always a finished card, never a frame waiting on one.
+  const [loaded, setLoaded] = useState<ReadonlySet<string>>(() => new Set());
+  const [dealt, setDealt] = useState(reduced ? Infinity : 0);
   hoveredRef.current = hovered;
   pausedRef.current = paused;
 
   const n = items.length;
+  const dealOrder = dealOrderFor(n, fanInitialActive(n));
+  const allDealt = dealt >= dealOrder.length;
+
+  const markLoaded = (id: string) =>
+    setLoaded((s) => (s.has(id) ? s : new Set(s).add(id)));
 
   useEffect(() => {
-    if (n < 2 || reduced) return;
+    if (allDealt) return;
+    const next = items[dealOrder[dealt]];
+    const ready = !next.images[0] || loaded.has(next.id);
+    if (!ready) return; // waits for the photo; re-runs when it lands
+    const id = window.setTimeout(() => setDealt((d) => d + 1), dealt === 0 ? 0 : DEAL_MS);
+    return () => window.clearTimeout(id);
+  }, [dealt, loaded, allDealt, items, dealOrder]);
+
+  useEffect(() => {
+    if (n < 2 || reduced || !allDealt) return;
     const id = window.setInterval(() => {
       if (hoveredRef.current !== null || pausedRef.current) return;
       setActive((a) => (a + 1) % n);
     }, 5000);
     return () => window.clearInterval(id);
-  }, [n, reduced]);
+  }, [n, reduced, allDealt]);
 
   if (n === 0) return null;
 
@@ -126,6 +160,7 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
           if (off > (n - 1) / 2) off -= n;
           const trueAbs = Math.abs(off);
           const outsideWindow = trueAbs > WINDOW;
+          const undealt = !outsideWindow && dealOrder.indexOf(i) >= dealt;
           const abs = Math.min(trueAbs, 3);
           const isCentre = off === 0;
           const auction = item.auction ?? null;
@@ -147,14 +182,15 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
               key={item.id}
               role="button"
               aria-label={`${item.title} — ${live ? 'live auction, current bid' : 'asking'} ${formatPrice(item.price, item.currency)}`}
-              aria-hidden={outsideWindow}
-              tabIndex={outsideWindow ? -1 : 0}
+              aria-hidden={outsideWindow || undealt}
+              tabIndex={outsideWindow || undealt ? -1 : 0}
               className={`fan-card ${isCentre ? 'fan-card-centre' : ''} ${live ? 'fan-card-live' : ''}`}
               style={{
-                opacity: outsideWindow ? 0 : undefined,
-                pointerEvents: outsideWindow ? 'none' : undefined,
+                opacity: outsideWindow || undealt ? 0 : undefined,
+                pointerEvents: outsideWindow || undealt ? 'none' : undefined,
                 transform:
                   `translate(-50%, -50%) translateX(${dragDx}px) translateX(${sign * X[abs]}%)` +
+                  (undealt ? ' translateY(70px)' : '') +
                   ` translateZ(${-Z[abs] + (hovered === i ? 90 : 0)}px)` +
                   ` rotateY(${sign * ROT[abs]}deg)${tiltTerm} scale(${scale.toFixed(3)})`,
                 filter: `brightness(${(isHot ? 1 : 1 - abs * 0.22).toFixed(2)})`,
@@ -203,6 +239,12 @@ export function FanCarousel({ items }: { items: ListingWithSeller[] }) {
                     alt=""
                     decoding="async"
                     draggable={false}
+                    onLoad={() => markLoaded(item.id)}
+                    onError={() => markLoaded(item.id)}
+                    ref={(el) => {
+                      // Already in the cache: onLoad may have fired before React listened.
+                      if (el && el.complete && el.naturalWidth > 0) markLoaded(item.id);
+                    }}
                     style={
                       isTilting
                         ? {

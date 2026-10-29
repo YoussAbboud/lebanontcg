@@ -26,6 +26,8 @@
   --hairline: #16191e;         /* frame-level separators */
   --border: #2a3038;           /* control borders */
   --hover-row: #1f242b;
+  --placeholder: #2f353d;      /* loading blocks and photo frames */
+  --placeholder-sheen: rgba(242, 245, 247, 0.16);
 
   /* ---- Ink -------------------------------------------------------------- */
   --text-1: #f2f5f7;

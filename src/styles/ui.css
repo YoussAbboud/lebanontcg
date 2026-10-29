@@ -282,23 +282,25 @@ select.input {
 }
 
 /* ---- Skeleton --------------------------------------------------------------------- */
-.skeleton {
-  background: linear-gradient(100deg, var(--surface) 40%, var(--raised-1) 50%, var(--surface) 60%);
+/* Every loading placeholder: a grey block with a light sheen sweeping
+   through it. .skeleton is a block standing in for a panel; .photo-slot is
+   a frame that holds a photo and shows the same sweep until the photo has
+   painted over it, so a picture still on its way never reads as an empty
+   card. Faces without a photo set their own background inline instead. */
+.skeleton,
+.photo-slot {
+  background-color: var(--placeholder);
+  background-image: linear-gradient(100deg, transparent 30%, var(--placeholder-sheen) 50%, transparent 70%);
   background-size: 200% 100%;
   animation: skeleton-sweep 1.4s infinite linear;
-  border-radius: var(--r-panel);
 }
+.skeleton { border-radius: var(--r-panel); }
 @keyframes skeleton-sweep {
   from { background-position: 130% 0; }
   to { background-position: -70% 0; }
 }
-/* A frame that holds a photo shows the same sweep until the photo has
-   painted over it, so a picture still on its way never reads as an empty
-   card. Faces without a photo set their own background inline instead. */
-.photo-slot {
-  background: linear-gradient(100deg, var(--surface) 35%, var(--raised-2) 50%, var(--surface) 65%);
-  background-size: 200% 100%;
-  animation: skeleton-sweep 1.4s infinite linear;
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .photo-slot { animation: none; }
 }
 
 /* ---- Toast ------------------------------------------------------------------------- */
